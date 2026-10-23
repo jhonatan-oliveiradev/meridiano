@@ -2,6 +2,29 @@ import { mkdir, copyFile, readFile, writeFile } from "node:fs/promises";
 import "./vendor-reicon.mjs";
 const target = new URL("../dist/vendor/", import.meta.url);
 await mkdir(target, { recursive: true });
+const paper = new URL("paper/", target);
+await mkdir(new URL("shaders/", paper), { recursive: true });
+for (const file of [
+  "shader-mount.js",
+  "vertex-shader.js",
+  "shader-utils.js",
+  "shader-sizing.js",
+  "get-shader-color-from-string.js",
+  "get-shader-noise-texture.js",
+  "shaders/warp.js",
+])
+  await copyFile(
+    new URL(
+      "../node_modules/@paper-design/shaders/dist/" + file,
+      import.meta.url,
+    ),
+    new URL(file, paper),
+  );
+for (const file of ["LICENSE", "NOTICE"])
+  await copyFile(
+    new URL("../node_modules/@paper-design/shaders/" + file, import.meta.url),
+    new URL(file, paper),
+  );
 for (const file of ["three.module.js", "three.core.js"])
   await copyFile(
     new URL("../node_modules/three/build/" + file, import.meta.url),

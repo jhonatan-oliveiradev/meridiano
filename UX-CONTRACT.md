@@ -60,3 +60,11 @@ Nilo remains optional decoration around the existing usable adviser. Click/keybo
 - Escolhas mostram custo extraordinário e modificadores antes da confirmação. Fechar ou decidir depois conserva a pendência. Uma resposta vale uma vez no próximo trimestre.
 - Balanço e pendência ficam acessíveis na linha de tempo desktop e em Indicadores; no celular, a ação de avanço e a ilha permitem resolver o acontecimento.
 - Salvar, retomar e recarregar conservam campos novos opcionais sem invalidar cenários v1. Grupos e prazos são descritos como regras sintéticas; acontecimentos têm origem regional narrativa e impacto nacional nesta etapa.
+
+## Compositor compacto
+
+- Consulta aceita recolhe o painel em um blob no canto; controles recolhidos ficam `inert`, fora da navegação por teclado. A área liberada aumenta a altura de leitura.
+- O botão Escrever para Nilo expande e foca o textarea, inclusive durante a resposta. Rascunhos são preservados; abrir manualmente impede um novo recolhimento na chegada/conclusão da mesma resposta.
+- O painel permanece compacto ao terminar a resposta. Botão Recolher e Escape permitem voltar ao modo de leitura. Erro, cancelamento e troca de cenário retornam ao painel expandido.
+- Transição de 440ms entre a superfície expandida e o círculo, com conteúdo em crossfade para evitar distorcer texto. O layout é animado somente durante essa troca de estado, para efetivamente devolver espaço ao leitor.
+- Movimento reduzido desativa deslocamentos/pulso e pausa o shader. WebGL indisponível mantém um gradiente e todas as ações utilizáveis. Não existe captura de voz ou microfone.

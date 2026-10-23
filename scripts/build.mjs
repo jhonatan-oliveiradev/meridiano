@@ -19,6 +19,9 @@ for (const f of [
   "simulation.js",
   "decision-ui.js",
   "decisions.css",
+  "ai-blob.js",
+  "composer-dock.js",
+  "vendor/paper/shaders/warp.js",
 ])
   await access(new URL("../dist/" + f, import.meta.url));
 await rm(new URL("../build", import.meta.url), {

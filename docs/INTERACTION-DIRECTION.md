@@ -14,3 +14,12 @@ Motion: input feedback 140–180 ms, content 220–320 ms, island size changes 3
 - Terraink uses MapLibre/OpenStreetMap. Keep Meridiano's fictional geography independent of real-world tiles; add deterministic local road/street detail and a cartographic layer.
 
 The app remains vanilla ESM. These are source-informed framework adaptations, not React packages pasted into a non-React runtime. Sources and licenses are recorded in THIRD_PARTY.md.
+
+## Compositor que se recolhe
+
+- Intenção: entregar altura à resposta e manter a próxima mensagem a um clique, no canto inferior direito da coluna de leitura.
+- Superfície única: largura total e 168px de altura viram um círculo de 56px; 144px em desktop baixo e 156px no celular. Duração 440ms, curva cubic-bezier(.22,.8,.22,1). Conteúdo sai em 100ms e entra com pequeno atraso para não comprimir as letras durante a forma.
+- Apenas essa troca anima layout: o leitor realmente recebe a altura. O shader e o pulso ficam em camadas separadas e não competem pelas propriedades da transição.
+- Consulta aceita recolhe; conclusão mantém leitura; reabertura manual vence o automatismo daquela consulta; erros/cancelamento retornam ao editor. Sugestões de pergunta expandem e focam o campo.
+- Textarea recolhido fica inert. O foco vai ao controle compacto se estava no formulário; expandir devolve foco ao textarea. Escape recolhe e rascunho não é apagado pela troca de modo.
+- Paper Warp nativo, mesmos parâmetros-base do AI Blob Warp da Cult UI, paleta NX. Importação local sob demanda, uma instância, limite de 12.544 pixels, pausa fora de vista/aba/estado expandido e preferência de movimento reduzido. CSS estático mantém a função sem WebGL.

@@ -8,6 +8,8 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ## Versão 0.6 · decisões e consequências
 
+- O compositor do Nilo recolhe em um blob durante a consulta, com transição e reabertura a qualquer momento para liberar a área de leitura.
+
 - Compare até quatro trimestres com os ajustes atuais e com as políticas do início do trimestre; veja custo, receita, pobreza, bem-estar e dívida antes de avançar.
 - Desfaça ajustes e consulte os grupos afetados e o prazo de cada política.
 - Confira o balanço do trimestre, as medidas aplicadas e a projeção com condições conhecidas.
