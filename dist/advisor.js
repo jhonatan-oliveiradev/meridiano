@@ -263,6 +263,7 @@ export function initAdvisor({ getState, notify }) {
       return;
     }
     if (active) return;
+    if (mode === "question") input.value = "";
     reveal.finish();
     input.removeAttribute("aria-invalid");
     error.textContent = "";
@@ -345,7 +346,13 @@ export function initAdvisor({ getState, notify }) {
     ask("question");
   });
   $("#advisorQuestion").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    if (e.key !== "Enter" || e.isComposing || e.keyCode === 229) return;
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const input = e.currentTarget;
+      input.setRangeText("\n", input.selectionStart, input.selectionEnd, "end");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    } else if (!e.shiftKey && !e.altKey) {
       e.preventDefault();
       ask("question");
     }
