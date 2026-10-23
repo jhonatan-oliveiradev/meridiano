@@ -1,0 +1,101 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  initialState,
+  advance,
+  budget,
+  regionalMetrics,
+  regionDefs,
+} from "../dist/model.js";
+import {
+  landPoints,
+  generateCities,
+  contains,
+  voronoiCell,
+} from "../dist/geography.js";
+test("same seed and choices yield identical trajectories", () => {
+  let a = initialState(),
+    b = initialState();
+  for (let i = 0; i < 40; i++) {
+    a = advance(a);
+    b = advance(b);
+  }
+  assert.deepEqual(a, b);
+  assert.equal(a.history.length, 41);
+});
+test("advancement never mutates saved snapshots", () => {
+  let a = initialState(),
+    snapshot = structuredClone(a);
+  advance(a);
+  assert.deepEqual(a, snapshot);
+});
+test("unfunded universal transfer increases deficit and lowers poverty gradually", () => {
+  let a = initialState(),
+    b = initialState();
+  b.policies.income = 800;
+  assert.ok(budget(b).balance < budget(a).balance);
+  for (let i = 0; i < 12; i++) {
+    a = advance(a);
+    b = advance(b);
+  }
+  assert.ok(b.metrics.poverty < a.metrics.poverty);
+  assert.ok(b.metrics.debt > a.metrics.debt);
+});
+test("extreme policy combinations remain finite for 40 years", () => {
+  for (const mode of [0, 1]) {
+    let s = initialState({ external: "sancoes" });
+    Object.assign(
+      s.policies,
+      mode
+        ? {
+            income: 800,
+            tax: 10,
+            services: 18,
+            infrastructure: 10,
+            labor: 100,
+            pension: 100,
+          }
+        : {
+            income: 0,
+            tax: 50,
+            services: 2,
+            infrastructure: 0,
+            labor: 0,
+            pension: 0,
+          },
+    );
+    for (let i = 0; i < 160; i++) {
+      s = advance(s);
+      for (const v of Object.values(s.metrics)) assert.ok(Number.isFinite(v));
+    }
+    assert.equal(advance(s), s);
+    assert.equal(s.quarter, 160);
+  }
+});
+test("regional population sums to country; relief affects execution", () => {
+  let s = initialState();
+  assert.ok(
+    Math.abs(
+      regionDefs.reduce(
+        (sum, _, i) => sum + regionalMetrics(s, i).population,
+        0,
+      ) - s.metrics.population,
+    ) < 1e-9,
+  );
+  assert.ok(regionalMetrics(s, 4).access < regionalMetrics(s, 2).access);
+});
+test("geography is seeded, cities inland and assigned to correct Voronoi state", () => {
+  for (const seed of [1, 1042, 99999]) {
+    let land = landPoints(seed),
+      cities = generateCities(seed, regionDefs, land);
+    assert.deepEqual(land, landPoints(seed));
+    assert.ok(cities.length > 40);
+    for (const c of cities) {
+      assert.ok(contains(land, c.x, c.y), c.name);
+      assert.ok(
+        contains(voronoiCell(regionDefs[c.region], regionDefs), c.x, c.y),
+        c.name,
+      );
+    }
+  }
+});

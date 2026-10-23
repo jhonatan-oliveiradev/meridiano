@@ -1,0 +1,11 @@
+node_modules/
+build/
+.env
+.env.*
+!.env.example
+.openai/*
+!.openai/hosting.json
+premium-audit.json
+.DS_Store
+dist/vendor/
+.vercel/
