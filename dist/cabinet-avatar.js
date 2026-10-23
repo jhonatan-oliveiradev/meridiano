@@ -1,30 +1,40 @@
-let assetPromise;
-async function avatarAssets() {
-  if (!assetPromise)
-    assetPromise = Promise.all(
-      ["neutral", "happy", "thinking"].map(async (key) => {
-        const response = await fetch("assets/nilo-" + key + ".svg");
-        if (!response.ok) throw Error();
-        const svg = new DOMParser().parseFromString(
-          await response.text(),
-          "image/svg+xml",
-        ).documentElement;
-        if (svg.localName !== "svg") throw Error();
-        svg
-          .querySelectorAll("script,foreignObject,style,iframe,image,use")
-          .forEach((el) => el.remove());
-        for (const el of [svg, ...svg.querySelectorAll("*")])
-          for (const a of [...el.attributes])
-            if (
-              a.name.startsWith("on") ||
-              a.name === "href" ||
-              a.name === "xlink:href"
-            )
-              el.removeAttribute(a.name);
-        return [key, document.importNode(svg, true)];
-      }),
-    ).then((entries) => new Map(entries));
-  return assetPromise;
+const assetPromises = new Map();
+async function avatarAssets(character) {
+  if (!assetPromises.has(character))
+    assetPromises.set(
+      character,
+      Promise.all(
+        ["neutral", "happy", "thinking"].map(async (key) => {
+          const response = await fetch(
+            "assets/" + character + "-" + key + ".svg",
+          );
+          if (!response.ok) throw Error();
+          const svg = new DOMParser().parseFromString(
+            await response.text(),
+            "image/svg+xml",
+          ).documentElement;
+          if (svg.localName !== "svg") throw Error();
+          svg
+            .querySelectorAll("script,foreignObject,style,iframe,image,use")
+            .forEach((el) => el.remove());
+          for (const el of [svg, ...svg.querySelectorAll("*")])
+            for (const a of [...el.attributes])
+              if (
+                a.name.startsWith("on") ||
+                a.name === "href" ||
+                a.name === "xlink:href"
+              )
+                el.removeAttribute(a.name);
+          return [key, document.importNode(svg, true)];
+        }),
+      )
+        .then((entries) => new Map(entries))
+        .catch((error) => {
+          assetPromises.delete(character);
+          throw error;
+        }),
+    );
+  return assetPromises.get(character);
 }
 function clonePose(svg, prefix) {
   const copy = svg.cloneNode(true),
@@ -70,6 +80,8 @@ export function initCabinetAvatar({
     drawPose();
     message.textContent = messages[next] || messages.idle;
   }
+  let character = "nilo",
+    identityVersion = 0;
   let assetsLoading = false;
   let assets = new Map();
   let rendered = null;
@@ -87,11 +99,16 @@ export function initCabinetAvatar({
   async function loadAssets() {
     if (assetsLoading) return;
     assetsLoading = true;
+    const version = identityVersion;
     try {
-      assets = await avatarAssets();
+      const loaded = await avatarAssets(character);
+      if (version !== identityVersion) return;
+      assets = loaded;
+      button.classList.remove("avatar-fallback");
       drawPose();
     } catch {
-      art.textContent = "N";
+      if (version !== identityVersion) return;
+      art.textContent = character[0].toUpperCase();
       button.classList.add("avatar-fallback");
     }
   }
@@ -151,6 +168,20 @@ export function initCabinetAvatar({
   setState("idle");
   return {
     setState,
+    setCharacter(next) {
+      if (!["nilo", "lia", "caio", "iara"].includes(next) || next === character)
+        return;
+      character = next;
+      identityVersion++;
+      clearTimeout(helloTimer);
+      assetsLoading = false;
+      assets = new Map();
+      rendered = null;
+      art.replaceChildren();
+      button.classList.remove("avatar-fallback");
+      setState("idle");
+      loadAssets();
+    },
     greet,
     spin() {
       if (state === "thinking" || state === "speaking") return;

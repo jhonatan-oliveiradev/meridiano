@@ -4,6 +4,11 @@ for (const f of [
   "cabinet-tools.js",
   "cabinet-panel.js",
   "cabinet.css",
+  ...["lia", "caio", "iara"].flatMap((name) =>
+    ["neutral", "happy", "thinking"].map(
+      (pose) => `assets/${name}-${pose}.svg`,
+    ),
+  ),
   "investment-ledger.js",
   "investments.js",
   "investment-ui.js",

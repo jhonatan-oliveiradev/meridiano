@@ -3,11 +3,11 @@
 | Área | Responsabilidade | Programas para propostas |
 |---|---|---|
 | Nilo | Coordenar prioridades e consultar as áreas | Todos |
-| Fazenda | Orçamento, dívida e financiamento | Todos |
-| Saúde | Acesso a serviços e atenção básica | Saúde |
-| Infraestrutura | Saneamento, mobilidade e execução | Saneamento e transporte |
+| Lia · Fazenda | Orçamento, dívida e financiamento | Todos |
+| Caio · Saúde | Acesso a serviços e atenção básica | Caio · Saúde |
+| Iara · Infraestrutura | Saneamento, mobilidade e execução | Saneamento e transporte |
 
-Na república democrática, Nilo passa a Chefe de Gabinete; nos demais regimes mantém um cargo de coordenação compatível. Os ministérios são áreas de consulta, sem personagens ou agentes autônomos adicionais. Secretarias estaduais ficam para uma etapa posterior.
+Na república democrática, Nilo passa a Chefe de Gabinete; nos demais regimes mantém um cargo de coordenação compatível. As secretarias são áreas de consulta, sem personagens ou agentes autônomos adicionais. Secretarias estaduais ficam para uma etapa posterior.
 
 ## Ferramentas
 
@@ -24,3 +24,12 @@ A seleção de área é local, persistida separadamente do cenário. Trocar de �
 O texto continua sendo apresentado progressivamente depois da resposta JSON completa. O compositor recolhe e expande com as transições existentes; Enter envia e Ctrl/Command + Enter insere uma quebra. Preferência por movimento reduzido conserva a alternativa imediata.
 
 Não há novas dependências, segredos ou migração dos saves. As áreas usam os indicadores existentes: Saúde não dispõe de mortalidade, hospitais ou demografia por idade; Infraestrutura não calcula tráfego real. A simulação continua sintética e experimental.
+
+
+## Identidades do gabinete
+
+Lia (Fazenda), Caio (Saúde) e Iara (Infraestrutura) são personagens fictícios criados no Avatar Lab. O seletor conserva a área junto do nome. Selecionar uma pessoa atualiza os dois avatares, cargo, compositor, identificação da resposta e rótulos acessíveis; Nilo mantém a coordenação e a identidade original.
+
+Cada secretário possui definição portátil e três exports SVG do Photo Mode, guardados em `docs/avatar-source`. `python3 scripts/prepare-avatar.py` recompõe as versões locais com gradiente, olhos animáveis e enquadramento sem corte. A aplicação mantém suas próprias animações de piscar, olhar, cumprimento, giro e estado de consulta. Os clipes completos do runtime do Lab não são incorporados.
+
+Os SVGs de cada personagem são carregados uma vez e compartilhados pelas duas instâncias. Trocas rápidas descartam a apresentação de carregamentos antigos. Cada instância recebe IDs SVG exclusivos. Os identificadores internos finance/health/infrastructure, regras, cache, API key e saves permanecem compatíveis.
