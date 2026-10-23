@@ -209,7 +209,7 @@ export function budget(s) {
     balance: p.tax - spending - interest,
   };
 }
-export function advance(s) {
+export function advance(s, effect = {}) {
   if (s.quarter >= 160) return s;
   const n = structuredClone(s),
     p = n.policies,
@@ -227,6 +227,7 @@ export function advance(s) {
   const cycle = Math.sin((n.quarter + (n.seed % 17)) * 0.7) * 0.22;
   const annualGrowth = clamp(
     2 +
+      (effect.growth ?? 0) +
       0.12 * (p.infrastructure - 3) * n.capacity +
       0.12 * (p.services - 8) * n.capacity -
       0.045 * Math.max(0, p.tax - 32) -
@@ -250,7 +251,11 @@ export function advance(s) {
     2,
     70,
   );
-  m.poverty = clamp(m.poverty + (povertyTarget - m.poverty) * 0.13, 0.5, 90);
+  m.poverty = clamp(
+    m.poverty + (povertyTarget - m.poverty) * 0.13 + (effect.poverty ?? 0),
+    0.5,
+    90,
+  );
   m.unemployment = clamp(
     m.unemployment -
       0.085 * (annualGrowth - 1.5) +
@@ -268,11 +273,17 @@ export function advance(s) {
     30,
   );
   m.inflation = clamp(
-    m.inflation + (inflationTarget - m.inflation) * 0.16,
+    m.inflation +
+      (inflationTarget - m.inflation) * 0.16 +
+      (effect.inflation ?? 0),
     0,
     35,
   );
-  m.debt = clamp((m.debt - b.balance / 4) / (1 + annualGrowth / 400), 0, 250);
+  m.debt = clamp(
+    (m.debt - b.balance / 4 + (effect.cost ?? 0)) / (1 + annualGrowth / 400),
+    0,
+    250,
+  );
   const access = regionDefs.reduce((a, r) => a + r.share * r.access, 0);
   const welfareTarget = clamp(
     58 +
@@ -286,7 +297,11 @@ export function advance(s) {
     10,
     97,
   );
-  m.welfare = clamp(m.welfare + (welfareTarget - m.welfare) * 0.1, 0, 100);
+  m.welfare = clamp(
+    m.welfare + (welfareTarget - m.welfare) * 0.1 + (effect.welfare ?? 0),
+    0,
+    100,
+  );
   m.approval = clamp(
     52 +
       0.7 * (m.welfare - 60) -

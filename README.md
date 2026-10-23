@@ -6,6 +6,15 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ![Gabinete e Nilo — v0.3](docs/screenshots/cabinet-v03.jpg)
 
+## Versão 0.6 · decisões e consequências
+
+- Compare até quatro trimestres com os ajustes atuais e com as políticas do início do trimestre; veja custo, receita, pobreza, bem-estar e dívida antes de avançar.
+- Desfaça ajustes e consulte os grupos afetados e o prazo de cada política.
+- Confira o balanço do trimestre, as medidas aplicadas e a projeção com condições conhecidas.
+- Responda a acontecimentos de abastecimento, serviços, transporte e investimento, com três opções e efeitos explícitos por um trimestre.
+- Decisões pendentes pausam o tempo e continuam nos cenários salvos. O custo extraordinário é cobrado uma vez.
+- Regras, limites e compatibilidade: [Ciclo de decisões](docs/DECISION-CYCLE.md).
+
 ## Versão 0.3
 
 - Interface em 100dvh no desktop, com rolagem apenas nos painéis; temas claro/escuro/sistema.

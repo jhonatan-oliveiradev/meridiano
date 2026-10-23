@@ -41,3 +41,14 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Escrita observada em progresso (aria-busy=true, cursor, 113 caracteres parciais e Nilo em speaking); Mostrar resposta completa apresentou o conteúdo integral e encerrou o estado. Cumprimento e giro por controles do personagem conferidos.
 - Layout final: 1920×920 sem overflow externo, leitor com 293 px e personagem com 498 px, ambos sem transbordamento interno de layout. 1024×600 raiz 600/600 e largura 1024/1024. Mobile 390×844 mantém rolagem natural, personagem maior oculto; resposta extensa com compositor 156 px e textarea 56 px. Redução de movimento é coberta no controlador por teste injetado; preferência do sistema não foi emulada no browser.
 - O mock foi restrito ao processo local de QA, sem modo de demonstração ou conteúdo fictício embutido no código entregue. Não houve mudança na API/provedor nem nas variáveis de ambiente.
+
+## v0.6 · ciclo de decisões
+
+- 35 testes aprovados. Sete casos novos cobrem projeção sem mutação, compatibilidade v1, limite de 160, decisões pendentes, serialização, IDs inválidos e repetidos, execução única, comparação com o próximo resultado, linha de base e replay de 40 anos.
+- Browser: renda básica ajustada de 0 a M$ 200 mostrou redução relativa de pobreza e aumento de gasto/dívida; Desfazer restaurou a configuração. Outro ajuste de M$ 0 a M$ 50 apareceu no balanço seguinte, com os mesmos valores da projeção de um trimestre.
+- Primeiro avanço apresentou o acontecimento do porto. Decidir depois manteve o tempo parado; recarregar preservou a pendência. Salvar e retomar a cópia restaurou a mesma decisão, trimestre e ações disponíveis.
+- Abrir rotas alternativas foi agendado e executado no turno seguinte com custo extraordinário de 0,5% do PIB. Aguardar a normalização foi testado como alternativa sem gasto extraordinário.
+- Reprodução automática avançou até o próximo acontecimento e parou em 2028/T1, com aria-pressed=false e ação Resolver acontecimento. Balanço pode ser reaberto pela linha do tempo e pelos Indicadores.
+- Desktop 1363×936: raiz 1363×936 sem overflow externo, temas claro/escuro inspecionados. Celular em iframe de 390×844: largura client/scroll 380/380 (barra do navegador), rolagem vertical natural, política e diálogo de escolhas operáveis. Não equivale a um teste físico de toque.
+- O contexto do Nilo agora é invalidado também quando um slider muda, antes do avanço. Consulta após edição verificada com transporte de provedor simulado apenas no processo de QA local; nenhuma mudança de provedor, chave real ou modo simulado integra o produto.
+- Arquivos e preâmbulos de QA removidos do produto antes do build. Regras e limitações em DECISION-CYCLE.md. Sem novas dependências ou configuração de ambiente.
