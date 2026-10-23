@@ -1,4 +1,5 @@
 import { initCabinetAvatar } from "./cabinet-avatar.js";
+import { elapsedTimer } from "./interactions.js";
 const $ = (s) => document.querySelector(s);
 const date = (q) => `${2027 + Math.floor(q / 4)} · ${(q % 4) + 1}º trimestre`;
 const fmt = (n) =>
@@ -19,6 +20,7 @@ export function snapshotOf(s) {
 }
 export function initAdvisor({ getState, notify }) {
   const avatar = initCabinetAvatar();
+  const elapsed = elapsedTimer($("#adviceElapsed"));
   let active = null,
     fingerprint = "",
     answerFingerprint = "",
@@ -40,6 +42,42 @@ export function initAdvisor({ getState, notify }) {
     }
     $("#advisorCountry").textContent = s.name;
     $("#advisorPeriod").textContent = date(s.quarter);
+    $("#composerContext").textContent = `${s.name} · T${(s.quarter % 4) + 1}`;
+    $("#advisorBrief").replaceChildren(
+      ...[
+        [
+          "Pobreza",
+          fmt(s.metrics.poverty) + "%",
+          "Como reduzir a pobreza sem ampliar muito o déficit?",
+        ],
+        [
+          "Dívida / PIB",
+          fmt(s.metrics.debt) + "%",
+          "O que pressiona a dívida deste país?",
+        ],
+        [
+          "Bem-estar",
+          fmt(s.metrics.welfare) + "/100",
+          "Quais políticas posso testar para melhorar o bem-estar?",
+        ],
+      ].map(([label, value, question]) => {
+        const el = document.createElement("button"),
+          n = document.createElement("span"),
+          v = document.createElement("strong"),
+          arrow = document.createElement("span");
+        el.type = "button";
+        n.textContent = label;
+        v.textContent = value;
+        arrow.textContent = "↗";
+        arrow.className = "brief-arrow";
+        el.append(n, v, arrow);
+        el.onclick = () => {
+          $("#advisorQuestion").value = question;
+          $("#advisorQuestion").focus();
+        };
+        return el;
+      }),
+    );
     $("#advisorFacts").replaceChildren(
       ...[
         ["População", fmt(s.metrics.population) + " milhões"],
@@ -57,7 +95,11 @@ export function initAdvisor({ getState, notify }) {
     );
   }
   function busy(on) {
+    if (on) elapsed.start();
+    else elapsed.stop();
     avatar.setState(on ? "thinking" : "idle");
+    $("#advisorForm").classList.toggle("is-sending", on);
+    $("#advisorEmpty").hidden = on || result.childElementCount > 0;
     $("#analyzeQuarter").disabled = on;
     $("#askAdvisor").disabled = on;
     $("#cancelAdvice").hidden = !on;
@@ -67,7 +109,9 @@ export function initAdvisor({ getState, notify }) {
       ? "Analisando cenário…"
       : available === false
         ? "Não conectado"
-        : "Pronto para consultar";
+        : available === true
+          ? "Chave configurada · Gemini"
+          : "Verificando conexão…";
   }
   function render(answer, quarter, provider) {
     $("#advisorEmpty").hidden = true;
@@ -81,6 +125,8 @@ export function initAdvisor({ getState, notify }) {
     summary.className = "advice-summary";
     summary.textContent = answer.summary;
     result.append(header, title, summary);
+    result.classList.remove("answer-arrived");
+    requestAnimationFrame(() => result.classList.add("answer-arrived"));
     avatar.setState("happy");
     for (const o of answer.observations) {
       const block = document.createElement("section"),
@@ -157,8 +203,10 @@ export function initAdvisor({ getState, notify }) {
       }
       if (!response.ok) {
         if (data.code === "NOT_CONFIGURED") available = false;
+        status.textContent = "Consulta não concluída";
         throw new Error(
-          data.message || "Não foi possível consultar o conselheiro.",
+          (data.message || "Não foi possível consultar o gabinete.") +
+            (data.code ? ` (${data.code})` : ""),
         );
       }
       if (stamp !== fingerprint || controller.signal.aborted) return;
@@ -189,6 +237,7 @@ export function initAdvisor({ getState, notify }) {
         active = null;
         busy(false);
         avatar.setState(error.textContent ? "error" : "happy");
+        if (error.textContent) status.textContent = "Consulta não concluída";
       }
     }
   }
@@ -196,6 +245,12 @@ export function initAdvisor({ getState, notify }) {
   $("#advisorForm").addEventListener("submit", (e) => {
     e.preventDefault();
     ask("question");
+  });
+  $("#advisorQuestion").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      ask("question");
+    }
   });
   $("#cancelAdvice").onclick = () => {
     active?.abort();
@@ -224,6 +279,7 @@ export function initAdvisor({ getState, notify }) {
     stateChanged,
     cancel() {
       active?.abort();
+      elapsed.stop();
     },
   };
 }

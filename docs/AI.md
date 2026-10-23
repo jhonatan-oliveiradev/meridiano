@@ -5,7 +5,7 @@
 1. Integre a branch da PR ao fluxo de deploy escolhido. A branch `main` inicial contém somente o README enquanto a PR não for integrada.
 2. Preset **Other**, diretório raiz do repositório, instalação `npm ci`, build `npm run build`, saída `build`.
 3. Em **Settings → Environment Variables**, crie `GEMINI_API_KEY` com sua chave. Habilite nos ambientes desejados (Preview e/ou Production). Não use prefixo público. Não coloque a chave no chat nem no repositório.
-4. Opcional: `GEMINI_MODEL=gemini-2.5-flash-lite`. É o padrão configurado no código. A disponibilidade e as cotas pertencem à sua conta Google e podem mudar.
+4. Opcional: `GEMINI_MODEL=gemini-3.5-flash-lite`. É o padrão configurado no código. A disponibilidade e as cotas pertencem à sua conta Google e podem mudar.
 5. Faça um novo deploy para aplicar as variáveis. O endpoint `GET /api/advisor` informa somente se a chave está presente. Use “Analisar trimestre” para verificar autenticação e disponibilidade reais do modelo.
 
 Não é necessário banco de dados. O endpoint está em `api/advisor.js`, função Node.js com duração máxima de 30 segundos. A chamada ao provedor tem timeout de 18 segundos, e o cliente aguarda no máximo 22 segundos.
@@ -34,3 +34,19 @@ Erros do provedor e detalhes internos não são repassados ao usuário. O client
 - https://ai.google.dev/gemini-api/docs/pricing
 - https://vercel.com/docs/functions/runtimes/node-js
 - https://vercel.com/docs/functions/configuring-functions/duration
+
+
+## v0.4 · diagnóstico
+
+O padrão agora é `gemini-3.5-flash-lite`. A documentação do Google em 23/10/2026 restringe a família 2.5 a projetos que já a usavam; novos projetos devem usar modelos atuais. Se `GEMINI_MODEL` ainda aponta para a família 2.5 e o provedor informa modelo indisponível, há uma única tentativa no padrão atual, dentro do orçamento de tempo original. Falhas de chave, quota e permissão genérica não provocam troca de modelo.
+
+- `PROVIDER_KEY`: chave inválida, expirada ou recusada pelo Google.
+- `PROVIDER_ACCESS`: API/projeto sem permissão ou restrição da chave.
+- `MODEL_UNAVAILABLE`: modelo não disponível para o projeto.
+- `PROVIDER_LIMIT`: quota do Google; não confundir com `RATE_LIMIT`, o limite local por instância.
+- `PROVIDER_REQUEST`: payload recusado; exige conferir a integração.
+- `PROVIDER_NETWORK` / `TIMEOUT`: conexão ou prazo da chamada.
+
+A função registra somente código e status nos logs, sem chave, pergunta, cenário ou mensagem bruta do Google. O GET indica presença da chave, não testa suas permissões. A interface apresenta o código de erro para que um problema de configuração não seja confundido com indisponibilidade temporária.
+
+Referências oficiais: https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-lite · https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite · https://ai.google.dev/gemini-api/docs/pricing

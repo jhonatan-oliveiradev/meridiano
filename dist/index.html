@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="premium.css" />
     <link rel="stylesheet" href="studio.css" />
+    <link rel="stylesheet" href="playful.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -81,7 +82,7 @@
     <div class="app">
       <nav class="rail" aria-label="Navegação principal">
         <a class="brand-mark" href="#territorio" aria-label="Meridiano, início"
-          ><svg><use href="#i-globe" /></svg
+          ><svg><use href="assets/reicon.svg#i-globe" /></svg
         ></a>
         <div class="rail-links">
           <button
@@ -90,35 +91,35 @@
             title="Território"
             aria-label="Território"
           >
-            <svg><use href="#i-map" /></svg></button
+            <svg><use href="assets/reicon.svg#i-map" /></svg></button
           ><button
             data-view="politicas"
             class="rail-btn"
             title="Políticas públicas"
             aria-label="Políticas públicas"
           >
-            <svg><use href="#i-policy" /></svg></button
+            <svg><use href="assets/reicon.svg#i-policy" /></svg></button
           ><button
             data-view="indicadores"
             class="rail-btn"
             title="Indicadores"
             aria-label="Indicadores"
           >
-            <svg><use href="#i-chart" /></svg></button
+            <svg><use href="assets/reicon.svg#i-chart" /></svg></button
           ><button
             data-view="cenarios"
             class="rail-btn"
             title="Cenários salvos"
             aria-label="Cenários salvos"
           >
-            <svg><use href="#i-layers" /></svg></button
+            <svg><use href="assets/reicon.svg#i-layers" /></svg></button
           ><button
             data-view="conselheiro"
             class="rail-btn"
             title="Conselheiro"
             aria-label="Conselheiro"
           >
-            <svg><use href="#i-advisor" /></svg>
+            <svg><use href="assets/reicon.svg#i-advisor" /></svg>
           </button>
         </div>
         <button
@@ -145,7 +146,7 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.3</span>
+          <span></span> Cenário fictício <span class="small-label">v0.4</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -208,7 +209,7 @@
               </button>
             </div>
             <button class="secondary advisor-shortcut" data-view="conselheiro">
-              <svg><use href="#i-advisor" /></svg>
+              <svg><use href="assets/reicon.svg#i-advisor" /></svg>
               <span data-cabinet-title>Ministro da Fazenda</span></button
             ><span class="local-status" id="localStatus">Sessão local</span
             ><button class="secondary" id="save">
@@ -243,7 +244,8 @@
             >
               <button class="active" data-map-mode="2d" aria-pressed="true">
                 2D</button
-              ><button data-map-mode="3d" aria-pressed="false">3D</button>
+              ><button data-map-mode="3d" aria-pressed="false">3D</button
+              ><button data-map-mode="atlas" aria-pressed="false">Atlas</button>
             </div>
             <div id="terrain3d" hidden></div>
             <div id="threeLoading" hidden role="status">
@@ -287,6 +289,11 @@
                   <g id="regions" clip-path="url(#landClip)"></g>
                   <g id="rivers" clip-path="url(#landClip)"></g>
                   <g id="roads" clip-path="url(#landClip)"></g>
+                  <g
+                    id="streetNetwork"
+                    class="street-network"
+                    clip-path="url(#landClip)"
+                  ></g>
                   <path
                     id="coast"
                     fill="none"
@@ -300,7 +307,8 @@
             </div>
             <div class="layer-bar" aria-label="Camadas do mapa">
               <span
-                ><svg><use href="#i-layers" /></svg> Camadas</span
+                ><svg><use href="assets/reicon.svg#i-layers" /></svg>
+                Camadas</span
               ><button class="active" data-layer="relevo">Relevo</button
               ><button data-layer="populacao">População</button
               ><button data-layer="renda">Renda</button
@@ -376,7 +384,14 @@
             </p>
           </div>
           <div class="policy-budget" id="policyBudget"></div>
-          <div id="policies" class="policies"></div>
+          <div class="policy-workspace">
+            <div id="policies" class="policies"></div>
+            <aside
+              id="policyLedger"
+              class="policy-ledger"
+              aria-label="Contas do país"
+            ></aside>
+          </div>
           <div class="model-note">
             Os valores e relações são experimentais. Financiamento, capacidade
             de execução e efeitos acumulados fazem parte do modelo.
@@ -390,35 +405,51 @@
             <p>Veja a trajetória dos indicadores a cada trimestre simulado.</p>
           </div>
           <div id="indicatorCards" class="indicator-cards"></div>
-          <div class="chart-panel">
-            <div class="chart-heading">
-              <div>
-                <h4>Evolução do cenário</h4>
-                <p id="chartSubtitle">Histórico trimestral</p>
+          <div class="results-workspace">
+            <div class="chart-panel">
+              <div class="chart-heading">
+                <div>
+                  <h4>Evolução do cenário</h4>
+                  <p id="chartSubtitle">Histórico trimestral</p>
+                </div>
+                <label
+                  >Indicador
+                  <select id="chartMetric">
+                    <option value="poverty">Pobreza (%)</option>
+                    <option value="gdp">PIB (bilhões M$)</option>
+                    <option value="unemployment">Desemprego (%)</option>
+                    <option value="inflation">Inflação (%)</option>
+                    <option value="debt">Dívida / PIB (%)</option>
+                    <option value="welfare">Bem-estar (0–100)</option>
+                  </select></label
+                >
               </div>
-              <label
-                >Indicador
-                <select id="chartMetric">
-                  <option value="poverty">Pobreza (%)</option>
-                  <option value="gdp">PIB (bilhões M$)</option>
-                  <option value="unemployment">Desemprego (%)</option>
-                  <option value="inflation">Inflação (%)</option>
-                  <option value="debt">Dívida / PIB (%)</option>
-                  <option value="welfare">Bem-estar (0–100)</option>
-                </select></label
-              >
+              <svg
+                id="historyChart"
+                viewBox="0 0 800 280"
+                role="group"
+                aria-label="Histórico do indicador selecionado"
+              ></svg>
+              <output
+                id="chartTooltip"
+                class="chart-tooltip"
+                aria-live="polite"
+              ></output>
+              <div id="chartSummary" class="chart-summary"></div>
             </div>
-            <svg
-              id="historyChart"
-              viewBox="0 0 800 280"
-              role="img"
-              aria-label="Histórico do indicador selecionado"
-            ></svg>
-            <div id="chartSummary" class="chart-summary"></div>
-          </div>
-          <div class="event-panel">
-            <h4>O que aconteceu neste trimestre</h4>
-            <div id="events"></div>
+            <div class="event-panel quarter-terminal">
+              <div class="terminal-chrome">
+                <span class="terminal-lights" aria-hidden="true"
+                  ><i></i><i></i><i></i></span
+                ><span>Boletim do país</span><span id="bulletinPeriod"></span>
+              </div>
+              <h4>O trimestre, em três linhas.</h4>
+              <ol id="quarterBulletin" class="quarter-bulletin"></ol>
+              <details>
+                <summary>Entenda os resultados</summary>
+                <div id="events"></div>
+              </details>
+            </div>
           </div>
         </div>
         <div class="view content-view" id="view-cenarios">
@@ -482,7 +513,8 @@
               </div>
               <div id="advisorFacts" class="advisor-facts"></div>
               <button class="primary full" id="analyzeQuarter">
-                <svg><use href="#i-chart" /></svg> Analisar trimestre</button
+                <svg><use href="assets/reicon.svg#i-chart" /></svg> Analisar
+                trimestre</button
               ><span class="advisor-status" id="advisorStatus" role="status"
                 >Pronto para consultar</span
               >
@@ -513,21 +545,31 @@
                 os dados atuais.
               </div>
               <div id="advisorLoading" class="advisor-loading" hidden>
-                <div class="loading-orbit" aria-hidden="true"></div>
+                <div class="agent-field" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i>
+                </div>
                 <div>
-                  <strong>Analisando o cenário</strong>
-                  <p>Conferindo indicadores, políticas e orçamento.</p>
+                  <strong>Consulta enviada ao Nilo</strong>
+                  <p>Aguardando a análise do Gemini.</p>
+                  <output id="adviceElapsed" class="request-timer"
+                    >00:00</output
+                  >
                 </div>
                 <button id="cancelAdvice" class="text-button" hidden>
                   Cancelar
                 </button>
               </div>
               <div id="advisorEmpty" class="advisor-empty">
-                <svg><use href="#i-advisor" /></svg>
-                <h4>Consulte seu país.</h4>
-                <p>
-                  Peça uma análise do trimestre ou escreva uma pergunta abaixo.
-                </p>
+                <span class="eyebrow">NA MESA DO GABINETE</span>
+                <h4>Qual decisão vem agora?</h4>
+                <p>Comece pelos números do país ou traga uma pergunta.</p>
+                <div id="advisorBrief" class="advisor-brief"></div>
+                <button
+                  class="text-button"
+                  data-question="Qual é a prioridade deste país no próximo trimestre?"
+                >
+                  Definir a próxima prioridade <span>↗</span>
+                </button>
               </div>
               <article
                 id="advisorResult"
@@ -539,29 +581,75 @@
                 class="field-error advisor-error"
                 role="alert"
               ></p>
-              <form id="advisorForm" novalidate>
+              <form id="advisorForm" class="prompt-composer" novalidate>
+                <div class="composer-top">
+                  <span class="composer-avatar" aria-hidden="true"
+                    ><img src="assets/nilo-neutral.svg" alt="" /></span
+                  ><span>Converse com Nilo</span
+                  ><span class="composer-context" id="composerContext"
+                    >Aurora · T1</span
+                  >
+                </div>
                 <label class="sr-only" for="advisorQuestion"
                   >Pergunta sobre o país</label
                 ><textarea
                   id="advisorQuestion"
-                  placeholder="Pergunte sobre o país…"
+                  placeholder="O que você quer mudar no país?"
                   maxlength="600"
                   rows="2"
                   aria-describedby="advisorError"
                 ></textarea>
                 <div class="advisor-input-actions">
-                  <span>Dados enviados ao Gemini somente ao consultar.</span
+                  <span><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para enviar</span
                   ><button id="askAdvisor" class="primary" type="submit">
-                    Perguntar <svg><use href="#i-arrow" /></svg>
+                    Enviar <svg><use href="assets/reicon.svg#i-send" /></svg>
                   </button>
                 </div>
               </form>
               <p class="advisor-model-note">
-                Análise assistida por IA · Modelo de simulação experimental
+                Os dados do cenário são enviados ao Gemini ao consultar.
+                Sugestões não alteram políticas.
               </p>
             </div>
           </div>
         </div>
+        <section
+          id="eventIsland"
+          class="event-island"
+          data-expanded="false"
+          aria-label="Boletim do país"
+        >
+          <button
+            class="island-trigger"
+            type="button"
+            aria-expanded="false"
+            aria-controls="islandBody"
+          >
+            <span class="island-signal" aria-hidden="true"></span
+            ><span class="island-label">Boletim nacional</span
+            ><span class="island-period"></span
+            ><svg aria-hidden="true">
+              <use href="assets/reicon.svg#i-bell" />
+            </svg>
+          </button>
+          <div class="island-body" id="islandBody" inert>
+            <div class="island-heading">
+              <span class="island-country"></span
+              ><button class="island-close" aria-label="Recolher boletim">
+                ×
+              </button>
+            </div>
+            <ol class="island-events"></ol>
+            <button class="island-details">
+              Abrir indicadores <span>↗</span>
+            </button>
+          </div>
+          <span
+            class="sr-only island-live"
+            role="status"
+            aria-live="polite"
+          ></span>
+        </section>
         <footer class="timeline">
           <div class="playback">
             <button

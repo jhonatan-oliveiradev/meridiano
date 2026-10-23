@@ -3,6 +3,7 @@ import {
   AdvisorError,
   validateRequest,
   generateAdvice,
+  DEFAULT_MODEL,
 } from "../server/advisor.js";
 const buckets = new Map();
 // Best effort per warm instance. Provider quota and Vercel WAF remain the global controls.
@@ -34,7 +35,10 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("X-Content-Type-Options", "nosniff");
   if (req.method === "GET")
-    return res.status(200).json({ available: !!process.env.GEMINI_API_KEY });
+    return res.status(200).json({
+      available: !!process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
+    });
   if (req.method !== "POST") {
     res.setHeader("Allow", "GET, POST");
     return res
@@ -87,7 +91,7 @@ export default async function handler(req, res) {
     return res.status(200).json(
       await generateAdvice(request, {
         apiKey: process.env.GEMINI_API_KEY,
-        model: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
+        model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
       }),
     );
   } catch (error) {
@@ -99,6 +103,8 @@ export default async function handler(req, res) {
             "INTERNAL_ERROR",
             "Não foi possível concluir a consulta. Tente novamente.",
           );
+    if (e.status >= 500)
+      console.warn("meridiano.advisor", { code: e.code, status: e.status });
     return res.status(e.status).json({ code: e.code, message: e.message });
   }
 }

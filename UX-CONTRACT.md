@@ -31,3 +31,14 @@ The new-country dialog has “Gerar país aleatório”. It updates a draft and 
 country.js owns office mapping: democratic republic → finance minister; parliamentary republic / constitutional monarchy → prime minister; direct democracy → council coordinator; authoritarian regime → planning chief. These are fictional game roles, not universal constitutional claims. Existing #conselheiro links keep working. Title updates everywhere visible and in the provider instruction.
 
 Nilo remains optional decoration around the existing usable adviser. Click/keyboard activation greets; requests show a thinking pose, successful results a happy pose, failures a recoverable state. Local SVG assets load on first visibility. No third-party runtime, tracker or automatic AI call is added. Blinking and motion pause offscreen/hidden and with reduced motion. SVG files and original exported definitions are kept as project assets.
+
+
+## v0.4 · interação
+
+- A área de conteúdo usa toda a largura disponível. Somente o texto corrido tem limite de leitura.
+- O demonstrativo de políticas é uma projeção anual e acompanha os controles; efeitos continuam entrando no próximo trimestre.
+- A ilha anuncia somente eventos produzidos pelo modelo no trimestre simulado. Não há notícias reais ou eventos aleatórios inventados por IA. Pode recolher, reabrir, fechar com Escape ou ir aos indicadores.
+- Cartões de indicadores selecionam a série. Pontos do gráfico oferecem valor por mouse/foco e navegação pelas setas.
+- O compositor envia por botão ou Ctrl/Cmd+Enter. Exibe espera e tempo somente enquanto uma requisição está ativa; cancelamento não apaga uma análise anterior.
+- O modo Atlas exibe rede viária fictícia. O traçado é decorativo e não altera os cálculos de execução/transporte.
+- Motion reduzido elimina loops e entradas decorativas. Os controles e dados permanecem disponíveis.

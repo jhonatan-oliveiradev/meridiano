@@ -1,4 +1,5 @@
 import { mkdir, copyFile, readFile, writeFile } from "node:fs/promises";
+import "./vendor-reicon.mjs";
 const target = new URL("../dist/vendor/", import.meta.url);
 await mkdir(target, { recursive: true });
 for (const file of ["three.module.js", "three.core.js"])
