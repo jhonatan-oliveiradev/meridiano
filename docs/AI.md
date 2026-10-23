@@ -1,8 +1,8 @@
-# Conselheiro Gemini
+# IA do gabinete
 
 ## Ativar na Vercel
 
-1. Integre a branch da PR ao fluxo de deploy escolhido. A branch `main` inicial contém somente o README enquanto a PR não for integrada.
+1. Integre a PR ao fluxo de deploy escolhido.
 2. Preset **Other**, diretório raiz do repositório, instalação `npm ci`, build `npm run build`, saída `build`.
 3. Em **Settings → Environment Variables**, crie `GEMINI_API_KEY` com sua chave. Habilite nos ambientes desejados (Preview e/ou Production). Não use prefixo público. Não coloque a chave no chat nem no repositório.
 4. Opcional: `GEMINI_MODEL=gemini-3.5-flash-lite`. É o padrão configurado no código. A disponibilidade e as cotas pertencem à sua conta Google e podem mudar.
@@ -26,7 +26,7 @@ O prompt pede português direto, observações ancoradas em indicadores e ausên
 
 Até quatro consultas por minuto por identidade de IP em cada instância aquecida. Esse controle em memória não é distribuído nem uma garantia contra abuso, reinicializações ou rotação de IP. Antes de abrir acesso público amplo, configure limites no provedor e regras de rate limiting no firewall da Vercel ou um limiter persistente. Esta versão é adequada para teste privado/baixo volume, sem promessa de gratuidade ilimitada.
 
-Erros do provedor e detalhes internos não são repassados ao usuário. O cliente tem cache em memória por snapshot/pergunta, cancelamento e descarte de respostas antigas. Cancelar no navegador impede o uso da resposta; não garante interrupção imediata de processamento já recebido pelo Google.
+Erros do provedor e detalhes internos não são repassados ao usuário. O cliente tem cache em memória por snapshot/área/pergunta, cancelamento e descarte de respostas antigas. Cancelar no navegador impede o uso da resposta; não garante interrupção imediata de processamento já recebido pelo Google.
 
 ## Referências de implementação
 
@@ -50,3 +50,14 @@ O padrão agora é `gemini-3.5-flash-lite`. A documentação do Google em 23/10/
 A função registra somente código e status nos logs, sem chave, pergunta, cenário ou mensagem bruta do Google. O GET indica presença da chave, não testa suas permissões. A interface apresenta o código de erro para que um problema de configuração não seja confundido com indisponibilidade temporária.
 
 Referências oficiais: https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-lite · https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite · https://ai.google.dev/gemini-api/docs/pricing
+
+
+## v0.9 · gabinete e ferramentas
+
+Nilo coordena Fazenda, Saúde e Infraestrutura. Cada consulta usa uma área selecionada, com escopo e ferramentas permitidas pelo servidor. É o mesmo modelo configurado, sem chamadas independentes para cada ministério. Os resumos das áreas enviados ao Nilo são calculados pelo jogo, não pareceres gerados por outros agentes.
+
+O modelo pode devolver até três pedidos estruturados de leitura. O servidor valida nomes, argumentos, índices e escopo, executa funções puras do motor e solicita uma explicação final. Há no máximo três chamadas ao provedor por consulta, incluindo a migração de modelo antigo, dentro do prazo compartilhado de 18 segundos. Uma resposta direta continua usando apenas uma chamada. Pedidos repetidos na explicação final são rejeitados.
+
+As ferramentas investigam estados, consultam o orçamento, comparam programas e preparam propostas. Nenhuma contrata, avança o trimestre ou altera políticas. Os cards são recalculados no navegador com o cenário atual; editar o cenário invalida suas ações. Revisar contratação abre o diálogo existente, onde o jogador confirma.
+
+Atalhos de dados funcionam sem chave e recebem a identificação “Dados do jogo”. A chave e o modelo existentes continuam válidos, sem configuração adicional. Orquestração e interface verificadas com transporte simulado; a compatibilidade com a conta e a quota reais do Google precisa ser conferida após o deploy.

@@ -1434,7 +1434,20 @@ eventIsland = initEventIsland({
   onDetails: () =>
     decisionFor(state) ? decisionUI.showDecision() : setView("indicadores"),
 });
-advisorController = initAdvisor({ getState: () => state, notify });
+advisorController = initAdvisor({
+  getState: () => state,
+  notify,
+  onSelectRegion: (index) => {
+    setView("territorio");
+    selectRegion(index);
+    $("#stateSelect").focus();
+  },
+  onPrepareInvestment: (index, type) => {
+    setView("territorio");
+    selectRegion(index);
+    investmentUI.showQuote(index, type);
+  },
+});
 updateUI();
 setView(location.hash.slice(1) || "territorio");
 window.addEventListener("hashchange", () => setView(location.hash.slice(1)));

@@ -384,3 +384,140 @@ test("all investment phases validate and a full 48-program portfolio fits the AP
   assert.equal(validateRequest(payload).snapshot.investments.length, 48);
   assert.ok(Buffer.byteLength(JSON.stringify(payload)) < 24000);
 });
+
+const planned = (requests) =>
+  new Response(
+    JSON.stringify({
+      candidates: [
+        {
+          finishReason: "STOP",
+          content: { parts: [{ text: JSON.stringify({ requests }) }] },
+        },
+      ],
+    }),
+    { status: 200 },
+  );
+test("cabinet executes read-only requests then explains computed results with the same role", async () => {
+  const req = validateRequest({
+    mode: "question",
+    role: "health",
+    question: "Prepare atenção básica no estado 0",
+    snapshot: snapshotOf(initialState()),
+  });
+  const before = JSON.stringify(req);
+  let calls = 0,
+    last;
+  const result = await generateAdvice(req, {
+    apiKey: "test",
+    fetcher: async (url, opts) => {
+      calls++;
+      const b = JSON.parse(opts.body);
+      last = JSON.parse(b.contents[0].parts[0].text);
+      if (calls === 1)
+        return planned([
+          {
+            name: "prepare_investment",
+            args: { region: 0, program: "health" },
+          },
+        ]);
+      assert.equal(
+        b.generationConfig.responseJsonSchema.properties.requests,
+        undefined,
+      );
+      assert.equal(last.toolResults[0].kind, "proposal");
+      assert.ok(last.toolResults[0].data.quotes[0].cost > 0);
+      return ok();
+    },
+  });
+  assert.equal(calls, 2);
+  assert.equal(result.role, "health");
+  assert.equal(result.tools[0].department, "health");
+  assert.equal(result.tools[0].data.quotes[0].allowed, true);
+  assert.equal(JSON.stringify(req), before);
+});
+test("unauthorized tools never prepare actions; recursive or excess plans are rejected", async () => {
+  const req = { ...request(), role: "health" };
+  let calls = 0;
+  const r = await generateAdvice(req, {
+    apiKey: "test",
+    fetcher: async () =>
+      ++calls === 1
+        ? planned([
+            {
+              name: "prepare_investment",
+              args: { region: 0, program: "water" },
+            },
+          ])
+        : ok(),
+  });
+  assert.equal(r.tools[0].kind, "notice");
+  assert.equal(r.tools[0].request, undefined);
+  calls = 0;
+  await assert.rejects(
+    generateAdvice(request(), {
+      apiKey: "test",
+      fetcher: async () => {
+        calls++;
+        return planned([{ name: "inspect_budget", args: {} }]);
+      },
+    }),
+    (e) => e.code === "INVALID_RESPONSE",
+  );
+  assert.equal(calls, 2);
+  calls = 0;
+  await assert.rejects(
+    generateAdvice(request(), {
+      apiKey: "test",
+      fetcher: async () => {
+        calls++;
+        return planned(
+          Array.from({ length: 4 }, () => ({
+            name: "inspect_budget",
+            args: {},
+          })),
+        );
+      },
+    }),
+    (e) => e.code === "INVALID_RESPONSE",
+  );
+  assert.equal(calls, 1);
+  assert.throws(
+    () => validateRequest({ ...baseReq().body, role: "admin" }),
+    AdvisorError,
+  );
+});
+test("tool orchestration shares one deadline and bounded legacy migration budget", async () => {
+  let calls = 0;
+  const result = await generateAdvice(request(), {
+    apiKey: "test",
+    model: "gemini-2.5-flash",
+    fetcher: async () => {
+      calls++;
+      if (calls === 1)
+        return new Response(
+          JSON.stringify({ error: { message: "model not found" } }),
+          { status: 404 },
+        );
+      return calls === 2
+        ? planned([{ name: "inspect_budget", args: {} }])
+        : ok();
+    },
+  });
+  assert.equal(calls, 3);
+  assert.equal(result.model, DEFAULT_MODEL);
+  assert.equal(result.tools[0].kind, "budget");
+  calls = 0;
+  await assert.rejects(
+    generateAdvice(request(), {
+      apiKey: "test",
+      deadline: Date.now() + 5,
+      fetcher: async () => {
+        calls++;
+        await new Promise((r) => setTimeout(r, 15));
+        return planned([{ name: "inspect_budget", args: {} }]);
+      },
+    }),
+    (e) => e.code === "TIMEOUT",
+  );
+  assert.equal(calls, 1);
+});

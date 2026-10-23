@@ -1,4 +1,10 @@
 import {
+  roleFor,
+  toolNames,
+  runCabinetTool,
+  cabinetBriefs,
+} from "../dist/cabinet-tools.js";
+import {
   projectFor,
   investmentSnapshot,
   activeInvestments,
@@ -225,6 +231,8 @@ function validateInvestments(value, scenario) {
 export function validateRequest(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) invalid();
   if (!["analysis", "question"].includes(body.mode)) invalid();
+  const role = body.role ?? "nilo";
+  if (!roleFor(role)) invalid();
   const s = body.snapshot;
   if (
     !s ||
@@ -263,6 +271,7 @@ export function validateRequest(body) {
       : undefined;
   return {
     mode: body.mode,
+    role,
     question,
     snapshot: {
       name: safeName(s.name, 40),
@@ -304,6 +313,50 @@ export const responseSchema = {
   },
   required: ["title", "summary", "observations", "tradeoffs", "nextSteps"],
 };
+export const toolResponseSchema = {
+  ...responseSchema,
+  properties: {
+    ...responseSchema.properties,
+    requests: {
+      type: "array",
+      maxItems: 3,
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", enum: toolNames },
+          args: {
+            type: "object",
+            properties: {
+              metric: {
+                type: "string",
+                enum: ["access", "poverty", "population", "density"],
+              },
+              direction: { type: "string", enum: ["asc", "desc"] },
+              limit: { type: "integer", minimum: 1, maximum: 5 },
+              region: { type: "integer", minimum: 0, maximum: 11 },
+              program: {
+                type: "string",
+                enum: ["water", "health", "education", "transport"],
+              },
+              regions: {
+                type: "array",
+                items: { type: "integer" },
+                maxItems: 3,
+              },
+              programs: {
+                type: "array",
+                items: { type: "string" },
+                maxItems: 2,
+              },
+            },
+          },
+        },
+        required: ["name", "args"],
+      },
+    },
+  },
+  required: [],
+};
 export function validateResponse(value) {
   const text = (v, max) => {
     if (typeof v !== "string" || !v.trim() || v.length > max)
@@ -340,7 +393,16 @@ Programas estaduais têm planejamento, construção, entrega e operação. Obras
 Para análise: título factual, resumo até 90 palavras, 2 a 3 observações curtas, até 2 custos ou limites, até 2 testes de políticas sugeridos. Para pergunta: responda à pergunta no resumo, usando até 2 observações e próximos passos quando úteis. Não afirme efeito causal comprovado; cite o indicador concreto. Se o dado não existe no modelo, diga isso. Retorne JSON no esquema solicitado, sem markdown.`;
 export async function generateAdvice(
   request,
-  { apiKey, model = DEFAULT_MODEL, fetcher = fetch, timeoutMs = 18000 } = {},
+  {
+    apiKey,
+    model = DEFAULT_MODEL,
+    fetcher = fetch,
+    timeoutMs = 18000,
+    deadline = Date.now() + timeoutMs,
+    phase = "plan",
+    consultations = [],
+    attempts = { count: 0 },
+  } = {},
 ) {
   if (!apiKey)
     throw new AdvisorError(
@@ -354,11 +416,29 @@ export async function generateAdvice(
       "INVALID_MODEL",
       "O conselheiro está indisponível neste momento.",
     );
+  const role = roleFor(request.role ?? "nilo");
+  if (!role) invalid();
+  const remainingBudget = deadline - Date.now();
+  if (remainingBudget <= 0 || attempts.count >= 3)
+    throw new AdvisorError(
+      504,
+      "TIMEOUT",
+      "A consulta demorou mais que o esperado. Tente novamente.",
+    );
   const s = request.snapshot;
   const { investments: portfolio, ...scenario } = s;
   const context = {
     ...request,
     snapshot: scenario,
+    cabinet: {
+      selected: role.id,
+      scope: role.scope,
+      programs: role.programs,
+      tools: role.tools,
+      briefs: role.id === "nilo" ? cabinetBriefs(s) : [],
+    },
+    statesIndex: regionsOf(s).map((r, index) => ({ index, name: r.name })),
+    toolResults: consultations,
     budget: budget(s),
     regions: regionsOf(s).map((r, i) => ({
       name: r.name,
@@ -386,7 +466,7 @@ export async function generateAdvice(
     },
   };
   let response;
-  const started = Date.now();
+  attempts.count++;
   try {
     response = await fetcher(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -396,14 +476,14 @@ export async function generateAdvice(
           "Content-Type": "application/json",
           "x-goog-api-key": apiKey,
         },
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
         body: JSON.stringify({
           systemInstruction: {
             parts: [
               {
                 text:
                   systemInstruction +
-                  ` Seu papel fictício neste cenário é ${cabinetFor(s.government).title}, chamado Nilo. Use esse cargo apenas como apresentação; não infira poderes ou políticas adicionais a partir dele.`,
+                  ` O Nilo atua como ${cabinetFor(s.government).title} e coordena Fazenda, Saúde e Infraestrutura. Você responde pela área ${role.name}. Responsabilidade: ${role.scope} Programas permitidos: ${role.programs.join(", ")}. Ferramentas permitidas: ${role.tools.join(", ")}. Não atribua uma opinião de IA independente a cada ministério; são áreas especializadas do mesmo gabinete. ${phase === "plan" ? "Para investigar estados, comparar programas ou preparar proposta, devolva requests com name e args. Use índices de statesIndex, nunca nomes inventados. Ferramentas: investigate_states(args metric,direction,limit); inspect_budget(args vazio); compare_investments(args regions e programs); prepare_investment(args region e program). Até três consultas, apenas leitura. Se não precisar consultar, preencha title, summary, observations, tradeoffs e nextSteps; requests pode ser vazio ou ausente. Não envie custo ou texto nos argumentos e não afirme que contratou algo." : "Esta é a explicação final. Use toolResults como fonte dos custos e propostas. Não peça outras ferramentas. Cite claramente limitações ou bloqueios. Os botões abrem revisão; o jogador confirma a contratação. Não há alteração de políticas ou avanço de tempo por IA."}`,
               },
             ],
           },
@@ -414,7 +494,8 @@ export async function generateAdvice(
             temperature: 0.25,
             maxOutputTokens: 1800,
             responseMimeType: "application/json",
-            responseJsonSchema: responseSchema,
+            responseJsonSchema:
+              phase === "plan" ? toolResponseSchema : responseSchema,
           },
         }),
       },
@@ -436,17 +517,22 @@ export async function generateAdvice(
     const error = await providerError(response);
     // Legacy 2.5 projects may lose model access. One bounded migration retry;
     // key, quota, network and generic permission failures never trigger it.
-    const remaining = timeoutMs - (Date.now() - started);
+    const remaining = deadline - Date.now();
     if (
       error.code === "MODEL_UNAVAILABLE" &&
       model.startsWith("gemini-2.5-") &&
-      remaining > 1500
+      remaining > 1500 &&
+      attempts.count < 3
     )
       return generateAdvice(request, {
         apiKey,
         model: DEFAULT_MODEL,
         fetcher,
         timeoutMs: Math.min(remaining, 12000),
+        deadline,
+        phase,
+        consultations,
+        attempts,
       });
     throw error;
   }
@@ -460,8 +546,37 @@ export async function generateAdvice(
       .map((p) => p.text || "")
       .join("");
     if (!text || text.length > 16000) throw new Error("Invalid");
+    const value = JSON.parse(text);
+    if (
+      value.requests !== undefined &&
+      (!Array.isArray(value.requests) || value.requests.length > 3)
+    )
+      throw new Error("Invalid tool requests");
+    if (value.requests?.length) {
+      if (phase !== "plan") throw new Error("No recursive tool requests");
+      const seen = new Set(),
+        results = [];
+      for (const item of value.requests) {
+        const key = JSON.stringify(item);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        results.push(runCabinetTool(s, role.id, item));
+      }
+      return await generateAdvice(request, {
+        apiKey,
+        model,
+        fetcher,
+        timeoutMs,
+        deadline,
+        phase: "answer",
+        consultations: results,
+        attempts,
+      });
+    }
     return {
-      answer: validateResponse(JSON.parse(text)),
+      answer: validateResponse(value),
+      role: role.id,
+      tools: consultations,
       provider: "Gemini",
       model,
       quarter: s.quarter,

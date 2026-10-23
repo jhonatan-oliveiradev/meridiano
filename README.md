@@ -134,3 +134,8 @@ A API usa o Flash-Lite atual por padrão e diferencia falhas de chave, quota, ac
 O campo de mensagem fica separado da rolagem da resposta. O texto aparece progressivamente, com opção de mostrar tudo; movimento reduzido mostra a resposta de imediato. A apresentação acontece depois do JSON completo, sem mudança no transporte da API.
 
 No desktop a partir de 1280 px, Nilo também ocupa uma coluna própria com olhar, cumprimento, giro e reações à consulta. A versão pequena continua no gabinete. Abaixo dessa largura, a conversa tem prioridade e o personagem maior fica oculto. As poses compartilham o mesmo carregamento local e recebem IDs SVG distintos por instância.
+
+
+### v0.9 · gabinete com ferramentas
+
+Nilo coordena Fazenda, Saúde e Infraestrutura. As áreas investigam estados, consultam orçamento, comparam programas e preparam propostas com dados do motor. Cards permitem abrir o estado no mapa e revisar uma contratação; a confirmação continua com o jogador. Atalhos de dados funcionam sem IA. A conversa usa a chave já configurada. Regras em [CABINET.md](docs/CABINET.md) e integração em [AI.md](docs/AI.md).

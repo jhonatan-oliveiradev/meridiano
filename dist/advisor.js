@@ -1,3 +1,5 @@
+import { initCabinetPanel } from "./cabinet-panel.js";
+import { roleFor, runCabinetTool } from "./cabinet-tools.js";
 import { investmentSnapshot } from "./investment-ledger.js";
 import { initCabinetAvatar } from "./cabinet-avatar.js";
 import { elapsedTimer } from "./interactions.js";
@@ -42,7 +44,12 @@ export function snapshotOf(s) {
     previous: s.history.length > 1 ? { ...s.history.at(-2) } : null,
   };
 }
-export function initAdvisor({ getState, notify }) {
+export function initAdvisor({
+  getState,
+  notify,
+  onSelectRegion,
+  onPrepareInvestment,
+}) {
   const avatar = initCabinetAvatar();
   const largeAvatar = initCabinetAvatar({
     button: "#largeCabinetAvatar",
@@ -64,6 +71,8 @@ export function initAdvisor({ getState, notify }) {
   }
   function setWriting(on) {
     writing = on;
+    $("#revealControls > span").firstChild.textContent =
+      `${roleFor(selectedRole).name} está respondendo`;
     dock.setResponding(on || !!active);
     $("#revealControls").hidden = !on;
     result.setAttribute("aria-busy", String(on));
@@ -73,7 +82,7 @@ export function initAdvisor({ getState, notify }) {
         .forEach((node) => node.classList.remove("typing-fragment"));
     if (on) {
       avatarState("speaking");
-      status.textContent = "Nilo está respondendo…";
+      status.textContent = `${roleFor(selectedRole).name} está respondendo…`;
     } else if (!active) {
       avatarState("happy");
       status.textContent = "Resposta concluída";
@@ -119,6 +128,73 @@ export function initAdvisor({ getState, notify }) {
   const status = $("#advisorStatus"),
     error = $("#advisorError"),
     result = $("#advisorResult");
+  let selectedRole = "nilo";
+  try {
+    const saved = localStorage.getItem("meridiano:cabinet-role");
+    if (roleFor(saved)) selectedRole = saved;
+  } catch {}
+  const cabinet = initCabinetPanel({
+    getState,
+    getRole: () => selectedRole,
+    getStamp: () => fingerprint,
+    setRole(id) {
+      if (id === selectedRole) return;
+      active?.abort();
+      active = null;
+      reveal.cancel();
+      writing = false;
+      selectedRole = id;
+      answerFingerprint = "";
+      result.replaceChildren();
+      cabinet.clear();
+      error.textContent = "";
+      $("#advisorStale").hidden = true;
+      $("#revealControls").hidden = true;
+      dock.reset();
+      busy(false);
+      cabinet.updateRole();
+      try {
+        localStorage.setItem("meridiano:cabinet-role", id);
+      } catch {}
+    },
+    onQuick(request) {
+      active?.abort();
+      active = null;
+      reveal.cancel();
+      writing = false;
+      busy(false);
+      error.textContent = "";
+      const s = getState(),
+        tool = runCabinetTool(s, selectedRole, request);
+      render(
+        {
+          title:
+            tool.kind === "budget"
+              ? "Contas do próximo trimestre"
+              : tool.kind === "states"
+                ? "Comparação entre estados"
+                : "Investimentos para comparar",
+          summary:
+            tool.kind === "budget"
+              ? `Pagamentos e compromissos de ${s.name}, no trimestre atual.`
+              : tool.kind === "states"
+                ? "Estados ordenados pelo acesso atual a serviços."
+                : "Propostas calculadas para os estados com menor acesso a serviços.",
+          observations: [],
+          tradeoffs: [],
+          nextSteps: [],
+        },
+        s.quarter,
+        { local: true },
+      );
+      cabinet.render([tool], fingerprint, selectedRole);
+      answerFingerprint = fingerprint;
+      $("#advisorStale").hidden = true;
+    },
+    onSelect: onSelectRegion,
+    onPrepare: onPrepareInvestment,
+    notify,
+  });
   function stateChanged(s) {
     const next = JSON.stringify(snapshotOf(s));
     if (next !== fingerprint) {
@@ -128,6 +204,7 @@ export function initAdvisor({ getState, notify }) {
       busy(false);
       dock.reset();
       fingerprint = next;
+      cabinet.invalidate();
       error.textContent = "";
       $("#advisorStale").hidden =
         !answerFingerprint || answerFingerprint === next;
@@ -204,17 +281,23 @@ export function initAdvisor({ getState, notify }) {
         ? "Não conectado"
         : available === true
           ? writing
-            ? "Nilo está respondendo…"
+            ? `${roleFor(selectedRole).name} está respondendo…`
             : "Pronto para conversar"
           : "Verificando conexão…";
   }
-  function render(answer, quarter) {
+  function render(answer, quarter, { local = false } = {}) {
     reveal.cancel();
     $("#advisorEmpty").hidden = true;
     result.replaceChildren();
     const header = document.createElement("div");
     header.className = "advice-meta";
-    header.textContent = `Nilo · ${date(quarter)}`;
+    result.setAttribute(
+      "aria-label",
+      local
+        ? "Dados consultados no jogo"
+        : `Resposta de ${roleFor(selectedRole).name}`,
+    );
+    header.textContent = `${local ? "Dados do jogo" : roleFor(selectedRole).name} · ${date(quarter)}`;
     const title = document.createElement("h3");
     title.textContent = answer.title;
     const summary = document.createElement("p");
@@ -251,6 +334,13 @@ export function initAdvisor({ getState, notify }) {
       section.append(h, list);
       result.append(section);
     }
+    if (local) {
+      $("#advisorEmpty").hidden = true;
+      $("#revealControls").hidden = true;
+      dock.reset();
+      status.textContent = "Consulta aos dados concluída";
+      return;
+    }
     const parts = [...result.querySelectorAll("h3,h4,p,li")].map((node) => ({
       node,
       text: node.textContent,
@@ -276,7 +366,7 @@ export function initAdvisor({ getState, notify }) {
       },
       onDone() {
         setWriting(false);
-        notify("Resposta de Nilo concluída.");
+        notify(`Resposta de ${roleFor(selectedRole).name} concluída.`);
       },
     });
   }
@@ -297,10 +387,11 @@ export function initAdvisor({ getState, notify }) {
     error.textContent = "";
     const snapshot = snapshotOf(getState()),
       stamp = JSON.stringify(snapshot),
-      key = stamp + mode + question;
+      key = stamp + selectedRole + mode + question;
     if (cache.has(key)) {
       const data = cache.get(key);
       render(data.answer, data.quarter);
+      cabinet.render(data.tools, stamp, selectedRole);
       answerFingerprint = stamp;
       $("#advisorStale").hidden = true;
       return;
@@ -308,6 +399,7 @@ export function initAdvisor({ getState, notify }) {
     const controller = new AbortController();
     active = controller;
     busy(true);
+    cabinet.clear();
     const timeout = setTimeout(() => controller.abort("timeout"), 22000);
     try {
       const response = await fetch("/api/advisor", {
@@ -316,7 +408,7 @@ export function initAdvisor({ getState, notify }) {
           "Content-Type": "application/json",
           "x-meridiano-client": "1",
         },
-        body: JSON.stringify({ mode, question, snapshot }),
+        body: JSON.stringify({ mode, role: selectedRole, question, snapshot }),
         signal: controller.signal,
       });
       let data;
@@ -347,6 +439,7 @@ export function initAdvisor({ getState, notify }) {
       cache.set(key, data);
       if (cache.size > 8) cache.delete(cache.keys().next().value);
       render(data.answer, data.quarter);
+      cabinet.render(data.tools, stamp, selectedRole);
       answerFingerprint = stamp;
       $("#advisorStale").hidden = true;
     } catch (e) {

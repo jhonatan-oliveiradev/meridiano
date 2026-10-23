@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="decisions.css" />
     <link rel="stylesheet" href="territory.css" />
     <link rel="stylesheet" href="investments.css" />
+    <link rel="stylesheet" href="cabinet.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +151,7 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.8</span>
+          <span></span> Cenário fictício <span class="small-label">v0.9</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -215,7 +216,7 @@
             </div>
             <button class="secondary advisor-shortcut" data-view="conselheiro">
               <svg><use href="assets/reicon.svg#i-advisor" /></svg>
-              <span data-cabinet-title>Ministro da Fazenda</span></button
+              <span data-cabinet-title>Chefe de Gabinete</span></button
             ><span class="local-status" id="localStatus">Sessão local</span
             ><button class="secondary" id="save">
               <svg><use href="#i-save" /></svg> Salvar cenário</button
@@ -505,14 +506,19 @@
         </div>
         <div class="view content-view advisor-view" id="view-conselheiro">
           <div class="content-heading">
-            <span class="eyebrow" data-cabinet-office
-              >Ministério da Fazenda</span
-            >
-            <h3>Análise do cenário</h3>
+            <span class="eyebrow" data-cabinet-office>Gabinete do Governo</span>
+            <h3>Gabinete</h3>
             <p>
               Consulte os resultados, os custos das políticas e as diferenças
               entre regiões.
             </p>
+            <div
+              id="cabinetTeam"
+              class="cabinet-team"
+              role="group"
+              aria-label="Equipe do gabinete"
+            ></div>
+            <span id="cabinetScope" class="cabinet-scope"></span>
           </div>
           <div class="advisor-layout">
             <aside class="advisor-context">
@@ -527,7 +533,7 @@
                 </button>
                 <div class="cabinet-intro">
                   <strong>Nilo</strong
-                  ><span data-cabinet-title>Ministro da Fazenda</span>
+                  ><span data-cabinet-title>Chefe de Gabinete</span>
                   <p id="avatarMessage" aria-live="polite">
                     Vamos conferir os números?
                   </p>
@@ -548,6 +554,8 @@
                 >Pronto para consultar</span
               >
               <div class="suggested-questions">
+                <h4 id="cabinetActiveOffice">Coordenação do gabinete</h4>
+                <div id="cabinetQuickTools"></div>
                 <h4>Perguntas sobre o país</h4>
                 <button
                   data-question="O que está pressionando a dívida deste país?"
@@ -586,7 +594,7 @@
                       <i></i><i></i><i></i><i></i>
                     </div>
                     <div>
-                      <strong>Consulta enviada ao Nilo</strong>
+                      <strong>Consulta enviada ao gabinete</strong>
                       <p>Preparando a análise do país.</p>
                       <output id="adviceElapsed" class="request-timer"
                         >00:00</output
@@ -625,6 +633,11 @@
                     aria-live="off"
                     aria-busy="false"
                   ></article>
+                  <section
+                    id="cabinetResults"
+                    aria-label="Dados consultados pelo gabinete"
+                    hidden
+                  ></section>
                   <p
                     id="advisorError"
                     class="field-error advisor-error"
@@ -638,7 +651,7 @@
               >
                 <div class="nilo-stage-heading">
                   <span class="eyebrow">SEU GABINETE</span><strong>Nilo</strong
-                  ><span data-cabinet-title>Ministro da Fazenda</span>
+                  ><span data-cabinet-title>Chefe de Gabinete</span>
                 </div>
                 <div class="nilo-playground">
                   <div class="nilo-floor" aria-hidden="true"></div>
@@ -675,7 +688,7 @@
                     <div class="composer-top">
                       <span class="composer-avatar" aria-hidden="true"
                         ><img src="assets/nilo-neutral.svg" alt="" /></span
-                      ><span>Converse com Nilo</span
+                      ><span id="cabinetComposerTitle">Converse com Nilo</span
                       ><span class="composer-context" id="composerContext"
                         >Aurora · T1</span
                       >
