@@ -1,0 +1,9 @@
+# Território e demografia
+
+Estratégia autorizada: primeiro um gerador coerente, depois atlas interativo. Países novos recebem geografia v2 persistida; estados antigos sem esse campo conservam integralmente o motor e o mapa legados.
+
+Gerar contornos variados por semente e perfil (ilha, península, continental, alongado), área sintética em km², relevo e rios descendentes. Dividir território em 3–12 estados conforme extensão, população inicial e variação administrativa. Distribuir 20–240 municípios conforme população e habitabilidade, com hierarquia urbana e parcela rural; conservar exatamente população e área nacionais. Densidade municipal inclui moradores urbanos e rurais; tamanho das manchas urbanas representa somente a população urbana. Divisas e municípios não são recriados ao avançar o tempo.
+
+D3 Delaunay para vizinhança, simplex-noise para relevo e polygon-clipping para recortar polígonos administrativos na costa. Renderizadores compartilham a geometria: SVG acessível, Three.js existente e novo Atlas MapLibre carregado sob demanda, sem tiles ou dados reais. Sem dependência de IA para geração. Estado/cidade com área, habitantes/km² e urbanização, camada de densidade, navegação até município e rótulos conforme zoom. MapLibre/WebGL indisponível retorna à representação SVG, com os mesmos dados.
+
+Critérios: determinismo, conservação das somas, cada cidade dentro do estado e da terra, diversidade significativa de sementes, polígonos válidos, escala territorial consistente, compatibilidade de cenários e API, altura desktop preservada. Cálculos são sintéticos, sem calibração ou inferência sobre países reais. Arquitetura permite arquipélagos em versão futura sem chamar uma ilha conectada de arquipélago. Não inclui migração entre municípios, fluxos de tráfego ou rotas econômicas nesta entrega.

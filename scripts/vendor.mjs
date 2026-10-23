@@ -1,5 +1,6 @@
 import { mkdir, copyFile, readFile, writeFile } from "node:fs/promises";
 import "./vendor-reicon.mjs";
+import "./vendor-geography.mjs";
 const target = new URL("../dist/vendor/", import.meta.url);
 await mkdir(target, { recursive: true });
 const paper = new URL("paper/", target);

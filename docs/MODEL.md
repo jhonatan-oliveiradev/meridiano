@@ -20,9 +20,11 @@ Capacidade inicial de 0,65. A cada trimestre varia em 0,0009 × (serviços − 8
 
 ## Território
 
-Seis centros estaduais fixos formam células Voronoi recortadas pelo litoral. Cada estado recebe cidades por rejeição e suas próprias divisões municipais, também recortadas na fronteira estadual. A semente altera a costa, o campo de altitude e a distribuição municipal. O relevo visual é um campo analítico com cristas; curvas de nível usam interseções de grade. O relevo de custo econômico é um parâmetro estadual simplificado, não uma integração do campo visual.
+Países v2 recebem geografia persistida na criação. Área e população inicial influenciam o número de estados e municípios; costa, altitude, declividade e proximidade da água influenciam a ocupação. Células Voronoi recortadas formam as divisões, deformadas pela mesma transformação que o litoral. As participações urbanas e rurais somam a população nacional, e as áreas municipais somam as estaduais. Densidade = população municipal × 1.000.000 / área em km². Veja [Território](TERRITORY.md) para regras e limitações.
 
-As participações populacionais estaduais somam 100%. Perfis fixos de renda e acesso produzem diferenças locais. Infraestrutura melhora o acesso com ganho inversamente proporcional ao custo do relevo. Índices regionais são derivações das métricas nacionais: não há ainda dinâmica econômica regional autônoma. A renda regional é um índice relativo; não é uma partição contábil calibrada do PIB. Municípios dividem igualmente a população estadual e usam os demais indicadores do estado.
+Acesso e perfil relativo de renda definem diferenças regionais; infraestrutura melhora o acesso com menor retorno nas serras. Municípios possuem população, área, urbanização, densidade e acesso próprios; renda, pobreza e bem-estar ainda derivam do estado. Não há dinâmica econômica regional autônoma. As participações populacionais permanecem constantes durante os turnos: crescimento uniforme, sem migração. A renda regional é um índice relativo, sem contabilidade setorial calibrada.
+
+Cenários legados sem `territory` preservam seis centros estaduais fixos, litoral e relevo originais, participações fixas e divisão igualitária da população entre os municípios. Nenhuma área ou densidade é inventada para esses cenários.
 
 ## Limites
 

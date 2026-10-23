@@ -6,6 +6,15 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ![Gabinete e Nilo — v0.3](docs/screenshots/cabinet-v03.jpg)
 
+## Versão 0.7 · território e demografia
+
+- Novos países têm litoral, relevo, rios e divisas próprios, reproduzíveis pela semente. Escolha área e formato ou sorteie tudo.
+- De 3 a 12 estados e 20 a 240 municípios conforme extensão, população inicial e distribuição territorial. Cada município tem habitantes urbanos e rurais, área e densidade próprias.
+- Camada de densidade, manchas urbanas e escala em quilômetros; população e áreas fecham nos totais nacionais.
+- Atlas MapLibre sob demanda com seleção, zoom e rótulos por aproximação; SVG e Three compartilham a mesma geometria. Sem tiles de países reais.
+- Acontecimentos e contexto do Nilo usam os estados gerados. Cenários antigos mantêm sua geografia original; crie um novo país para experimentar o gerador.
+- Regras e limites: [Território](docs/TERRITORY.md). Renda, pobreza e bem-estar municipais ainda seguem o estado; não há migração.
+
 ## Versão 0.6 · decisões e consequências
 
 - O compositor do Nilo recolhe em um blob durante a consulta, com transição e reabertura a qualquer momento para liberar a área de leitura.

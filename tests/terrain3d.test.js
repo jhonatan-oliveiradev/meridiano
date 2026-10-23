@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildTerrainGeometry } from "../dist/terrain3d.js";
-import { landPoints, contains } from "../dist/geography.js";
+import { generateTerritory } from "../dist/territory.js";
+import { landPoints, contains, regionIndexAt } from "../dist/geography.js";
 test("3D geometry is bounded and deterministic without a GPU", () => {
   const a = buildTerrainGeometry(1042),
     b = buildTerrainGeometry(1042);
@@ -33,6 +34,38 @@ test("3D triangles stay on land at their centroids; all states represented", () 
       assert.ok(contains(land, x, y));
     }
     assert.equal(new Set(owners.map((o) => o.region)).size, 6);
+  } finally {
+    geometry.dispose();
+  }
+});
+
+test("3D v2 geometry follows the generated land and curved state boundaries", () => {
+  const territory = generateTerritory({
+    seed: 40315,
+    population: 67,
+    areaKm2: 720000,
+    kind: "elongated",
+  });
+  const { geometry, owners } = buildTerrainGeometry(40315, territory);
+  try {
+    const pos = geometry.attributes.position,
+      ind = geometry.index.array;
+    for (let i = 0; i < ind.length; i += 3) {
+      const ids = [ind[i], ind[i + 1], ind[i + 2]];
+      assert.ok(
+        contains(
+          territory.land,
+          ids.reduce((n, id) => n + pos.getX(id), 0) / 3 + 460,
+          ids.reduce((n, id) => n + pos.getZ(id), 0) / 3 + 370,
+        ),
+      );
+    }
+    for (const o of owners)
+      assert.equal(o.region, regionIndexAt(territory.regions, o.x, o.y));
+    assert.equal(
+      new Set(owners.map((o) => o.region)).size,
+      territory.regions.length,
+    );
   } finally {
     geometry.dispose();
   }

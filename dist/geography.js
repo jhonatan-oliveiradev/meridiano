@@ -1,3 +1,4 @@
+import { createNoise2D } from "./vendor/geography-engine.js";
 export function rng(seed) {
   let a = seed | 0;
   return () => {
@@ -73,7 +74,8 @@ export function voronoiCell(site, sites) {
   }
   return poly;
 }
-export function elevation(x, y, seed) {
+export function elevation(x, y, seed, profile = null) {
+  if (profile) return terrainElevation(x, y, seed, profile);
   let a = seed * 0.017;
   const ridgeX = 300 + Math.sin(y * 0.008 + a) * 53;
   let h =
@@ -195,4 +197,113 @@ export function transportNetwork(seed, cities, land) {
       }
   }
   return { roads, streets };
+}
+
+const noiseCache = new Map();
+function noiseFor(seed) {
+  if (!noiseCache.has(seed)) {
+    if (noiseCache.size >= 8) noiseCache.delete(noiseCache.keys().next().value);
+    noiseCache.set(seed, createNoise2D(rng(seed + 990)));
+  }
+  return noiseCache.get(seed);
+}
+export function coastRadius(t, p) {
+  return (
+    1 +
+    p.waves[0] * Math.sin(3 * t + p.phase) +
+    p.waves[1] * Math.cos(5 * t - p.phase) +
+    p.waves[2] * Math.sin(9 * t + p.phase * 2) +
+    (p.kind === "peninsula" ? 0.24 * Math.cos(t) : 0)
+  );
+}
+export function terrainElevation(x, y, seed, p) {
+  if (p.warp) {
+    y -= p.warp.b * Math.sin(x * p.warp.f * 0.8 + p.warp.phase);
+    x -= p.warp.a * Math.sin(y * p.warp.f + p.warp.phase);
+  }
+  const dx = x - p.cx,
+    dy = y - p.cy,
+    cs = Math.cos(p.rotation),
+    sn = Math.sin(p.rotation);
+  const u = (dx * cs + dy * sn) / p.rx,
+    v = (-dx * sn + dy * cs) / p.ry;
+  const radial = Math.hypot(u, v) / coastRadius(Math.atan2(v, u), p);
+  if (radial >= 1) return 0;
+  const noise = noiseFor(seed);
+  const hills =
+    (noise(x / 150, y / 150) +
+      0.45 * noise(x / 65, y / 65) +
+      0.16 * noise(x / 24, y / 24)) /
+    1.61;
+  const ridge = Math.exp(
+    -(
+      ((u * Math.cos(p.ridgeAngle) +
+        v * Math.sin(p.ridgeAngle) -
+        p.ridgeOffset) /
+        0.2) **
+      2
+    ),
+  );
+  return Math.max(
+    0,
+    Math.min(
+      1,
+      (0.2 + 0.25 * hills + 0.62 * ridge) * Math.min(1, (1 - radial) * 5),
+    ),
+  );
+}
+export const landFor = (s) => s.territory?.land ?? landPoints(s.seed);
+export function multiPath(multi) {
+  return multi
+    .map((poly) => poly.map((ring) => polygonPath(ring)).join(""))
+    .join("");
+}
+export function multiArea(multi) {
+  return multi.reduce(
+    (sum, poly) =>
+      sum +
+      poly.reduce(
+        (n, ring, i) =>
+          n +
+          (i ? -1 : 1) *
+            Math.abs(
+              ring.reduce((v, a, j) => {
+                const b = ring[(j + 1) % ring.length];
+                return v + a[0] * b[1] - b[0] * a[1];
+              }, 0) / 2,
+            ),
+        0,
+      ),
+    0,
+  );
+}
+export function pointInMulti(multi, x, y) {
+  return multi.some(
+    (poly) =>
+      contains(poly[0], x, y) && !poly.slice(1).some((r) => contains(r, x, y)),
+  );
+}
+
+export function regionIndexAt(regions, x, y) {
+  const actual = regions.findIndex(
+    (r) =>
+      r.shape &&
+      (!r.bounds ||
+        (x >= r.bounds[0] &&
+          y >= r.bounds[1] &&
+          x <= r.bounds[2] &&
+          y <= r.bounds[3])) &&
+      pointInMulti(r.shape, x, y),
+  );
+  if (actual >= 0) return actual;
+  let owner = 0,
+    distance = Infinity;
+  regions.forEach((r, i) => {
+    const d = (r.x - x) ** 2 + (r.y - y) ** 2;
+    if (d < distance) {
+      owner = i;
+      distance = d;
+    }
+  });
+  return owner;
 }

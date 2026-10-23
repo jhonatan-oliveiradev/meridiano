@@ -1,0 +1,105 @@
+.territory-facts {
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.country-title h1 {
+  font-size: clamp(23px, 2.1vw, 33px);
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+  min-width: 0;
+}
+.country-title .flag {
+  flex-shrink: 0;
+}
+.urban-footprint {
+  fill: #e1be7b;
+  fill-opacity: 0.35;
+  stroke: #c39b61;
+  stroke-width: 0.5;
+  pointer-events: none;
+}
+.density-active .municipality {
+  pointer-events: all;
+  fill-opacity: 0.92;
+  stroke-opacity: 0.6;
+  cursor: pointer;
+}
+.density-active .region-path {
+  fill-opacity: 0.2;
+}
+.density-active .minor-city {
+  display: block;
+}
+.density-active .minor-city .city-text {
+  display: none;
+}
+.map-shell .region-card {
+  max-height: calc(100% - 180px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+#atlasInteractive {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--ocean);
+  border-radius: inherit;
+  overflow: hidden;
+}
+#atlasInteractive[hidden] {
+  display: none;
+}
+.map-shell.atlas-active #mapViewport {
+  visibility: hidden;
+  pointer-events: none;
+}
+.map-shell.atlas-active .map-bottom .legend,
+.map-shell.atlas-active .map-bottom .scale {
+  display: none;
+}
+.map-shell.atlas-active .map-top,
+.map-shell.atlas-active .map-dimensions,
+.map-shell.atlas-active .layers,
+.map-shell.atlas-active .map-tools,
+.map-shell.atlas-active .region-card {
+  z-index: 6;
+}
+.map-shell.atlas-active .map-attribution {
+  z-index: 6;
+  font-size: 9px;
+}
+#atlasInteractive .maplibregl-ctrl-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+#atlasInteractive .maplibregl-ctrl-scale {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--muted);
+  font-family: Manrope, sans-serif;
+  font-size: 9px;
+}
+[data-theme="dark"] #atlasInteractive .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+.map-shell .layers {
+  max-width: calc(100% - 40px);
+  flex-wrap: wrap;
+}
+@media (max-width: 760px) {
+  .region-card {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .territory-facts {
+    font-size: 11px;
+  }
+  .country-title h1 {
+    font-size: 28px;
+  }
+}

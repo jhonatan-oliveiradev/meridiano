@@ -284,7 +284,7 @@ export function advance(s, effect = {}) {
     0,
     250,
   );
-  const access = regionDefs.reduce((a, r) => a + r.share * r.access, 0);
+  const access = regionsOf(n).reduce((a, r) => a + r.share * r.access, 0);
   const welfareTarget = clamp(
     58 +
       0.8 * (p.services - 8) * n.capacity +
@@ -335,7 +335,7 @@ export function advance(s, effect = {}) {
   return n;
 }
 export function regionalMetrics(s, index) {
-  const r = regionDefs[index],
+  const r = regionsOf(s)[index],
     m = s.metrics,
     p = s.policies;
   const execution = clamp(
@@ -357,5 +357,34 @@ export function regionalMetrics(s, index) {
       100,
     ),
     access: execution * 100,
+    ...(r.areaKm2
+      ? {
+          areaKm2: r.areaKm2,
+          density: (m.population * r.share * 1e6) / r.areaKm2,
+        }
+      : {}),
+  };
+}
+
+export const regionsOf = (s) => s.territory?.regions ?? regionDefs;
+export function municipalMetrics(s, city) {
+  const regional = regionalMetrics(s, city.region);
+  if (!s.territory || !city.populationShare) return regional;
+  const population = s.metrics.population * city.populationShare;
+  return {
+    ...regional,
+    population,
+    areaKm2: city.areaKm2,
+    density: (population * 1e6) / city.areaKm2,
+    urbanization: (city.urbanShare / city.populationShare) * 100,
+    urbanPopulation: s.metrics.population * city.urbanShare,
+    access:
+      clamp(
+        city.access +
+          ((s.policies.infrastructure - 3) * 0.008) /
+            regionsOf(s)[city.region].terrain,
+        0.3,
+        1,
+      ) * 100,
   };
 }
