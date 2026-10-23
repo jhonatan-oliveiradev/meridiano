@@ -1,0 +1,493 @@
+/* A stable composer and independently scrollable transcript. */
+.advisor-workspace {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.advisor-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.advisor-workspace > .advisor-stage {
+  grid-column: 1;
+  grid-row: 1;
+}
+.advisor-workspace > #advisorForm {
+  grid-column: 1;
+  grid-row: 2;
+}
+.advisor-workspace > .advisor-model-note {
+  grid-column: 1;
+  grid-row: 3;
+}
+.advisor-scroll {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 2px 16px 12px 2px;
+  scroll-behavior: auto;
+}
+.advisor-scroll:focus-visible {
+  outline: 1px solid var(--primary);
+  outline-offset: -1px;
+  border-radius: 8px;
+}
+.advisor-workspace #advisorResult {
+  width: 100%;
+  max-width: 80ch;
+  margin: 0;
+  padding-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+.advisor-scroll .advisor-empty {
+  min-height: 100%;
+  margin: 0;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.advisor-workspace #advisorForm.prompt-composer {
+  min-height: 164px;
+  height: auto;
+  flex-shrink: 0;
+  align-self: stretch;
+  overflow: hidden;
+  margin-top: 14px;
+  display: grid;
+  grid-template-rows: auto minmax(58px, auto) auto;
+  gap: 4px;
+  padding: 12px 16px;
+}
+.advisor-workspace #advisorForm textarea {
+  height: 64px;
+  min-height: 58px;
+  max-height: 110px;
+  resize: none;
+  padding: 5px 0;
+  margin: 0;
+}
+.advisor-workspace .composer-top {
+  margin: 0;
+  min-height: 30px;
+  flex-shrink: 0;
+}
+.advisor-workspace .advisor-input-actions {
+  padding: 0;
+  min-height: 38px;
+  flex-shrink: 0;
+}
+.advisor-workspace .advisor-model-note {
+  margin: 9px 0 0;
+  font-size: 9px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+.reveal-controls {
+  position: sticky;
+  top: -2px;
+  z-index: 2;
+  background: var(--surface);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 18px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.reveal-controls button {
+  font-size: 10px;
+  color: var(--primary);
+  padding: 6px 0;
+  text-align: right;
+  flex-shrink: 0;
+}
+.reveal-controls button:hover {
+  text-decoration: underline;
+}
+.typing-fragment::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  vertical-align: -0.12em;
+  background: var(--primary);
+  margin-left: 3px;
+  animation: reply-cursor 850ms steps(2, end) infinite;
+}
+.advisor-workspace .answer-arrived > section {
+  animation: none;
+}
+.nilo-stage {
+  display: none;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 2;
+  grid-row: 1/-1;
+  overflow: hidden;
+}
+.nilo-stage-heading {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.nilo-stage-heading > .eyebrow {
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+}
+.nilo-stage-heading > strong {
+  font:
+    500 26px/1.1 "Space Grotesk",
+    sans-serif;
+  letter-spacing: -0.8px;
+}
+.nilo-stage-heading > [data-cabinet-title] {
+  font-size: 10px;
+  color: var(--primary);
+  line-height: 1.4;
+}
+.nilo-playground {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  isolation: isolate;
+}
+.nilo-floor {
+  position: absolute;
+  width: 72%;
+  height: 21%;
+  bottom: 10%;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  transform: rotate(-9deg);
+  background: radial-gradient(ellipse, #c7ff3d10, transparent 70%);
+  pointer-events: none;
+}
+.nilo-floor:after {
+  content: "";
+  position: absolute;
+  inset: 15%;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  opacity: 0.45;
+}
+.nilo-playground .cabinet-avatar-large {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  border-radius: 32px;
+  background: none;
+  transform: perspective(600px) rotateX(var(--lean-x, 0deg))
+    rotateY(var(--lean-y, 0deg));
+  transition: transform 220ms var(--ease-out);
+  z-index: 1;
+}
+.cabinet-avatar-large #largeAvatarArt {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  transform-origin: 50% 50%;
+  will-change: auto;
+}
+.cabinet-avatar-large svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+}
+.nilo-stage #largeAvatarMessage {
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--muted);
+  text-align: center;
+  min-height: 36px;
+  margin: 6px 0 14px;
+  max-width: 26ch;
+  align-self: center;
+  flex-shrink: 0;
+}
+.nilo-gestures {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.nilo-gestures button {
+  font-size: 10px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  background: var(--surface);
+  padding: 8px 11px;
+  transition:
+    background 160ms,
+    border-color 160ms;
+}
+.nilo-gestures button:hover {
+  background: var(--selection);
+  border-color: var(--primary);
+}
+.nilo-gestures button span {
+  color: var(--primary);
+  margin-left: 6px;
+}
+.cabinet-avatar-large[data-state="thinking"] #largeAvatarArt {
+  animation: nilo-think 1.6s ease-in-out infinite;
+}
+.cabinet-avatar-large[data-state="happy"] #largeAvatarArt {
+  animation: nilo-nod 0.55s ease-out;
+}
+.cabinet-avatar[data-state="speaking"] #avatarArt,
+.cabinet-avatar-large[data-state="speaking"] #largeAvatarArt {
+  animation: nilo-speaking 900ms ease-in-out infinite alternate;
+}
+.avatar-paused #largeAvatarArt,
+.avatar-paused #avatarArt,
+.avatar-paused .avatar-eye {
+  animation-play-state: paused !important;
+}
+@media (min-width: 1051px) {
+  .app > main > .advisor-view.active {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .advisor-view .advisor-layout {
+    height: auto;
+    min-height: 0;
+    flex: 1;
+  }
+  .advisor-workspace {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(18px, 2vw, 30px);
+  }
+  .advisor-context {
+    min-height: 0;
+  }
+  .advisor-context .cabinet-person {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--surface);
+  }
+}
+@media (min-width: 1280px) and (max-height: 680px) {
+  .nilo-stage-heading,
+  .nilo-stage #largeAvatarMessage {
+    display: none;
+  }
+  .nilo-stage .nilo-playground {
+    min-height: 60px;
+  }
+}
+@media (min-width: 1280px) {
+  .advisor-workspace {
+    grid-template-columns: minmax(0, 1fr) clamp(180px, 16vw, 340px);
+    column-gap: 22px;
+  }
+  .nilo-stage {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    padding: 12px 0 8px 22px;
+  }
+  .advisor-scroll .advisor-brief {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .advisor-scroll .advisor-brief button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+  }
+  .advisor-scroll .advisor-brief strong {
+    font-size: 20px;
+    margin: 0 20px 0 auto;
+  }
+  .advisor-scroll .brief-arrow {
+    top: 12px;
+  }
+  .advisor-scroll .advisor-empty h4 {
+    font-size: clamp(25px, 1.9vw, 36px);
+    letter-spacing: -1px;
+  }
+}
+@media (min-width: 1800px) {
+  .advisor-scroll .advisor-brief {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .advisor-scroll .advisor-brief button {
+    display: block;
+    padding: 16px;
+  }
+  .advisor-scroll .advisor-brief strong {
+    margin-top: 10px;
+    font-size: 24px;
+  }
+  .advisor-workspace {
+    column-gap: 32px;
+  }
+  .nilo-stage {
+    padding-left: 32px;
+  }
+}
+@media (min-width: 1051px) and (max-height: 740px) {
+  .advisor-view > .content-heading {
+    margin-bottom: 15px;
+  }
+  .advisor-view > .content-heading h3 {
+    margin-top: 7px;
+    margin-bottom: 5px;
+  }
+  .advisor-workspace {
+    padding: 16px;
+  }
+  .advisor-workspace #advisorForm.prompt-composer {
+    min-height: 140px;
+    margin-top: 9px;
+    grid-template-rows: auto minmax(42px, auto) auto;
+    padding: 10px 14px;
+  }
+  .advisor-workspace #advisorForm textarea {
+    height: 44px;
+    min-height: 42px;
+  }
+  .nilo-stage-heading > .eyebrow {
+    display: none;
+  }
+  .nilo-stage-heading > strong {
+    font-size: 21px;
+  }
+  .nilo-stage {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .nilo-stage #largeAvatarMessage {
+    margin: 3px 0 6px;
+    font-size: 10px;
+    min-height: 28px;
+  }
+  .nilo-gestures button {
+    padding: 5px 8px;
+  }
+}
+@media (max-width: 1050px) {
+  .advisor-workspace {
+    min-height: 560px;
+    height: auto;
+    grid-template-rows: minmax(250px, 420px) auto auto;
+  }
+  .advisor-scroll {
+    max-height: 420px;
+  }
+  .advisor-stage {
+    max-height: 420px;
+  }
+  .advisor-scroll .advisor-empty {
+    min-height: 230px;
+  }
+}
+@media (max-width: 760px) {
+  .advisor-workspace {
+    padding: 16px;
+    min-height: 520px;
+    grid-template-rows: minmax(220px, 360px) auto auto;
+  }
+  .advisor-stage,
+  .advisor-scroll {
+    max-height: 360px;
+  }
+  .advisor-scroll {
+    padding-right: 10px;
+  }
+  .advisor-workspace #advisorForm.prompt-composer {
+    min-height: 156px;
+    padding: 10px 12px;
+    grid-template-rows: auto minmax(54px, auto) auto;
+  }
+  .advisor-workspace #advisorForm textarea {
+    height: 56px;
+    min-height: 54px;
+    font-size: 16px;
+  }
+  .advisor-workspace .advisor-model-note {
+    font-size: 8px;
+  }
+  .reveal-controls {
+    font-size: 9px;
+    align-items: flex-start;
+  }
+  .reveal-controls button {
+    font-size: 9px;
+    padding-top: 0;
+  }
+  .advisor-scroll .advisor-empty {
+    padding: 10px 0;
+  }
+  .advisor-scroll .advisor-brief {
+    margin-top: 15px;
+  }
+  .advisor-scroll .advisor-empty h4 {
+    font-size: 25px;
+  }
+  .advisor-scroll .advisor-empty p {
+    font-size: 11px;
+  }
+}
+@keyframes reply-cursor {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes nilo-speaking {
+  from {
+    transform: translateY(0) rotate(-1deg);
+  }
+  to {
+    transform: translateY(-4px) rotate(1deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typing-fragment::after {
+    animation: none;
+    display: none;
+  }
+  .cabinet-avatar-large,
+  .nilo-gestures button {
+    transition: none;
+  }
+  .cabinet-avatar[data-state="speaking"] #avatarArt,
+  .cabinet-avatar-large[data-state] #largeAvatarArt {
+    animation: none !important;
+    transform: none;
+  }
+}

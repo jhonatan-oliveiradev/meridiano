@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="premium.css" />
     <link rel="stylesheet" href="studio.css" />
     <link rel="stylesheet" href="playful.css" />
+    <link rel="stylesheet" href="conversation.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -146,7 +147,7 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.4</span>
+          <span></span> Cenário fictício <span class="small-label">v0.5</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -540,47 +541,101 @@
               </p>
             </aside>
             <div class="advisor-workspace">
-              <div id="advisorStale" class="inline-notice" hidden>
-                O cenário mudou desde esta análise. Consulte novamente para usar
-                os dados atuais.
-              </div>
-              <div id="advisorLoading" class="advisor-loading" hidden>
-                <div class="agent-field" aria-hidden="true">
-                  <i></i><i></i><i></i><i></i>
-                </div>
-                <div>
-                  <strong>Consulta enviada ao Nilo</strong>
-                  <p>Aguardando a análise do Gemini.</p>
-                  <output id="adviceElapsed" class="request-timer"
-                    >00:00</output
-                  >
-                </div>
-                <button id="cancelAdvice" class="text-button" hidden>
-                  Cancelar
-                </button>
-              </div>
-              <div id="advisorEmpty" class="advisor-empty">
-                <span class="eyebrow">NA MESA DO GABINETE</span>
-                <h4>Qual decisão vem agora?</h4>
-                <p>Comece pelos números do país ou traga uma pergunta.</p>
-                <div id="advisorBrief" class="advisor-brief"></div>
-                <button
-                  class="text-button"
-                  data-question="Qual é a prioridade deste país no próximo trimestre?"
+              <div class="advisor-stage">
+                <div
+                  id="advisorScroll"
+                  class="advisor-scroll"
+                  role="region"
+                  aria-label="Conversa com Nilo"
+                  tabindex="0"
                 >
-                  Definir a próxima prioridade <span>↗</span>
-                </button>
+                  <div id="advisorStale" class="inline-notice" hidden>
+                    O cenário mudou desde esta análise. Consulte novamente para
+                    usar os dados atuais.
+                  </div>
+                  <div id="advisorLoading" class="advisor-loading" hidden>
+                    <div class="agent-field" aria-hidden="true">
+                      <i></i><i></i><i></i><i></i>
+                    </div>
+                    <div>
+                      <strong>Consulta enviada ao Nilo</strong>
+                      <p>Preparando a análise do país.</p>
+                      <output id="adviceElapsed" class="request-timer"
+                        >00:00</output
+                      >
+                    </div>
+                    <button id="cancelAdvice" class="text-button" hidden>
+                      Cancelar
+                    </button>
+                  </div>
+                  <div id="advisorEmpty" class="advisor-empty">
+                    <span class="eyebrow">NA MESA DO GABINETE</span>
+                    <h4>Qual decisão vem agora?</h4>
+                    <p>Comece pelos números do país ou traga uma pergunta.</p>
+                    <div id="advisorBrief" class="advisor-brief"></div>
+                    <button
+                      class="text-button"
+                      data-question="Qual é a prioridade deste país no próximo trimestre?"
+                    >
+                      Definir a próxima prioridade <span>↗</span>
+                    </button>
+                  </div>
+                  <div id="revealControls" class="reveal-controls" hidden>
+                    <span
+                      >Nilo está respondendo<span
+                        class="typing-dots"
+                        aria-hidden="true"
+                        >…</span
+                      ></span
+                    ><button id="finishReveal" type="button">
+                      Mostrar resposta completa
+                    </button>
+                  </div>
+                  <article
+                    id="advisorResult"
+                    aria-label="Resposta de Nilo"
+                    aria-live="off"
+                    aria-busy="false"
+                  ></article>
+                  <p
+                    id="advisorError"
+                    class="field-error advisor-error"
+                    role="alert"
+                  ></p>
+                </div>
               </div>
-              <article
-                id="advisorResult"
-                aria-live="polite"
-                aria-busy="false"
-              ></article>
-              <p
-                id="advisorError"
-                class="field-error advisor-error"
-                role="alert"
-              ></p>
+              <aside
+                class="nilo-stage"
+                aria-label="Nilo, seu companheiro de governo"
+              >
+                <div class="nilo-stage-heading">
+                  <span class="eyebrow">SEU GABINETE</span><strong>Nilo</strong
+                  ><span data-cabinet-title>Ministro da Fazenda</span>
+                </div>
+                <div class="nilo-playground">
+                  <div class="nilo-floor" aria-hidden="true"></div>
+                  <button
+                    class="cabinet-avatar cabinet-avatar-large"
+                    id="largeCabinetAvatar"
+                    type="button"
+                    aria-label="Cumprimentar o Nilo maior"
+                  >
+                    <span id="largeAvatarArt"></span>
+                  </button>
+                </div>
+                <p id="largeAvatarMessage">Vamos conferir os números?</p>
+                <div class="nilo-gestures">
+                  <button type="button" id="niloWave">
+                    Cumprimentar <span aria-hidden="true">↗</span></button
+                  ><button
+                    type="button"
+                    id="niloSpin"
+                    aria-label="Fazer Nilo girar"
+                  >
+                    Girar <span aria-hidden="true">↻</span>
+                  </button>
+                </div>
+              </aside>
               <form id="advisorForm" class="prompt-composer" novalidate>
                 <div class="composer-top">
                   <span class="composer-avatar" aria-hidden="true"
@@ -607,8 +662,8 @@
                 </div>
               </form>
               <p class="advisor-model-note">
-                Os dados do cenário são enviados ao Gemini ao consultar.
-                Sugestões não alteram políticas.
+                Análise assistida por IA. Sugestões não alteram as políticas do
+                país.
               </p>
             </div>
           </div>

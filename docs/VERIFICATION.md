@@ -31,3 +31,13 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Browser with a temporary local provider transport: actual frontend POST → local API handler → mocked Gemini response → structured rendering. Also API-key error code, Ctrl+Enter, active loading/timer and cancellation. The test prelude was removed; no mock mode, test key or fixture response is included in the shipped application.
 - Layout: 1363×936 root equals viewport and content width equals main; iframe 1920×920 root 1920/1920 and 920/920; 1024×600 root 1024/1024 and 600/600. Mobile 390×844 document client/scroll width 380/380 (scrollbar); natural vertical scrolling. These are browser viewport checks, not physical touch/device tests.
 - Motion CSS includes a reduced-motion alternate; static audit's missing-reduced-motion lead was a false negative (it scans a limited set of file types). Loops run only for active request state. GPU WebGL and FPS remain unverified as described in v0.2.
+
+
+## v0.5
+
+- Bug identificado: resposta e form dentro do mesmo flex com altura limitada permitiam encolher o compositor; havia também um min-height de breakpoint que podia competir com o espaço disponível. O gabinete agora usa linhas explícitas para leitor, compositor e nota; o Nilo maior ocupa uma coluna independente em todas as linhas.
+- 28 testes automatizados: quatro novos casos de revelação ordenada/Unicode, conclusão imediata, movimento reduzido e cancelamento/substituição sem atualização antiga.
+- Browser com transporte temporário simulado: resposta de 9.264 caracteres; em 1363×936 o compositor permaneceu com 168 px e o textarea com 64 px antes/durante/depois. A leitura rolou internamente. Metadados exibem Nilo; nenhuma ocorrência de Gemini no conteúdo normal do gabinete. SVGs simultâneos sem IDs duplicados.
+- Escrita observada em progresso (aria-busy=true, cursor, 113 caracteres parciais e Nilo em speaking); Mostrar resposta completa apresentou o conteúdo integral e encerrou o estado. Cumprimento e giro por controles do personagem conferidos.
+- Layout final: 1920×920 sem overflow externo, leitor com 293 px e personagem com 498 px, ambos sem transbordamento interno de layout. 1024×600 raiz 600/600 e largura 1024/1024. Mobile 390×844 mantém rolagem natural, personagem maior oculto; resposta extensa com compositor 156 px e textarea 56 px. Redução de movimento é coberta no controlador por teste injetado; preferência do sistema não foi emulada no browser.
+- O mock foi restrito ao processo local de QA, sem modo de demonstração ou conteúdo fictício embutido no código entregue. Não houve mudança na API/provedor nem nas variáveis de ambiente.

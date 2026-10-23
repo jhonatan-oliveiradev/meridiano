@@ -14,6 +14,8 @@ for (const f of [
   "playful.css",
   "cabinet-avatar.js",
   "assets/reicon.svg",
+  "conversation.css",
+  "text-reveal.js",
 ])
   await access(new URL("../dist/" + f, import.meta.url));
 await rm(new URL("../build", import.meta.url), {

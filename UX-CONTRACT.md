@@ -42,3 +42,12 @@ Nilo remains optional decoration around the existing usable adviser. Click/keybo
 - O compositor envia por botão ou Ctrl/Cmd+Enter. Exibe espera e tempo somente enquanto uma requisição está ativa; cancelamento não apaga uma análise anterior.
 - O modo Atlas exibe rede viária fictícia. O traçado é decorativo e não altera os cálculos de execução/transporte.
 - Motion reduzido elimina loops e entradas decorativas. Os controles e dados permanecem disponíveis.
+
+
+## v0.5 · resposta e personagem
+
+- Metadados da resposta usam Nilo e o período; a marca do provedor não aparece no estado normal do gabinete.
+- Somente a área de leitura rola. A resposta extensa não reduz a altura do compositor nem do textarea.
+- Revelação progressiva pode ser concluída pelo botão Mostrar resposta completa. Rolar para cima interrompe o acompanhamento automático; trocar o cenário ou ocultar a aba conclui a apresentação. O leitor de tela não recebe cada fragmento como uma notificação.
+- Movimento reduzido apresenta todo o texto imediatamente. Não há atraso artificial na chamada de rede.
+- Nilo maior aparece a partir de 1280 px, numa coluna que não disputa altura com o compositor. Cumprimento e giro funcionam por teclado; ficam indisponíveis durante a consulta/revelação. Não há rastreamento por câmera.
