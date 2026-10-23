@@ -6,6 +6,16 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ![Gabinete e Nilo — v0.3](docs/screenshots/cabinet-v03.jpg)
 
+## Versão 0.8 · investimentos regionais
+
+- Compare necessidades dos estados e avalie saneamento, atenção básica, educação e mobilidade pelo mapa ou pela carteira em Políticas.
+- Antes de contratar, consulte investimento, prazo estimado, moradores atendidos, manutenção e impacto no orçamento.
+- Acompanhe planejamento, construção, entrega e operação; capacidade e relevo alteram o ritmo da obra.
+- Obras são pagas por trimestre; manutenção e benefícios locais/nacionais entram depois da entrega. Boletim e balanço registram os marcos.
+- Até três programas em implantação e um de cada tipo por estado; cancelamento sem cobrança antes do primeiro avanço.
+- Carteira preservada ao salvar/retomar e incluída no contexto validado do Nilo. Funciona também em cenários com a geografia original.
+- Regras e coeficientes: [Investimentos regionais](docs/INVESTMENTS.md).
+
 ## Versão 0.7 · território e demografia
 
 - Novos países têm litoral, relevo, rios e divisas próprios, reproduzíveis pela semente. Escolha área e formato ou sorteie tudo.

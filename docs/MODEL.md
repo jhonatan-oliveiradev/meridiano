@@ -4,7 +4,7 @@ Fonte normativa das equações: `dist/model.js`. Valores fictícios em M$, popul
 
 ## Contabilidade
 
-Renda básica (% PIB) = benefício mensal × 12 × população / (PIB × 1000) × 100. Previdência (% PIB) = cobertura × 0,075. Despesa = 11 + serviços + infraestrutura + transferências + previdência. Juros (% PIB) = dívida/PIB × 0,055. Saldo = alíquota efetiva − despesa − juros. Dívida/PIB seguinte = (dívida/PIB − saldo/4) / (1 + crescimento anual/400).
+Renda básica (% PIB) = benefício mensal × 12 × população / (PIB × 1000) × 100. Previdência (% PIB) = cobertura × 0,075. Despesa = 11 + serviços + infraestrutura + transferências + previdência + equivalente anual dos programas regionais. O equivalente anual é quatro vezes os pagamentos de obra e manutenção do próximo trimestre, divididos pelo PIB. Juros (% PIB) = dívida/PIB × 0,055. Saldo = alíquota efetiva − despesa − juros. Dívida/PIB seguinte = (dívida/PIB − saldo/4) / (1 + crescimento anual/400).
 
 Os 11 pontos fixos representam os demais gastos do Estado. Juros não variam com política monetária, prêmio de risco ou inflação. Não há balanço patrimonial nem mercado de títulos.
 
@@ -29,3 +29,7 @@ Cenários legados sem `territory` preservam seis centros estaduais fixos, litora
 ## Limites
 
 Governo e ideologia são descritivos, sem bônus ou penalidade automáticos. Não existem agentes, eleições, migração, faixas etárias, produção setorial, comércio bilateral, distribuição de renda por domicílio ou causalidade estimada. A aprovação é calculada, mas ainda não exibida nem usada em decisões. Sem intervalos de incerteza; determinismo não implica precisão científica.
+
+## Programas regionais
+
+Contratos opcionais de saneamento, atenção básica, educação e mobilidade passam por planejamento, construção, entrega e operação. Custo trimestral e manutenção entram no orçamento existente; benefícios nacionais ponderados alteram metas e crescimento, e o estado recebe modificadores locais de acesso, pobreza e bem-estar. Regras, fases, coeficientes e limitações em [INVESTMENTS.md](INVESTMENTS.md).

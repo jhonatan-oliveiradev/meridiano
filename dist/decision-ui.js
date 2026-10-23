@@ -3,7 +3,8 @@ import {
   decisionFor,
   resolveDecision,
 } from "./simulation.js";
-import { policyDefs } from "./model.js";
+import { projectFor } from "./investment-ledger.js";
+import { regionsOf, policyDefs } from "./model.js";
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
   String(s).replace(
@@ -18,6 +19,8 @@ const fmt = (n, d = 2) =>
     minimumFractionDigits: d,
     maximumFractionDigits: d,
   }).format(n);
+const money = (n) =>
+  n >= 1 ? `M$ ${fmt(n, 2)} bi` : `M$ ${fmt(n * 1000, 2)} mi`;
 const signed = (n) => `${n > 0 ? "+" : ""}${fmt(Math.abs(n) < 0.005 ? 0 : n)}`;
 const period = (q) => `${2027 + Math.floor(q / 4)} · T${(q % 4) + 1}`;
 const policyValue = (key, n) => {
@@ -109,7 +112,7 @@ export function initDecisionUI({
       })
       .join("")}</div>${
       full
-        ? `<div class="report-changes"><h4>O que entrou em vigor</h4>${r.changes.length ? r.changes.map((p) => `<p><b>${p.name}</b><span>${policyValue(p.key, p.before)} → ${policyValue(p.key, p.after)}</span></p>`).join("") : "<p>As políticas do trimestre anterior foram mantidas.</p>"}${r.decision ? `<p><b>${esc(r.decision.choice)}</b><span>${fmt(r.decision.effect.cost ?? 0, 1)}% do PIB em gasto extraordinário</span></p><small>Executado uma vez neste trimestre. Os efeitos seguintes dependem da evolução do país.</small>` : ""}</div><details><summary>Projeção e resultado</summary><p>Projeção de um trimestre, com as políticas e decisões conhecidas antes do avanço. Neste motor determinístico, as mesmas condições produzem os mesmos resultados.</p><div class="comparison"><table><thead><tr><th>Indicador</th><th>Projetado</th><th>Realizado</th></tr></thead><tbody>${[
+        ? `<div class="report-changes"><h4>O que entrou em vigor</h4>${r.changes.length ? r.changes.map((p) => `<p><b>${p.name}</b><span>${policyValue(p.key, p.before)} → ${policyValue(p.key, p.after)}</span></p>`).join("") : "<p>As políticas do trimestre anterior foram mantidas.</p>"}${r.decision ? `<p><b>${esc(r.decision.choice)}</b><span>${fmt(r.decision.effect.cost ?? 0, 1)}% do PIB em gasto extraordinário</span></p><small>Executado uma vez neste trimestre. Os efeitos seguintes dependem da evolução do país.</small>` : ""}</div>${s.investmentReport && s.investments?.length ? `<div class="investment-report"><h4>Investimentos regionais</h4><p>Obras: ${money(s.investmentReport.constructionQuarter)} · operação: ${money(s.investmentReport.upkeepQuarter)} neste trimestre.</p>${s.investmentReport.transitions.map((p) => `<p>${esc(projectFor(p.type).name)} · ${esc(regionsOf(s)[p.region].name)}: ${p.phase === "operating" ? "operação iniciada" : p.phase === "ready" ? "entrega concluída" : "construção iniciada"}.</p>`).join("")}</div>` : ""}<details><summary>Projeção e resultado</summary><p>Projeção de um trimestre, com as políticas e decisões conhecidas antes do avanço. Neste motor determinístico, as mesmas condições produzem os mesmos resultados.</p><div class="comparison"><table><thead><tr><th>Indicador</th><th>Projetado</th><th>Realizado</th></tr></thead><tbody>${[
             ["poverty", "Pobreza (%)"],
             ["welfare", "Bem-estar"],
             ["debt", "Dívida / PIB (%)"],

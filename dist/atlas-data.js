@@ -65,6 +65,23 @@ export function atlasData(state, cities) {
     states: fc(states),
     municipalities: fc(municipalities),
     cities: fc(points),
+    projects: fc(
+      regions.flatMap((r, i) => {
+        const ps = (state.investments ?? []).filter((p) => p.region === i);
+        return ps.length
+          ? [
+              feature(
+                { type: "Point", coordinates: project([r.x + 15, r.y + 15]) },
+                {
+                  index: i,
+                  count: ps.length,
+                  operating: ps.every((p) => p.phase === "operating") ? 1 : 0,
+                },
+              ),
+            ]
+          : [];
+      }),
+    ),
     rivers: fc((state.territory?.rivers ?? []).map(line)),
     roads: fc((state.territory?.roads ?? []).map(line)),
     streets: fc((state.territory?.streets ?? []).map(line)),

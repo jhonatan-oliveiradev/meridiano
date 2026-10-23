@@ -159,6 +159,7 @@ export function createAtlasMap(
     const d = data();
     for (const key of [
       "country",
+      "projects",
       "states",
       "municipalities",
       "cities",
@@ -271,6 +272,22 @@ export function createAtlasMap(
         "circle-stroke-width": 1,
       },
     });
+    map.addLayer({
+      id: "projects",
+      type: "circle",
+      source: "projects",
+      paint: {
+        "circle-radius": 10,
+        "circle-color": [
+          "case",
+          ["==", ["get", "operating"], 1],
+          "#c7ff3d",
+          "#f0b66b",
+        ],
+        "circle-stroke-color": "#15261c",
+        "circle-stroke-width": 1.5,
+      },
+    });
     for (const [id, source, minzoom, maxzoom, filter, size] of [
       ["state-labels", "labels", 0, 7, undefined, 12],
       ["major-labels", "cities", 3, 24, ["==", ["get", "major"], 1], 12],
@@ -300,7 +317,7 @@ export function createAtlasMap(
     }
     map.on("click", (e) => {
       const features = map.queryRenderedFeatures(e.point, {
-        layers: ["cities", "municipal-fill", "state-fill"],
+        layers: ["projects", "cities", "municipal-fill", "state-fill"],
       });
       const f = features[0];
       if (!f) return;
@@ -340,7 +357,7 @@ export function createAtlasMap(
         const changed = cachedState !== current;
         const d = data();
         if (changed)
-          for (const key of ["states", "municipalities", "cities"])
+          for (const key of ["states", "municipalities", "cities", "projects"])
             map.getSource(key).setData(d[key]);
         recolor();
       }
