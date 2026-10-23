@@ -98,3 +98,10 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Desktop 1363×936: documento client/scroll 1363×936, sem overflow externo. Mobile em iframe 390×844: documento client/scroll width 380/380; seletor 296/296, sem overflow horizontal. Rolagem vertical natural; personagem grande oculto conforme breakpoint existente. Não houve teste físico de toque.
 - 60 testes aprovados; syntax check, Prettier, build e diff check aprovados. Sem alteração das regras econômicas, identificadores de área, saves ou configuração da API. Não foi feita consulta com chave real. Limitações de WebGL/reduced motion das verificações anteriores permanecem.
 - Captura: screenshots/secretaries.jpg. Arquivo temporário de QA removido antes do build final.
+
+## Nome do país em uma linha · 2026-10-23
+
+- Título lateral usa nowrap, largura flexível e fonte ajustada ao espaço medido. Recalcula após editar o nome, redimensionar e carregar fontes; mantém mínimo de 16px. Nomes que excedem esse limite recebem reticências, com nome completo no DOM/título nativo.
+- Browser desktop 1363×936: Bolsonaristão completo com fonte 28,25px, uma linha de 32px de altura e largura client/scroll 177/177. Nome República das Ilhas do Horizonte Azul chegou ao limite de 16px e usou reticências; texto completo preservado.
+- Iframe com largura 320px: nome extenso permaneceu em uma linha na área de título de 182px; ao editar para Aurora, fonte voltou a 28px. Nome do país de QA foi restaurado a Serra do Horizonte. Não foi feito teste de toque em aparelho físico; este ajuste não altera outras áreas do layout móvel.
+- Syntax check, Prettier e build aprovados. Sem alteração de regras, saves, dependências ou variáveis de ambiente. Arquivo temporário de QA removido. Captura: screenshots/country-name.jpg.

@@ -1,3 +1,4 @@
+import { initCountryNameFit } from "./fit-country-name.js";
 import { initInvestmentUI } from "./investment-ui.js";
 import { generateTerritory, landforms } from "./territory.js";
 import {
@@ -1434,6 +1435,7 @@ eventIsland = initEventIsland({
   onDetails: () =>
     decisionFor(state) ? decisionUI.showDecision() : setView("indicadores"),
 });
+initCountryNameFit($("#countryName"));
 advisorController = initAdvisor({
   getState: () => state,
   notify,
