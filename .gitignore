@@ -3,6 +3,9 @@ build/
 .env
 .env.*
 !.env.example
-.openai/
+.openai/*
+!.openai/hosting.json
 premium-audit.json
 .DS_Store
+dist/vendor/
+.vercel/

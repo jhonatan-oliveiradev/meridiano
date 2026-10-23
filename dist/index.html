@@ -1,32 +1,585 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#275c4a"><meta name="description" content="Explore territórios, experimente políticas públicas e compare caminhos para um país fictício."><title>Meridiano — laboratório de países</title><link rel="stylesheet" href="style.css"></head>
-<body>
-<svg class="icon-defs" xmlns="http://www.w3.org/2000/svg"><defs>
-<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c6 5 6 13 0 18-6-5-6-13 0-18Z"/></symbol>
-<symbol id="i-map" viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2ZM9 3v16m6-14v16"/></symbol>
-<symbol id="i-policy" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></symbol>
-<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M8 15l4-5 4 2 5-7"/></symbol>
-<symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5"/></symbol>
-<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
-<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
-<symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l4 4v14H3V3Zm2 0v7h10V3M7 21v-7h10v7"/></symbol>
-<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
-<symbol id="i-cross" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
-<symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/></symbol>
-</defs></svg>
-<div class="app">
-<nav class="rail" aria-label="Navegação principal"><a class="brand-mark" href="#territorio" aria-label="Meridiano, início"><svg><use href="#i-globe"/></svg></a><div class="rail-links"><button data-view="territorio" class="rail-btn active" title="Território" aria-label="Território"><svg><use href="#i-map"/></svg></button><button data-view="politicas" class="rail-btn" title="Políticas públicas" aria-label="Políticas públicas"><svg><use href="#i-policy"/></svg></button><button data-view="indicadores" class="rail-btn" title="Indicadores" aria-label="Indicadores"><svg><use href="#i-chart"/></svg></button><button data-view="cenarios" class="rail-btn" title="Cenários salvos" aria-label="Cenários salvos"><svg><use href="#i-layers"/></svg></button></div><button class="rail-btn bottom" id="methods" title="Como funciona" aria-label="Como funciona"><svg><use href="#i-info"/></svg></button><div class="version">M / 01</div></nav>
-<aside class="sidebar"><div class="wordmark">meridiano<span>LABORATÓRIO DE PAÍSES</span></div><div class="country-heading"><span class="eyebrow">SEU CENÁRIO</span><button class="text-button" id="configure">Configurar ↗</button></div><div class="country-title"><span class="flag"><i></i></span><h1 id="countryName">Aurora</h1></div><div class="country-system" id="countrySystem">República democrática · Economia mista</div><div class="scenario-status"><span></span> Cenário experimental <span class="small-label">v0.1</span></div>
-<div class="sidebar-section"><div class="section-heading">Visão nacional <span id="sideDate">2027 · T1</span></div><div class="national-stats"><div><span>População</span><strong id="pop">24,8 <small>milhões</small></strong></div><div><span>PIB por habitante</span><strong id="gdpPc">M$ 18.400</strong></div></div><div id="sideMetrics"></div></div>
-<div class="sidebar-section territory-list"><div class="section-heading">Unidades federativas <span>6 estados</span></div><div id="regionList"></div></div><div class="sidebar-note"><svg><use href="#i-info"/></svg><span>Um território fictício.<br>Vários caminhos possíveis.</span></div><button id="newCountry" class="secondary full"><svg><use href="#i-plus"/></svg> Novo país</button></aside>
-<main><header class="topbar"><div><div class="breadcrumb">Workspace <span>/</span> <span id="breadCountry">Aurora</span></div><h2 id="pageTitle">Território</h2></div><div class="top-actions"><span class="local-status" id="localStatus">Sessão local</span><button class="secondary" id="save"><svg><use href="#i-save"/></svg> Salvar cenário</button><button class="primary" id="advance">Avançar trimestre <svg><use href="#i-arrow"/></svg></button></div></header>
-<div class="view active" id="view-territorio"><section class="map-shell" aria-label="Mapa interativo de Aurora"><div class="map-top"><div class="map-caption"><span class="live-dot"></span> ATLAS TERRITORIAL <span class="map-sub">/ <span id="mapSeed">SEMENTE 1042</span></span></div><div class="map-top-actions"><label class="sr-only" for="stateSelect">Selecionar estado</label><select id="stateSelect" class="state-select"></select><button class="map-country" id="overview">⌖ Visão do país</button></div></div><div id="mapViewport"><svg id="atlas" viewBox="0 0 1000 760" aria-label="Mapa de estados e municípios; use a lista lateral para seleção por teclado"><defs><clipPath id="landClip"><path id="landClipPath"/></clipPath><filter id="coastShadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#557e7a" flood-opacity=".18"/></filter></defs><g id="mapTransform"><g id="seaGrid"></g><path id="landShadow" filter="url(#coastShadow)" fill="#edf0d9"/><image id="terrain" x="0" y="0" width="1000" height="760" clip-path="url(#landClip)"/><g id="contours" clip-path="url(#landClip)"></g><g id="municipalities" clip-path="url(#landClip)"></g><g id="regions" clip-path="url(#landClip)"></g><g id="rivers" clip-path="url(#landClip)"></g><g id="roads" clip-path="url(#landClip)"></g><path id="coast" fill="none" stroke="#7d9b87" stroke-width="1.2"/><g id="geoLabels"></g><g id="cities"></g></g></svg></div>
-<div class="layer-bar" aria-label="Camadas do mapa"><span><svg><use href="#i-layers"/></svg> Camadas</span><button class="active" data-layer="relevo">Relevo</button><button data-layer="populacao">População</button><button data-layer="renda">Renda</button><button data-layer="bemestar">Bem-estar</button></div><div class="compass" aria-hidden="true"><span>N</span><svg viewBox="0 0 32 48"><path d="m16 4 9 30-9-5-9 5Z" fill="#345c50"/><path d="m16 4 0 25-9 5Z" fill="#8eaaa0"/></svg></div><div class="map-zoom"><button id="zoomIn" aria-label="Aproximar mapa">+</button><button id="zoomOut" aria-label="Afastar mapa">−</button><button id="resetMap" aria-label="Centralizar mapa">⌖</button></div>
-<div class="region-card" id="regionCard"><div class="region-overline"><span id="regionType">ESTADO SELECIONADO</span><button id="closeRegion" aria-label="Fechar detalhes da região"><svg><use href="#i-cross"/></svg></button></div><h3 id="regionName">Vale Central</h3><p id="regionDescription">O coração produtivo do país.</p><div class="region-data" id="regionData"></div><label class="municipality-picker" for="municipalitySelect">Município<select id="municipalitySelect"></select></label><div class="region-footer"><span id="municipalCount">12 municípios</span><button id="exploreRegion">Explorar região ↗</button></div></div>
-<div class="map-bottom"><div><span id="legendLabel">ALTITUDE</span><div class="legend-gradient" id="legendRamp"></div><div class="legend-labels"><span id="legendMin">0 m</span><span id="legendMax">2.400 m</span></div></div><div class="scale"><span>0</span><span>100</span><span>200 km</span><div></div></div><span class="map-attribution">Cartografia sintética · Meridiano</span></div><div class="map-hint" id="mapHint">Selecione um estado para explorar</div></section>
-<div class="below-map"><span><span class="dot-green"></span> <strong>O território importa.</strong> Cada região responde de um jeito às suas decisões.</span><button id="mapMethods">Sobre o modelo ↗</button></div></div>
-<div class="view content-view" id="view-politicas"><div class="content-heading"><span class="eyebrow">ESCOLHAS QUE TRANSFORMAM</span><h3>Políticas públicas</h3><p>Ajuste as prioridades. Os efeitos entram em vigor no próximo trimestre.</p></div><div class="policy-budget" id="policyBudget"></div><div id="policies" class="policies"></div><div class="model-note">Os valores e relações são experimentais. Financiamento, capacidade de execução e efeitos acumulados fazem parte do modelo. <button data-methods>Consultar premissas ↗</button></div></div>
-<div class="view content-view" id="view-indicadores"><div class="content-heading"><span class="eyebrow">ACOMPANHE AS CONSEQUÊNCIAS</span><h3>Um país em movimento</h3><p>Veja a trajetória dos indicadores a cada trimestre simulado.</p></div><div id="indicatorCards" class="indicator-cards"></div><div class="chart-panel"><div class="chart-heading"><div><h4>Evolução do cenário</h4><p id="chartSubtitle">Histórico trimestral</p></div><label>Indicador <select id="chartMetric"><option value="poverty">Pobreza (%)</option><option value="gdp">PIB (bilhões M$)</option><option value="unemployment">Desemprego (%)</option><option value="inflation">Inflação (%)</option><option value="debt">Dívida / PIB (%)</option><option value="welfare">Bem-estar (0–100)</option></select></label></div><svg id="historyChart" viewBox="0 0 800 280" role="img" aria-label="Histórico do indicador selecionado"></svg><div id="chartSummary" class="chart-summary"></div></div><div class="event-panel"><h4>O que aconteceu neste trimestre</h4><div id="events"></div></div></div>
-<div class="view content-view" id="view-cenarios"><div class="content-heading"><span class="eyebrow">CAMINHOS POSSÍVEIS</span><h3>Seus cenários</h3><p>Salve um ponto da simulação, experimente outra política e compare os resultados.</p></div><div class="scenario-actions"><button class="primary" id="save2"><svg><use href="#i-save"/></svg> Salvar cenário atual</button><button class="secondary" id="export">Exportar cenário JSON ↗</button></div><p class="storage-note">Salvos neste navegador. Exporte uma cópia para conservar seus cenários.</p><div id="scenarios"></div></div>
-<footer class="timeline"><div class="timeline-date"><span class="eyebrow">TEMPO SIMULADO</span><strong id="dateDisplay">2027 <span>1º trimestre</span></strong></div><div class="timeline-track" id="timelineTrack"></div><div class="timeline-end"><span id="elapsed">Ponto de partida</span><span class="experiment">MODELO EXPERIMENTAL</span></div></footer></main></div>
-<dialog id="modal" aria-labelledby="modalTitle"><div class="modal-top"><span class="eyebrow">MERIDIANO / LABORATÓRIO</span><button id="closeModal" class="icon-button" aria-label="Fechar janela"><svg><use href="#i-cross"/></svg></button></div><div id="modalBody"></div></dialog><div id="toast" role="status" aria-live="polite"></div><script type="module" src="app.js"></script></body></html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#275c4a" />
+    <meta
+      name="description"
+      content="Explore territórios, experimente políticas públicas e compare caminhos para um país fictício."
+    />
+    <title>Meridiano — laboratório de países</title>
+    <script>
+      try {
+        const t = localStorage.getItem("meridiano:theme") || "system";
+        document.documentElement.dataset.theme =
+          t === "system"
+            ? matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : t;
+      } catch {
+        document.documentElement.dataset.theme = matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches
+          ? "dark"
+          : "light";
+      }
+    </script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="premium.css" />
+  </head>
+  <body>
+    <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="i-globe" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c6 5 6 13 0 18-6-5-6-13 0-18Z" />
+        </symbol>
+        <symbol id="i-map" viewBox="0 0 24 24">
+          <path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2ZM9 3v16m6-14v16" />
+        </symbol>
+        <symbol id="i-policy" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+          <circle cx="9" cy="6" r="2" />
+          <circle cx="16" cy="12" r="2" />
+          <circle cx="8" cy="18" r="2" />
+        </symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24">
+          <path d="M4 3v17h17M8 15l4-5 4 2 5-7" />
+        </symbol>
+        <symbol id="i-layers" viewBox="0 0 24 24">
+          <path d="m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M4 12h16m-6-6 6 6-6 6" />
+        </symbol>
+        <symbol id="i-save" viewBox="0 0 24 24">
+          <path d="M5 3h12l4 4v14H3V3Zm2 0v7h10V3M7 21v-7h10v7" />
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v6m0-10v1" />
+        </symbol>
+        <symbol id="i-cross" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M6 18 18 6" />
+        </symbol>
+        <symbol id="i-advisor" viewBox="0 0 24 24">
+          <path d="M5 4h14v12H9l-4 4Z" />
+          <path d="M9 8h6m-6 4h4" />
+        </symbol>
+        <symbol id="i-pin" viewBox="0 0 24 24">
+          <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
+          <circle cx="12" cy="10" r="2" />
+        </symbol>
+      </defs>
+    </svg>
+    <div class="app">
+      <nav class="rail" aria-label="Navegação principal">
+        <a class="brand-mark" href="#territorio" aria-label="Meridiano, início"
+          ><svg><use href="#i-globe" /></svg
+        ></a>
+        <div class="rail-links">
+          <button
+            data-view="territorio"
+            class="rail-btn active"
+            title="Território"
+            aria-label="Território"
+          >
+            <svg><use href="#i-map" /></svg></button
+          ><button
+            data-view="politicas"
+            class="rail-btn"
+            title="Políticas públicas"
+            aria-label="Políticas públicas"
+          >
+            <svg><use href="#i-policy" /></svg></button
+          ><button
+            data-view="indicadores"
+            class="rail-btn"
+            title="Indicadores"
+            aria-label="Indicadores"
+          >
+            <svg><use href="#i-chart" /></svg></button
+          ><button
+            data-view="cenarios"
+            class="rail-btn"
+            title="Cenários salvos"
+            aria-label="Cenários salvos"
+          >
+            <svg><use href="#i-layers" /></svg></button
+          ><button
+            data-view="conselheiro"
+            class="rail-btn"
+            title="Conselheiro"
+            aria-label="Conselheiro"
+          >
+            <svg><use href="#i-advisor" /></svg>
+          </button>
+        </div>
+        <button
+          class="rail-btn bottom"
+          id="methods"
+          title="Como funciona"
+          aria-label="Como funciona"
+        >
+          <svg><use href="#i-info" /></svg>
+        </button>
+        <div class="version">M / 01</div>
+      </nav>
+      <aside class="sidebar">
+        <div class="wordmark">meridiano<span>SIMULADOR GEOPOLÍTICO</span></div>
+        <div class="country-heading">
+          <span class="eyebrow">SEU CENÁRIO</span
+          ><button class="text-button" id="configure">Configurar ↗</button>
+        </div>
+        <div class="country-title">
+          <span class="flag"><i></i></span>
+          <h1 id="countryName">Aurora</h1>
+        </div>
+        <div class="country-system" id="countrySystem">
+          República democrática · Economia mista
+        </div>
+        <div class="scenario-status">
+          <span></span> Cenário fictício <span class="small-label">v0.2</span>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-heading">
+            Visão nacional <span id="sideDate">2027 · T1</span>
+          </div>
+          <div class="national-stats">
+            <div>
+              <span>População</span
+              ><strong id="pop">24,8 <small>milhões</small></strong>
+            </div>
+            <div>
+              <span>PIB por habitante</span
+              ><strong id="gdpPc">M$ 18.400</strong>
+            </div>
+          </div>
+          <div id="sideMetrics"></div>
+        </div>
+        <div class="sidebar-section territory-list">
+          <div class="section-heading">
+            Unidades federativas <span>6 estados</span>
+          </div>
+          <div id="regionList"></div>
+        </div>
+        <div class="sidebar-note">
+          <svg><use href="#i-info" /></svg
+          ><span>Dados salvos neste navegador.</span>
+        </div>
+        <button id="newCountry" class="secondary full">
+          <svg><use href="#i-plus" /></svg> Novo país
+        </button>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div>
+            <div class="breadcrumb">
+              Simulação <span>/</span> <span id="breadCountry">Aurora</span>
+            </div>
+            <h2 id="pageTitle">Território</h2>
+          </div>
+          <div class="top-actions">
+            <div class="theme-switch" role="group" aria-label="Aparência">
+              <button
+                data-theme-choice="light"
+                aria-label="Tema claro"
+                title="Tema claro"
+              >
+                ☀</button
+              ><button
+                data-theme-choice="dark"
+                aria-label="Tema escuro"
+                title="Tema escuro"
+              >
+                ☾</button
+              ><button
+                data-theme-choice="system"
+                aria-label="Tema do sistema"
+                title="Usar tema do sistema"
+              >
+                ◐
+              </button>
+            </div>
+            <button class="secondary advisor-shortcut" data-view="conselheiro">
+              <svg><use href="#i-advisor" /></svg> Conselheiro</button
+            ><span class="local-status" id="localStatus">Sessão local</span
+            ><button class="secondary" id="save">
+              <svg><use href="#i-save" /></svg> Salvar cenário</button
+            ><button class="primary" id="advance">
+              Avançar trimestre <svg><use href="#i-arrow" /></svg>
+            </button>
+          </div>
+        </header>
+        <div class="view active" id="view-territorio">
+          <section class="map-shell" aria-label="Mapa interativo de Aurora">
+            <div class="map-top">
+              <div class="map-caption">
+                <span class="live-dot"></span> ATLAS TERRITORIAL
+                <span class="map-sub"
+                  >/ <span id="mapSeed">SEMENTE 1042</span></span
+                >
+              </div>
+              <div class="map-top-actions">
+                <label class="sr-only" for="stateSelect"
+                  >Selecionar estado</label
+                ><select id="stateSelect" class="state-select"></select
+                ><button class="map-country" id="overview">
+                  ⌖ Visão do país
+                </button>
+              </div>
+            </div>
+            <div
+              class="map-dimensions"
+              role="group"
+              aria-label="Dimensão do mapa"
+            >
+              <button class="active" data-map-mode="2d" aria-pressed="true">
+                2D</button
+              ><button data-map-mode="3d" aria-pressed="false">3D</button>
+            </div>
+            <div id="terrain3d" hidden></div>
+            <div id="threeLoading" hidden role="status">
+              Preparando relevo 3D…
+            </div>
+            <div id="mapViewport">
+              <svg
+                id="atlas"
+                viewBox="0 0 1000 760"
+                aria-label="Mapa de estados e municípios; use o controle Selecionar estado para navegar por teclado"
+              >
+                <defs>
+                  <clipPath id="landClip"><path id="landClipPath" /></clipPath>
+                  <filter id="coastShadow">
+                    <feDropShadow
+                      dx="0"
+                      dy="3"
+                      stdDeviation="5"
+                      flood-color="#557e7a"
+                      flood-opacity=".18"
+                    />
+                  </filter>
+                </defs>
+                <g id="mapTransform">
+                  <g id="seaGrid"></g>
+                  <path
+                    id="landShadow"
+                    filter="url(#coastShadow)"
+                    fill="#edf0d9"
+                  />
+                  <image
+                    id="terrain"
+                    x="0"
+                    y="0"
+                    width="1000"
+                    height="760"
+                    clip-path="url(#landClip)"
+                  />
+                  <g id="contours" clip-path="url(#landClip)"></g>
+                  <g id="municipalities" clip-path="url(#landClip)"></g>
+                  <g id="regions" clip-path="url(#landClip)"></g>
+                  <g id="rivers" clip-path="url(#landClip)"></g>
+                  <g id="roads" clip-path="url(#landClip)"></g>
+                  <path
+                    id="coast"
+                    fill="none"
+                    stroke="#7d9b87"
+                    stroke-width="1.2"
+                  />
+                  <g id="geoLabels"></g>
+                  <g id="cities"></g>
+                </g>
+              </svg>
+            </div>
+            <div class="layer-bar" aria-label="Camadas do mapa">
+              <span
+                ><svg><use href="#i-layers" /></svg> Camadas</span
+              ><button class="active" data-layer="relevo">Relevo</button
+              ><button data-layer="populacao">População</button
+              ><button data-layer="renda">Renda</button
+              ><button data-layer="bemestar">Bem-estar</button>
+            </div>
+            <div class="compass" aria-hidden="true">
+              <span>N</span
+              ><svg viewBox="0 0 32 48">
+                <path d="m16 4 9 30-9-5-9 5Z" fill="#345c50" />
+                <path d="m16 4 0 25-9 5Z" fill="#8eaaa0" />
+              </svg>
+            </div>
+            <div class="map-zoom">
+              <button id="zoomIn" aria-label="Aproximar mapa">+</button
+              ><button id="zoomOut" aria-label="Afastar mapa">−</button
+              ><button id="resetMap" aria-label="Centralizar mapa">⌖</button>
+            </div>
+            <div class="region-card" id="regionCard">
+              <div class="region-overline">
+                <span id="regionType">ESTADO SELECIONADO</span
+                ><button
+                  id="closeRegion"
+                  aria-label="Fechar detalhes da região"
+                >
+                  <svg><use href="#i-cross" /></svg>
+                </button>
+              </div>
+              <h3 id="regionName">Vale Central</h3>
+              <p id="regionDescription">Indústria, serviços e administração.</p>
+              <div class="region-data" id="regionData"></div>
+              <label class="municipality-picker" for="municipalitySelect"
+                >Município<select id="municipalitySelect"></select
+              ></label>
+              <div class="region-footer">
+                <span id="municipalCount">12 municípios</span
+                ><button id="exploreRegion">Explorar região ↗</button>
+              </div>
+            </div>
+            <div class="map-bottom">
+              <div>
+                <span id="legendLabel">ALTITUDE</span>
+                <div class="legend-gradient" id="legendRamp"></div>
+                <div class="legend-labels">
+                  <span id="legendMin">0 m</span
+                  ><span id="legendMax">2.400 m</span>
+                </div>
+              </div>
+              <div class="scale">
+                <span>0</span><span>100</span><span>200 km</span>
+                <div></div>
+              </div>
+              <span class="map-attribution"
+                >Cartografia sintética · Meridiano</span
+              >
+            </div>
+            <div class="map-hint" id="mapHint">
+              Selecione um estado para explorar
+            </div>
+          </section>
+          <div class="below-map">
+            <span id="mapInteractionHint"
+              >Arraste para navegar. Selecione um estado ou município.</span
+            ><button id="mapMethods">Sobre o modelo ↗</button>
+          </div>
+        </div>
+        <div class="view content-view" id="view-politicas">
+          <div class="content-heading">
+            <span class="eyebrow">GOVERNO</span>
+            <h3>Políticas públicas</h3>
+            <p>
+              Ajuste as prioridades. Os efeitos entram em vigor no próximo
+              trimestre.
+            </p>
+          </div>
+          <div class="policy-budget" id="policyBudget"></div>
+          <div id="policies" class="policies"></div>
+          <div class="model-note">
+            Os valores e relações são experimentais. Financiamento, capacidade
+            de execução e efeitos acumulados fazem parte do modelo.
+            <button data-methods>Consultar premissas ↗</button>
+          </div>
+        </div>
+        <div class="view content-view" id="view-indicadores">
+          <div class="content-heading">
+            <span class="eyebrow">RESULTADOS</span>
+            <h3>Indicadores do país</h3>
+            <p>Veja a trajetória dos indicadores a cada trimestre simulado.</p>
+          </div>
+          <div id="indicatorCards" class="indicator-cards"></div>
+          <div class="chart-panel">
+            <div class="chart-heading">
+              <div>
+                <h4>Evolução do cenário</h4>
+                <p id="chartSubtitle">Histórico trimestral</p>
+              </div>
+              <label
+                >Indicador
+                <select id="chartMetric">
+                  <option value="poverty">Pobreza (%)</option>
+                  <option value="gdp">PIB (bilhões M$)</option>
+                  <option value="unemployment">Desemprego (%)</option>
+                  <option value="inflation">Inflação (%)</option>
+                  <option value="debt">Dívida / PIB (%)</option>
+                  <option value="welfare">Bem-estar (0–100)</option>
+                </select></label
+              >
+            </div>
+            <svg
+              id="historyChart"
+              viewBox="0 0 800 280"
+              role="img"
+              aria-label="Histórico do indicador selecionado"
+            ></svg>
+            <div id="chartSummary" class="chart-summary"></div>
+          </div>
+          <div class="event-panel">
+            <h4>O que aconteceu neste trimestre</h4>
+            <div id="events"></div>
+          </div>
+        </div>
+        <div class="view content-view" id="view-cenarios">
+          <div class="content-heading">
+            <span class="eyebrow">ARQUIVO</span>
+            <h3>Seus cenários</h3>
+            <p>
+              Salve um ponto da simulação, experimente outra política e compare
+              os resultados.
+            </p>
+          </div>
+          <div class="scenario-actions">
+            <button class="primary" id="save2">
+              <svg><use href="#i-save" /></svg> Salvar cenário atual</button
+            ><button class="secondary" id="export">
+              Exportar cenário JSON ↗
+            </button>
+          </div>
+          <p class="storage-note">
+            Salvos neste navegador. Exporte uma cópia para conservar seus
+            cenários.
+          </p>
+          <div id="scenarios"></div>
+        </div>
+        <div class="view content-view advisor-view" id="view-conselheiro">
+          <div class="content-heading">
+            <span class="eyebrow">CONSELHEIRO</span>
+            <h3>Análise do cenário</h3>
+            <p>
+              Consulte os resultados, os custos das políticas e as diferenças
+              entre regiões.
+            </p>
+          </div>
+          <div class="advisor-layout">
+            <aside class="advisor-context">
+              <div class="advisor-context-heading">
+                <span class="flag"><i></i></span>
+                <div>
+                  <h4 id="advisorCountry">Aurora</h4>
+                  <span id="advisorPeriod">2027 · 1º trimestre</span>
+                </div>
+              </div>
+              <div id="advisorFacts" class="advisor-facts"></div>
+              <button class="primary full" id="analyzeQuarter">
+                <svg><use href="#i-chart" /></svg> Analisar trimestre</button
+              ><span class="advisor-status" id="advisorStatus" role="status"
+                >Pronto para consultar</span
+              >
+              <div class="suggested-questions">
+                <h4>Perguntas sobre o país</h4>
+                <button
+                  data-question="O que está pressionando a dívida deste país?"
+                >
+                  O que pressiona a dívida? <span>↗</span></button
+                ><button
+                  data-question="Quais políticas posso testar para reduzir a pobreza sem ampliar muito o déficit?"
+                >
+                  Como reduzir a pobreza? <span>↗</span></button
+                ><button
+                  data-question="Por que as regiões deste país têm resultados diferentes?"
+                >
+                  Por que as regiões diferem? <span>↗</span>
+                </button>
+              </div>
+              <p class="advisor-footnote">
+                A análise usa os dados da sua simulação. As sugestões não
+                alteram as políticas.
+              </p>
+            </aside>
+            <div class="advisor-workspace">
+              <div id="advisorStale" class="inline-notice" hidden>
+                O cenário mudou desde esta análise. Consulte novamente para usar
+                os dados atuais.
+              </div>
+              <div id="advisorLoading" class="advisor-loading" hidden>
+                <div class="loading-orbit" aria-hidden="true"></div>
+                <div>
+                  <strong>Analisando o cenário</strong>
+                  <p>Conferindo indicadores, políticas e orçamento.</p>
+                </div>
+                <button id="cancelAdvice" class="text-button" hidden>
+                  Cancelar
+                </button>
+              </div>
+              <div id="advisorEmpty" class="advisor-empty">
+                <svg><use href="#i-advisor" /></svg>
+                <h4>Consulte seu país.</h4>
+                <p>
+                  Peça uma análise do trimestre ou escreva uma pergunta abaixo.
+                </p>
+              </div>
+              <article
+                id="advisorResult"
+                aria-live="polite"
+                aria-busy="false"
+              ></article>
+              <p
+                id="advisorError"
+                class="field-error advisor-error"
+                role="alert"
+              ></p>
+              <form id="advisorForm" novalidate>
+                <label class="sr-only" for="advisorQuestion"
+                  >Pergunta sobre o país</label
+                ><textarea
+                  id="advisorQuestion"
+                  placeholder="Pergunte sobre o país…"
+                  maxlength="600"
+                  rows="2"
+                  aria-describedby="advisorError"
+                ></textarea>
+                <div class="advisor-input-actions">
+                  <span>Dados enviados ao Gemini somente ao consultar.</span
+                  ><button id="askAdvisor" class="primary" type="submit">
+                    Perguntar <svg><use href="#i-arrow" /></svg>
+                  </button>
+                </div>
+              </form>
+              <p class="advisor-model-note">
+                Análise assistida por IA · Modelo de simulação experimental
+              </p>
+            </div>
+          </div>
+        </div>
+        <footer class="timeline">
+          <div class="playback">
+            <button
+              id="playSimulation"
+              aria-label="Reproduzir simulação"
+              aria-pressed="false"
+              title="Avançar um trimestre a cada 4 segundos"
+            >
+              ▶</button
+            ><label class="sr-only" for="playSpeed"
+              >Velocidade da simulação</label
+            ><select id="playSpeed">
+              <option value="4000">1×</option>
+              <option value="2000">2×</option>
+              <option value="1000">4×</option>
+            </select>
+          </div>
+          <div class="timeline-date">
+            <span class="eyebrow">TEMPO SIMULADO</span
+            ><strong id="dateDisplay">2027 <span>1º trimestre</span></strong>
+          </div>
+          <div class="timeline-track" id="timelineTrack"></div>
+          <div class="timeline-end">
+            <span id="elapsed">Ponto de partida</span
+            ><span class="experiment">MODELO EXPERIMENTAL</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+    <dialog id="modal" aria-labelledby="modalTitle">
+      <div class="modal-top">
+        <span class="eyebrow">MERIDIANO / LABORATÓRIO</span
+        ><button id="closeModal" class="icon-button" aria-label="Fechar janela">
+          <svg><use href="#i-cross" /></svg>
+        </button>
+      </div>
+      <div id="modalBody"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

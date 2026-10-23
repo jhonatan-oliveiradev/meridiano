@@ -1,16 +1,26 @@
 {
   "name": "meridiano",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Laboratório territorial de políticas públicas",
+  "description": "Laborat\u00f3rio territorial de pol\u00edticas p\u00fablicas",
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "test": "node --test tests/*.test.js",
-    "check": "node --check dist/app.js && node --check dist/model.js && node --check dist/geography.js",
-    "build": "node scripts/build.mjs"
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/vendor.mjs && node scripts/build.mjs",
+    "predev": "node scripts/vendor.mjs",
+    "format": "prettier --write dist/*.js dist/*.css dist/index.html api/*.js server/*.js scripts/*.mjs tests/*.js",
+    "format:check": "prettier --check dist/*.js dist/*.css dist/index.html api/*.js server/*.js scripts/*.mjs tests/*.js",
+    "pretest": "node scripts/vendor.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   }
 }

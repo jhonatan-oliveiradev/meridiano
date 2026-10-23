@@ -1,0 +1,224 @@
+const $ = (s) => document.querySelector(s);
+const date = (q) => `${2027 + Math.floor(q / 4)} · ${(q % 4) + 1}º trimestre`;
+const fmt = (n) =>
+  new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(n);
+export function snapshotOf(s) {
+  return {
+    name: s.name,
+    government: s.government,
+    economy: s.economy,
+    external: s.external,
+    seed: s.seed,
+    quarter: s.quarter,
+    policies: { ...s.policies },
+    metrics: { ...s.metrics },
+    capacity: s.capacity,
+    previous: s.history.length > 1 ? { ...s.history.at(-2) } : null,
+  };
+}
+export function initAdvisor({ getState, notify }) {
+  let active = null,
+    fingerprint = "",
+    answerFingerprint = "",
+    available = null;
+  const cache = new Map();
+  const status = $("#advisorStatus"),
+    error = $("#advisorError"),
+    result = $("#advisorResult");
+  function stateChanged(s) {
+    const next = JSON.stringify(snapshotOf(s));
+    if (next !== fingerprint) {
+      active?.abort();
+      active = null;
+      busy(false);
+      fingerprint = next;
+      error.textContent = "";
+      $("#advisorStale").hidden =
+        !answerFingerprint || answerFingerprint === next;
+    }
+    $("#advisorCountry").textContent = s.name;
+    $("#advisorPeriod").textContent = date(s.quarter);
+    $("#advisorFacts").replaceChildren(
+      ...[
+        ["População", fmt(s.metrics.population) + " milhões"],
+        ["Pobreza", fmt(s.metrics.poverty) + "%"],
+        ["Dívida / PIB", fmt(s.metrics.debt) + "%"],
+      ].map(([k, v]) => {
+        const el = document.createElement("div"),
+          label = document.createElement("span"),
+          value = document.createElement("strong");
+        label.textContent = k;
+        value.textContent = v;
+        el.append(label, value);
+        return el;
+      }),
+    );
+  }
+  function busy(on) {
+    $("#analyzeQuarter").disabled = on;
+    $("#askAdvisor").disabled = on;
+    $("#cancelAdvice").hidden = !on;
+    $("#advisorLoading").hidden = !on;
+    result.setAttribute("aria-busy", String(on));
+    status.textContent = on
+      ? "Analisando cenário…"
+      : available === false
+        ? "Não conectado"
+        : "Pronto para consultar";
+  }
+  function render(answer, quarter, provider) {
+    $("#advisorEmpty").hidden = true;
+    result.replaceChildren();
+    const header = document.createElement("div");
+    header.className = "advice-meta";
+    header.textContent = `${provider} · ${date(quarter)}`;
+    const title = document.createElement("h3");
+    title.textContent = answer.title;
+    const summary = document.createElement("p");
+    summary.className = "advice-summary";
+    summary.textContent = answer.summary;
+    result.append(header, title, summary);
+    for (const o of answer.observations) {
+      const block = document.createElement("section"),
+        h = document.createElement("h4"),
+        p = document.createElement("p");
+      block.className = "advice-observation";
+      h.textContent = o.heading;
+      p.textContent = o.detail;
+      block.append(h, p);
+      result.append(block);
+    }
+    for (const [label, items] of [
+      ["Custos e limites", answer.tradeoffs],
+      ["O que testar", answer.nextSteps],
+    ]) {
+      if (!items.length) continue;
+      const section = document.createElement("section"),
+        h = document.createElement("h4"),
+        list = document.createElement("ul");
+      h.textContent = label;
+      section.className = "advice-list";
+      for (const text of items) {
+        const li = document.createElement("li");
+        li.textContent = text;
+        list.append(li);
+      }
+      section.append(h, list);
+      result.append(section);
+    }
+  }
+  async function ask(mode) {
+    const input = $("#advisorQuestion"),
+      question = input.value.trim();
+    if (mode === "question" && !question) {
+      error.textContent = "Escreva uma pergunta sobre o país.";
+      input.setAttribute("aria-invalid", "true");
+      input.focus();
+      return;
+    }
+    if (active) return;
+    input.removeAttribute("aria-invalid");
+    error.textContent = "";
+    const snapshot = snapshotOf(getState()),
+      stamp = JSON.stringify(snapshot),
+      key = stamp + mode + question;
+    if (cache.has(key)) {
+      const data = cache.get(key);
+      render(data.answer, data.quarter, data.provider);
+      answerFingerprint = stamp;
+      $("#advisorStale").hidden = true;
+      return;
+    }
+    const controller = new AbortController();
+    active = controller;
+    busy(true);
+    const timeout = setTimeout(() => controller.abort("timeout"), 22000);
+    try {
+      const response = await fetch("/api/advisor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-meridiano-client": "1",
+        },
+        body: JSON.stringify({ mode, question, snapshot }),
+        signal: controller.signal,
+      });
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(
+          "O conselheiro está indisponível neste ambiente. A simulação continua funcionando.",
+        );
+      }
+      if (!response.ok) {
+        if (data.code === "NOT_CONFIGURED") available = false;
+        throw new Error(
+          data.message || "Não foi possível consultar o conselheiro.",
+        );
+      }
+      if (stamp !== fingerprint || controller.signal.aborted) return;
+      if (
+        !data.answer ||
+        !Array.isArray(data.answer.observations) ||
+        !Array.isArray(data.answer.tradeoffs) ||
+        !Array.isArray(data.answer.nextSteps)
+      )
+        throw new Error("A resposta veio incompleta. Tente novamente.");
+      available = true;
+      cache.set(key, data);
+      if (cache.size > 8) cache.delete(cache.keys().next().value);
+      render(data.answer, data.quarter, data.provider);
+      answerFingerprint = stamp;
+      $("#advisorStale").hidden = true;
+      notify("Análise concluída.");
+    } catch (e) {
+      if (active === controller) {
+        if (controller.signal.reason === "timeout")
+          error.textContent =
+            "A consulta demorou mais que o esperado. Tente novamente.";
+        else if (!controller.signal.aborted) error.textContent = e.message;
+      }
+    } finally {
+      clearTimeout(timeout);
+      if (active === controller) {
+        active = null;
+        busy(false);
+      }
+    }
+  }
+  $("#analyzeQuarter").onclick = () => ask("analysis");
+  $("#advisorForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    ask("question");
+  });
+  $("#cancelAdvice").onclick = () => {
+    active?.abort();
+    active = null;
+    busy(false);
+    status.textContent = "Consulta cancelada";
+  };
+  document.querySelectorAll("[data-question]").forEach(
+    (b) =>
+      (b.onclick = () => {
+        $("#advisorQuestion").value = b.dataset.question;
+        $("#advisorQuestion").focus();
+      }),
+  );
+  fetch("/api/advisor")
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      if (data) {
+        available = !!data.available;
+        if (!active) busy(false);
+      }
+    })
+    .catch(() => {});
+  stateChanged(getState());
+  return {
+    stateChanged,
+    cancel() {
+      active?.abort();
+    },
+  };
+}
