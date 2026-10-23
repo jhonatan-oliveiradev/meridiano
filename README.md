@@ -4,11 +4,14 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ![Tema claro](docs/screenshots/atlas-light-v02.jpg)
 
-![Tema escuro](docs/screenshots/atlas-dark-v02.jpg)
+![Gabinete e Nilo — v0.3](docs/screenshots/cabinet-v03.jpg)
 
-## Versão 0.2
+## Versão 0.3
 
-- Interface com temas claro, escuro e do sistema; preferência salva no navegador.
+- Interface em 100dvh no desktop, com rolagem apenas nos painéis; temas claro/escuro/sistema.
+- Cores do NX Creative Studio; fontes Manrope e Space Grotesk hospedadas localmente.
+- Países aleatórios com prévia e confirmação; condições iniciais e políticas reproduzíveis por semente.
+- Nilo, avatar criado no Avatar Lab, com expressões, piscadas e cargo ligado ao governo.
 - Atlas procedural por semente, relevo sombreado e curvas de nível.
 - Visão 3D opcional com Three.js/WebGL, carregamento sob demanda e fallback para SVG.
 - Reprodução do tempo com play/pause e velocidades 1×, 2× e 4×.
@@ -23,7 +26,7 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ## Executar
 
-Recomenda-se Node.js 22 ou superior. Three.js é a dependência de visualização; Prettier é usado somente no desenvolvimento. A chave Gemini é opcional para o Conselheiro.
+Recomenda-se Node.js 22 ou superior. Three.js é a dependência de visualização, e Fontsource fornece as duas fontes locais; Prettier é usado somente no desenvolvimento. A chave Gemini é opcional para o Conselheiro.
 
 ```sh
 npm ci
@@ -67,7 +70,7 @@ Nesta versão, governo e orientação econômica são metadados independentes. O
 
 Dados ficam neste navegador, sem conta ou sincronização. São mantidos até 20 snapshots; um novo salvamento substitui o mais antigo quando o limite é atingido. Exporte cópias para conservar o trabalho. A importação JSON ainda não foi implementada.
 
-## Limites da versão 0.2
+## Limites da versão 0.3
 
 A consulta real ao Gemini depende da chave e das cotas da sua conta. O controle de consultas em memória é por instância, não distribuído; recomenda-se acesso privado/baixo volume até implementar proteção persistente ou regras no firewall da hospedagem.
 
@@ -83,3 +86,7 @@ O ambiente de testes tem WebGL desabilitado: fallback 2D e geometria foram valid
 6. Calibrar cenários com fontes e metodologia documentadas antes de qualquer pretensão preditiva.
 
 O nome Meridiano é provisório. Sem licença de distribuição definida nesta etapa.
+
+## Avatar e cargos
+
+Os cargos são papéis fictícios de apoio. Veja [origem dos assets e fontes](THIRD_PARTY.md). A definição portátil e os SVGs originais do Lab estão em `docs/avatar-source/`; `python3 scripts/prepare-avatar.py` recompõe as adaptações visuais locais. A aplicação não importa o runtime AGPL do Lab.

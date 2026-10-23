@@ -1,3 +1,4 @@
+import { cabinetFor } from "../dist/country.js";
 import {
   policyDefs,
   budget,
@@ -202,7 +203,15 @@ export async function generateAdvice(
         },
         signal: AbortSignal.timeout(timeoutMs),
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemInstruction }] },
+          systemInstruction: {
+            parts: [
+              {
+                text:
+                  systemInstruction +
+                  ` Seu papel fictício neste cenário é ${cabinetFor(s.government).title}, chamado Nilo. Use esse cargo apenas como apresentação; não infira poderes ou políticas adicionais a partir dele.`,
+              },
+            ],
+          },
           contents: [
             { role: "user", parts: [{ text: JSON.stringify(context) }] },
           ],

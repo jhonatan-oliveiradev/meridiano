@@ -28,6 +28,7 @@
     </script>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="premium.css" />
+    <link rel="stylesheet" href="studio.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -144,7 +145,7 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.2</span>
+          <span></span> Cenário fictício <span class="small-label">v0.3</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -207,7 +208,8 @@
               </button>
             </div>
             <button class="secondary advisor-shortcut" data-view="conselheiro">
-              <svg><use href="#i-advisor" /></svg> Conselheiro</button
+              <svg><use href="#i-advisor" /></svg>
+              <span data-cabinet-title>Ministro da Fazenda</span></button
             ><span class="local-status" id="localStatus">Sessão local</span
             ><button class="secondary" id="save">
               <svg><use href="#i-save" /></svg> Salvar cenário</button
@@ -443,7 +445,9 @@
         </div>
         <div class="view content-view advisor-view" id="view-conselheiro">
           <div class="content-heading">
-            <span class="eyebrow">CONSELHEIRO</span>
+            <span class="eyebrow" data-cabinet-office
+              >Ministério da Fazenda</span
+            >
             <h3>Análise do cenário</h3>
             <p>
               Consulte os resultados, os custos das políticas e as diferenças
@@ -452,6 +456,23 @@
           </div>
           <div class="advisor-layout">
             <aside class="advisor-context">
+              <div class="cabinet-person">
+                <button
+                  class="cabinet-avatar"
+                  id="cabinetAvatar"
+                  type="button"
+                  aria-label="Cumprimentar Nilo"
+                >
+                  <span id="avatarArt"></span>
+                </button>
+                <div class="cabinet-intro">
+                  <strong>Nilo</strong
+                  ><span data-cabinet-title>Ministro da Fazenda</span>
+                  <p id="avatarMessage" aria-live="polite">
+                    Vamos conferir os números?
+                  </p>
+                </div>
+              </div>
               <div class="advisor-context-heading">
                 <span class="flag"><i></i></span>
                 <div>

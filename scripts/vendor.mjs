@@ -21,3 +21,21 @@ await copyFile(
   new URL("../node_modules/three/LICENSE", import.meta.url),
   new URL("THREE-LICENSE.txt", target),
 );
+const fonts = new URL("../dist/fonts/", import.meta.url);
+await mkdir(fonts, { recursive: true });
+for (const family of ["manrope", "space-grotesk"]) {
+  await copyFile(
+    new URL(
+      `../node_modules/@fontsource-variable/${family}/files/${family}-latin-wght-normal.woff2`,
+      import.meta.url,
+    ),
+    new URL(`${family}-latin-wght-normal.woff2`, fonts),
+  );
+  await copyFile(
+    new URL(
+      `../node_modules/@fontsource-variable/${family}/LICENSE`,
+      import.meta.url,
+    ),
+    new URL(`${family}-LICENSE.txt`, fonts),
+  );
+}

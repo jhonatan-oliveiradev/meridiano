@@ -12,3 +12,11 @@
 - Recursos Three.js: DPR limitado a 1,5, desenho por demanda, observers e descarte explícito. São decisões de implementação, não resultados de benchmark.
 
 Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; inspeção 3D em aparelho com WebGL habilitado; auditoria WCAG completa; benchmark em hardware do usuário. Sem validação científica do motor econômico.
+
+## v0.3
+
+- 19 automated tests: adds generator reproducibility, 120 randomized countries with policy/API/12-quarter invariants, and government-office mapping without numerical bonuses.
+- Browser desktop 1363×936: root scrollHeight=clientHeight=936 and scrollWidth=clientWidth=1363.
+- Browser iframe 1280×720: root 720/720, width 1280/1280; 1024×600: root 600/600, width 1024/1024. Mobile 390×844 allows natural vertical scrolling and no horizontal overflow.
+- Browser: randomization fills preview, manual choice of parliamentary republic is preserved on creation, initial indicators differ from Aurora, and office becomes Primeiro-ministro. Nilo SVG loads; click changes greeting. Fonts, colors and both themes inspected. Original poses exported through Avatar Lab UI, not reconstructed from a screenshot.
+- Existing limitations for live Gemini credentials and WebGL GPU validation still apply. No benchmark or scientific calibration claims.
