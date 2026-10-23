@@ -1,4 +1,10 @@
-import { cabinetFor, governments, randomCountry } from "./country.js";
+import { generateTerritory, landforms } from "./territory.js";
+import {
+  cabinetFor,
+  governments,
+  randomCountry,
+  createCountry,
+} from "./country.js";
 import { initAdvisor } from "./advisor.js";
 import { initEventIsland, renderBulletin } from "./interactions.js";
 import { advanceTurn, decisionFor } from "./simulation.js";
@@ -7,12 +13,14 @@ import {
   initialState,
   budget,
   policyDefs,
-  regionDefs,
+  regionsOf,
+  municipalMetrics,
   regionalMetrics,
   clamp,
 } from "./model.js";
 import {
-  landPoints,
+  landFor,
+  multiPath,
   polygonPath,
   voronoiCell,
   elevation,
@@ -51,8 +59,10 @@ let state = initialState(),
   toastTimer,
   modalTrigger;
 const svgNS = "http://www.w3.org/2000/svg";
+let regions = regionsOf(state);
 let eventIsland = null;
 let decisionUI = null;
+let atlasMap = null;
 let advisorController = null,
   terrain3d = null,
   mapMode = "2d",
@@ -94,8 +104,10 @@ function readStorage() {
       Number.isFinite(active.seed)
     )
       state = active;
+    else state = createCountry();
   } catch {
     saved = [];
+    state = createCountry();
     notify(
       "Não foi possível recuperar os dados locais. Você pode começar uma nova sessão.",
     );
@@ -173,7 +185,11 @@ function updateUI() {
         `<div class="metric-row"><span>${label}</span><div class="metric-value">${val}<span class="mini-bar"><i style="width:${clamp(bar, 0, 100)}%"></i></span></div></div>`,
     )
     .join("");
-  $("#regionList").innerHTML = regionDefs
+  $("#regionCount").textContent = `${regions.length} estados`;
+  $("#territoryFacts").textContent = state.territory
+    ? `${landforms[state.territory.kind]} · ${fmt(state.territory.areaKm2, 0)} km² · ${fmt((state.metrics.population * 1e6) / state.territory.areaKm2)} hab./km²`
+    : "Geografia original · cenário preservado";
+  $("#regionList").innerHTML = regions
     .map(
       (r, i) =>
         `<button class="region-list-item ${i === selected ? "selected" : ""}" data-region="${i}" aria-pressed="${i === selected}"><span class="region-dot" style="background:${r.color}"></span>${r.name}<span>${fmt(m.population * r.share)} mi</span></button>`,
@@ -213,7 +229,7 @@ function updateUI() {
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
-  $("#stateSelect").innerHTML = regionDefs
+  $("#stateSelect").innerHTML = regions
     .map(
       (r, i) =>
         `<option value="${i}" ${i === selected ? "selected" : ""}>${r.name}</option>`,
@@ -228,17 +244,21 @@ function renderRegion() {
           : "",
       )
       .join("");
-  let r = regionDefs[selected],
+  let r = regions[selected],
     m = regionalMetrics(state, selected),
     localPop = selectedCity
-      ? m.population / cities.filter((c) => c.region === selected).length
+      ? state.territory
+        ? municipalMetrics(state, selectedCity).population
+        : m.population / cities.filter((c) => c.region === selected).length
       : m.population;
+  if (selectedCity && state.territory)
+    m = municipalMetrics(state, selectedCity);
   $("#regionName").textContent = selectedCity?.name || r.name;
   $("#regionType").textContent = selectedCity
     ? "MUNICÍPIO SELECIONADO"
     : "ESTADO SELECIONADO";
   $("#regionDescription").textContent = selectedCity
-    ? `${r.name} · ${r.sector}. Dados municipais distribuídos igualmente nesta versão.`
+    ? `${r.name} · ${r.sector}.${state.territory ? " População municipal inclui áreas urbanas e rurais." : " Dados municipais distribuídos igualmente nesta versão."}`
     : r.description;
   $("#regionData").innerHTML = [
     [
@@ -250,12 +270,26 @@ function renderRegion() {
     ["Renda por habitante", "M$ " + fmt(m.income, 0)],
     ["Bem-estar", fmt(m.welfare, 0) + "/100"],
     ["Pobreza", fmt(m.poverty) + "%"],
+    ...(m.areaKm2
+      ? [
+          ["Área", fmt(m.areaKm2, 0) + " km²"],
+          ["Densidade", fmt(m.density) + " hab./km²"],
+          ...(selectedCity
+            ? [
+                ["População urbana", fmt(m.urbanization, 0) + "%"],
+                ["Acesso a serviços", fmt(m.access, 0) + "/100"],
+              ]
+            : []),
+        ]
+      : []),
   ]
     .map(([k, v]) => `<div><span>${k}</span><strong>${v}</strong></div>`)
     .join("");
   const count = cities.filter((c) => c.region === selected).length;
   $("#municipalCount").textContent = selectedCity
-    ? "Estimativa municipal"
+    ? state.territory
+      ? "Distribuição sintética · geografia v2"
+      : "Estimativa municipal"
     : `${count} municípios`;
   $("#exploreRegion").textContent = selectedCity
     ? "Ver estado ↗"
@@ -264,6 +298,7 @@ function renderRegion() {
     el.classList.toggle("selected", Number(el.dataset.region) === selected),
   );
   terrain3d?.update(state, { selected, layer });
+  atlasMap?.update(state, { selected, layer });
 }
 function selectRegion(i, city = null) {
   selected = i;
@@ -540,9 +575,9 @@ function terrainImage() {
     for (let x = 0; x < w; x++) {
       let gx = (x * 1000) / w,
         gy = (y * 760) / h,
-        z = elevation(gx, gy, state.seed),
-        dx = elevation(gx + 2, gy, state.seed) - z,
-        dy = elevation(gx, gy + 2, state.seed) - z,
+        z = elevation(gx, gy, state.seed, state.territory?.profile),
+        dx = elevation(gx + 2, gy, state.seed, state.territory?.profile) - z,
+        dy = elevation(gx, gy + 2, state.seed, state.territory?.profile) - z,
         shade = clamp(1 - dx * 4 - dy * 3, 0.73, 1.15),
         v = clamp(z * 5, 0, 4.99),
         k = Math.floor(v),
@@ -573,7 +608,9 @@ function drawContours() {
             [x + step, y + step],
             [x, y + step],
           ],
-          v = pts.map((p) => elevation(...p, state.seed));
+          v = pts.map((p) =>
+            elevation(...p, state.seed, state.territory?.profile),
+          );
         let hits = [];
         for (let i = 0; i < 4; i++) {
           let j = (i + 1) % 4;
@@ -601,24 +638,39 @@ function drawContours() {
 }
 function drawMap() {
   setMapMode("2d");
-  const land = landPoints(state.seed),
+  regions = regionsOf(state);
+  selected = clamp(selected, 0, regions.length - 1);
+  const land = landFor(state),
     path = polygonPath(land);
   for (const id of ["landClipPath", "landShadow", "coast"])
     $("#" + id).setAttribute("d", path);
   terrainImage();
   drawContours();
   $("#regions").replaceChildren();
-  regionDefs.forEach((r, i) => {
+  regions.forEach((r, i) => {
     const el = svgEl("path", {
-      d: polygonPath(voronoiCell(r, regionDefs)),
+      d: r.shape ? multiPath(r.shape) : polygonPath(voronoiCell(r, regions)),
       class: "region-path",
       "data-region": i,
     });
     el.append(svgEl("title", {}, r.name));
     $("#regions").append(el);
   });
-  cities = generateCities(state.seed, regionDefs, land);
-  const network = transportNetwork(state.seed, cities, land);
+  cities = state.territory?.cities ?? generateCities(state.seed, regions, land);
+  const network = state.territory ?? transportNetwork(state.seed, cities, land);
+  $("#urbanFootprints").replaceChildren(
+    ...cities
+      .filter((c) => c.urbanAreaKm2)
+      .map((c) =>
+        svgEl("circle", {
+          cx: c.x,
+          cy: c.y,
+          r: Math.sqrt(c.urbanAreaKm2 / Math.PI) / state.territory.kmPerUnit,
+          class: "urban-footprint",
+        }),
+      ),
+  );
+
   $("#streetNetwork").replaceChildren(
     ...network.streets.map((points) =>
       svgEl("path", { d: "M" + points.map((p) => p.join(",")).join("L") }),
@@ -626,20 +678,26 @@ function drawMap() {
   );
   $("#municipalities").replaceChildren();
   $$("[data-state-clip]").forEach((el) => el.remove());
-  regionDefs.forEach((r, i) => {
+  regions.forEach((r, i) => {
     const clip = svgEl("clipPath", {
       id: "stateClip" + i,
       "data-state-clip": "",
     });
-    clip.append(svgEl("path", { d: polygonPath(voronoiCell(r, regionDefs)) }));
+    clip.append(
+      svgEl("path", {
+        d: r.shape ? multiPath(r.shape) : polygonPath(voronoiCell(r, regions)),
+      }),
+    );
     $("#atlas defs").append(clip);
     const group = svgEl("g", { "clip-path": "url(#stateClip" + i + ")" }),
       local = cities.filter((c) => c.region === i);
     local.forEach((c) =>
       group.append(
         svgEl("path", {
-          d: polygonPath(voronoiCell(c, local)),
+          d: c.shape ? multiPath(c.shape) : polygonPath(voronoiCell(c, local)),
           class: "municipality",
+          "data-municipality": cities.indexOf(c),
+          "fill-rule": "evenodd",
         }),
       ),
     );
@@ -658,7 +716,24 @@ function drawMap() {
       svgEl("circle", {
         cx: c.x,
         cy: c.y,
-        r: c.capital ? 5 : c.major ? 3.4 : 2.1,
+        r: state.territory
+          ? clamp(
+              1.5 +
+                Math.log10(
+                  Math.max(
+                    1,
+                    c.populationShare * state.metrics.population * 1e6,
+                  ),
+                ) *
+                  0.45,
+              2,
+              5.4,
+            )
+          : c.capital
+            ? 5
+            : c.major
+              ? 3.4
+              : 2.1,
       }),
     );
     g.append(
@@ -696,7 +771,7 @@ function drawMap() {
       }),
     );
   $("#geoLabels").replaceChildren();
-  regionDefs.forEach((r) =>
+  regions.forEach((r) =>
     $("#geoLabels").append(
       svgEl(
         "text",
@@ -730,8 +805,14 @@ function drawMap() {
       "MAR DO POENTE",
     ),
   );
-  $("#rivers").innerHTML =
-    '<path d="M343 168 C380 220 327 262 393 300 S453 345 469 393 S530 425 550 470 S620 465 673 515" fill="none" stroke="#edf4db" stroke-width="5" opacity=".6"/><path d="M343 168 C380 220 327 262 393 300 S453 345 469 393 S530 425 550 470 S620 465 673 515" fill="none" stroke="#7caaa9" stroke-width="2.3"/><path d="M334 456 Q380 435 438 426 T550 470M515 183 Q490 250 452 284T441 368" fill="none" stroke="#85afaa" stroke-width="1.5"/>';
+  $("#rivers").innerHTML = state.territory
+    ? state.territory.rivers
+        .map(
+          (points) =>
+            `<path d="M${points.map((p) => p.join(",")).join("L")}" fill="none" stroke="#8ebfce" stroke-width="2.2"/>`,
+        )
+        .join("")
+    : '<path d="M343 168 C380 220 327 262 393 300 S453 345 469 393 S530 425 550 470 S620 465 673 515" fill="none" stroke="#edf4db" stroke-width="5" opacity=".6"/><path d="M343 168 C380 220 327 262 393 300 S453 345 469 393 S530 425 550 470 S620 465 673 515" fill="none" stroke="#7caaa9" stroke-width="2.3"/><path d="M334 456 Q380 435 438 426 T550 470M515 183 Q490 250 452 284T441 368" fill="none" stroke="#85afaa" stroke-width="1.5"/>';
   $("#roads").replaceChildren();
   network.roads.forEach((points) =>
     $("#roads").append(
@@ -745,10 +826,10 @@ function drawMap() {
       }),
     ),
   );
-  for (let i = 0; i < regionDefs.length; i++) {
-    if (i === 3) continue;
-    const r = regionDefs[i],
-      c = regionDefs[3];
+  for (let i = 0; i < regions.length; i++) {
+    if (state.territory || i === 3) continue;
+    const r = regions[i],
+      c = regions[3];
     $("#roads").append(
       svgEl("path", {
         d: `M${c.x + 8} ${c.y + 13} Q${(r.x + c.x) / 2 + 30} ${(r.y + c.y) / 2} ${r.x + 8} ${r.y + 13}`,
@@ -766,8 +847,10 @@ function drawMap() {
 }
 function applyLayer() {
   terrain3d?.update(state, { selected, layer });
+  atlasMap?.update(state, { selected, layer });
   const colors = {
     populacao: ["#dbe7c7", "#73935d", "#3a654c"],
+    densidade: ["#d8e6c0", "#7eaa38", "#e97738"],
     renda: ["#ece5be", "#b8bf84", "#4e7b5c"],
     bemestar: ["#e6e4c5", "#99b18b", "#3f795c"],
   };
@@ -779,13 +862,23 @@ function applyLayer() {
     const m = regionalMetrics(state, i),
       v =
         layer === "populacao"
-          ? regionDefs[i].share / 0.3
-          : layer === "renda"
-            ? (m.income /
-                ((state.metrics.gdp / state.metrics.population) * 1000) -
-                0.5) /
-              0.8
-            : m.welfare / 100;
+          ? regions[i].share / Math.max(...regions.map((r) => r.share))
+          : layer === "densidade"
+            ? Math.log1p(m.density ?? 0) /
+              Math.log1p(
+                Math.max(
+                  1,
+                  ...regions.map(
+                    (_, j) => regionalMetrics(state, j).density ?? 0,
+                  ),
+                ),
+              )
+            : layer === "renda"
+              ? (m.income /
+                  ((state.metrics.gdp / state.metrics.population) * 1000) -
+                  0.5) /
+                0.8
+              : m.welfare / 100;
     const palette = colors[layer];
     el.style.fill =
       palette[Math.min(2, Math.floor(clamp(v, 0, 0.99) * 3))] + "ce";
@@ -794,12 +887,52 @@ function applyLayer() {
     el.classList.toggle("active", el.dataset.layer === layer);
     el.setAttribute("aria-pressed", el.dataset.layer === layer);
   });
+  $(".map-shell").classList.toggle("density-active", layer === "densidade");
+  const maximumDensity = Math.max(
+    1,
+    ...cities.map((c) =>
+      state.territory ? municipalMetrics(state, c).density : 0,
+    ),
+  );
+  $$("[data-municipality]").forEach((el) => {
+    const c = cities[Number(el.dataset.municipality)];
+    const v = state.territory
+      ? Math.log1p(municipalMetrics(state, c).density) /
+        Math.log1p(maximumDensity)
+      : 0;
+    el.style.fill =
+      layer === "densidade" && state.territory
+        ? `hsl(${105 - v * 85} 45% ${72 - v * 30}%)`
+        : "";
+  });
   const labels = {
     relevo: ["ALTITUDE", "0 m", "2.400 m"],
+    densidade: [
+      state.territory
+        ? mapMode === "3d"
+          ? "DENSIDADE ESTADUAL"
+          : "DENSIDADE MUNICIPAL"
+        : "DENSIDADE · SEM ÁREA NO LEGADO",
+      state.territory ? "0 hab./km²" : "Indisponível",
+      state.territory
+        ? fmt(
+            mapMode === "3d"
+              ? Math.max(
+                  ...regions.map(
+                    (_, i) => regionalMetrics(state, i).density ?? 0,
+                  ),
+                )
+              : maximumDensity,
+            0,
+          ) + " hab./km²"
+        : "Crie um país novo",
+    ],
     populacao: [
       "POPULAÇÃO ESTADUAL",
-      fmt(state.metrics.population * 0.09) + " mi",
-      fmt(state.metrics.population * 0.27) + " mi",
+      fmt(state.metrics.population * Math.min(...regions.map((r) => r.share))) +
+        " mi",
+      fmt(state.metrics.population * Math.max(...regions.map((r) => r.share))) +
+        " mi",
     ],
     renda: ["RENDA / HABITANTE", "Menor", "Maior"],
     bemestar: ["BEM-ESTAR", "0", "100"],
@@ -823,12 +956,23 @@ function transformMap() {
   $(".map-shell").classList.toggle("zoomed", zoom >= 1.5);
   $("#zoomIn").disabled = zoom >= 3;
   $("#zoomOut").disabled = zoom <= 0.75;
+  if (state.territory) {
+    const rect = $("#atlas").getBoundingClientRect();
+    const pxPerUnit = Math.min(rect.width / 1000, rect.height / 760) * zoom;
+    const length =
+      (106 / Math.max(0.001, pxPerUnit)) * state.territory.kmPerUnit;
+    const ticks = $$(".scale span");
+    ticks[0].textContent = "0";
+    ticks[1].textContent = fmt(length / 2, 0);
+    ticks[2].textContent = fmt(length, 0) + " km";
+  }
   $("#mapHint").textContent =
     zoom >= 1.5
       ? "Municípios visíveis · arraste para navegar"
       : "Selecione um estado para explorar";
 }
 function resetMap() {
+  atlasMap?.reset();
   terrain3d?.reset();
   zoom = matchMedia("(max-width: 760px)").matches ? 1.3 : 1;
   pan = { x: 0, y: 0 };
@@ -850,7 +994,7 @@ function closeModal() {
 }
 function showMethods() {
   openModal(
-    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Seis estados, municípios e relevo gerados por semente. Acesso e perfil de renda definem diferenças regionais. Infraestrutura melhora o acesso com menor retorno nas serras. Nesta versão, municípios dividem igualmente a população do estado e compartilham seus índices. Rios e estradas são representações esquemáticas.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; seus modificadores duram um trimestre e o custo extraordinário é financiado por dívida uma única vez. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
+    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Países novos têm área, relevo e divisões reproduzíveis pela semente. Extensão e população inicial influenciam o número de estados e municípios. Costa, rios e relevo influenciam a ocupação; cada município tem população urbana e rural, área e densidade próprias. A população cresce sem migração e as divisas permanecem estáveis. Renda, pobreza e bem-estar municipais ainda seguem o estado. Cenários antigos conservam seus seis estados e a distribuição original, sem área inventada. Estradas são esquemáticas, sem cálculo de rotas.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; seus modificadores duram um trimestre e o custo extraordinário é financiado por dívida uma única vez. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
   );
 }
 function countryForm(isNew = false) {
@@ -873,7 +1017,17 @@ function countryForm(isNew = false) {
       )
       .join(
         "",
-      )}</select><small>Afeta o crescimento e a pressão inflacionária.</small></div>${isNew ? `<div class="field"><label for="population">População inicial (milhões)</label><input id="population" name="population" type="number" min="1" max="500" step="0.1" value="24.8" aria-describedby="numberError"></div><div class="field"><label for="seed">Semente territorial</label><input id="seed" name="seed" type="number" min="1" max="99999" step="1" value="${s.seed}" aria-describedby="numberError"></div><span class="field-error wide" id="numberError"></span>` : ""}</div><div class="modal-actions"><button type="button" class="secondary" data-close>Cancelar</button><button class="primary" type="submit">${isNew ? "Criar e substituir cenário ativo" : "Salvar configuração"}</button></div></form>`,
+      )}</select><small>Afeta o crescimento e a pressão inflacionária.</small></div>${
+      isNew
+        ? `<div class="field"><label for="population">População inicial (milhões)</label><input id="population" name="population" type="number" min="1" max="500" step="0.1" value="24.8" aria-describedby="numberError"></div><div class="field"><label for="seed">Semente territorial</label><input id="seed" name="seed" type="number" min="1" max="99999" step="1" value="${s.seed}" aria-describedby="numberError"></div><div class="field"><label for="areaKm2">Área territorial (km²)</label><input id="areaKm2" name="areaKm2" type="number" min="5000" max="8000000" step="100" placeholder="Gerar pela semente" aria-describedby="numberError"><small>Define a escala e a densidade, sem alterar a população.</small></div><div class="field"><label for="landform">Formato do território</label><select id="landform" name="landform"><option value="">Gerar pela semente</option>${Object.entries(
+            landforms,
+          )
+            .map(([v, n]) => `<option value="${v}">${n}</option>`)
+            .join(
+              "",
+            )}</select></div><span class="field-error wide" id="numberError"></span>`
+        : ""
+    }</div><div class="modal-actions"><button type="button" class="secondary" data-close>Cancelar</button><button class="primary" type="submit">${isNew ? "Criar e substituir cenário ativo" : "Salvar configuração"}</button></div></form>`,
   );
   if (isNew)
     $("#randomizeCountry").onclick = () => {
@@ -887,6 +1041,8 @@ function countryForm(isNew = false) {
         external: randomDraft.external,
         population: randomDraft.metrics.population,
         seed: randomDraft.seed,
+        areaKm2: randomDraft.territory.areaKm2,
+        landform: randomDraft.territory.kind,
       }))
         $("#" + id).value = val;
       $("#randomSummary").hidden = false;
@@ -939,6 +1095,17 @@ function countryForm(isNew = false) {
         ).focus();
         return;
       }
+      const areaInput = f.get("areaKm2"),
+        area = areaInput ? Number(areaInput) : undefined;
+      if (
+        area !== undefined &&
+        (!Number.isFinite(area) || area < 5000 || area > 8000000)
+      ) {
+        $("#numberError").textContent =
+          "Use uma área de 5.000 a 8.000.000 km².";
+        $("#areaKm2").focus();
+        return;
+      }
       if (randomDraft) {
         state =
           randomDraft.seed === seed
@@ -950,7 +1117,13 @@ function countryForm(isNew = false) {
         state.metrics.gdp = population * perCapita;
         state.history = [{ quarter: 0, ...state.metrics }];
       } else state = initialState({ ...config, population, seed });
-      selected = 3;
+      state.territory = generateTerritory({
+        seed,
+        population,
+        areaKm2: f.get("areaKm2") ? Number(f.get("areaKm2")) : undefined,
+        kind: f.get("landform") || undefined,
+      });
+      selected = state.territory.capitalRegion;
       selectedCity = null;
       drawMap();
       renderPolicies();
@@ -1038,7 +1211,7 @@ document.addEventListener("click", (e) => {
     );
     $("#confirmLoad").onclick = () => {
       state = structuredClone(item.state);
-      selected = 3;
+      selected = state.territory?.capitalRegion ?? 3;
       selectedCity = null;
       drawMap();
       renderPolicies();
@@ -1111,6 +1284,10 @@ $("#municipalitySelect").onchange = (e) => {
 };
 $("#closeRegion").onclick = () => $("#regionCard").classList.add("hidden");
 $("#zoomIn").onclick = () => {
+  if (atlasMap) {
+    atlasMap.zoomBy(0.5);
+    return;
+  }
   if (terrain3d) {
     terrain3d.zoomBy(0.82);
     return;
@@ -1119,6 +1296,10 @@ $("#zoomIn").onclick = () => {
   transformMap();
 };
 $("#zoomOut").onclick = () => {
+  if (atlasMap) {
+    atlasMap.zoomBy(-0.5);
+    return;
+  }
   if (terrain3d) {
     terrain3d.zoomBy(1.2);
     return;
@@ -1139,11 +1320,15 @@ $("#exploreRegion").onclick = () => {
     renderRegion();
     return;
   }
+  if (atlasMap) {
+    atlasMap.focus(selected, selectedCity);
+    return;
+  }
   if (terrain3d) {
     terrain3d.focus(selected);
     return;
   }
-  const r = regionDefs[selected];
+  const r = regions[selected];
   zoom = 2;
   pan = { x: (500 - r.x) * zoom, y: (380 - r.y) * zoom };
   transformMap();
@@ -1196,7 +1381,13 @@ window.addEventListener("pointerup", (e) => {
   $("#mapViewport").classList.remove("dragging");
   if (moved) return;
   const city = e.target.closest("[data-city]"),
-    region = e.target.closest(".region-path");
+    region = e.target.closest(".region-path"),
+    municipality = e.target.closest("[data-municipality]");
+  if (municipality && layer === "densidade") {
+    const c = cities[Number(municipality.dataset.municipality)];
+    selectRegion(c.region, c);
+    return;
+  }
   if (city) {
     let c = cities[Number(city.dataset.city)];
     selectRegion(c.region, c);
@@ -1317,6 +1508,7 @@ function applyTheme(choice) {
     localStorage.setItem("meridiano:theme", themePreference);
   } catch {}
   terrain3d?.setTheme(resolved);
+  atlasMap?.setTheme(resolved);
   if (view === "indicadores") renderChart();
 }
 $$("[data-theme-choice]").forEach(
@@ -1327,7 +1519,12 @@ systemTheme.addEventListener("change", () => {
 });
 applyTheme(themePreference);
 async function setMapMode(next) {
-  if (next === "3d" && (terrain3d || !$("#threeLoading").hidden)) return;
+  if (
+    next === mapMode &&
+    next !== "2d" &&
+    (terrain3d || atlasMap || !$("#threeLoading").hidden)
+  )
+    return;
   const token = ++mapLoadToken;
   mapMode = next;
   $$("[data-map-mode]").forEach((b) => {
@@ -1337,6 +1534,12 @@ async function setMapMode(next) {
   const shell = $(".map-shell"),
     host = $("#terrain3d");
   shell.classList.toggle("cartographic", next === "atlas");
+  if (next !== "atlas") {
+    atlasMap?.dispose();
+    atlasMap = null;
+    $("#atlasInteractive").hidden = true;
+    shell.classList.remove("atlas-active");
+  }
   if (next !== "3d") {
     terrain3d?.dispose();
     terrain3d = null;
@@ -1347,6 +1550,46 @@ async function setMapMode(next) {
       next === "atlas"
         ? "Vias e cidades fictícias. Aproxime para explorar o traçado urbano."
         : "Arraste para navegar. Selecione um estado ou município.";
+    if (next !== "atlas") return;
+    $("#threeLoading").hidden = false;
+    try {
+      const { createAtlasMap } = await import("./atlas-map.js");
+      if (token !== mapLoadToken) return;
+      const atlasHost = $("#atlasInteractive");
+      atlasHost.hidden = false;
+      shell.classList.add("atlas-active");
+      const fallback = (message) => {
+        atlasMap?.dispose();
+        atlasMap = null;
+        atlasHost.hidden = true;
+        atlasHost.replaceChildren();
+        shell.classList.remove("atlas-active");
+        notify(message);
+      };
+      atlasMap = createAtlasMap(atlasHost, {
+        state,
+        cities,
+        onSelect: selectRegion,
+        onError: fallback,
+        reducedMotion,
+      });
+      atlasMap.update(state, { selected, layer });
+      $("#mapInteractionHint").textContent =
+        "Atlas: aproxime para revelar municípios e ruas. Território e dados sintéticos.";
+    } catch {
+      if (token === mapLoadToken) {
+        atlasMap?.dispose();
+        atlasMap = null;
+        $("#atlasInteractive").replaceChildren();
+        $("#atlasInteractive").hidden = true;
+        shell.classList.remove("atlas-active");
+        notify(
+          "Atlas em modo vetorial neste aparelho. Os mesmos estados, cidades e dados continuam disponíveis.",
+        );
+      }
+    } finally {
+      if (token === mapLoadToken) $("#threeLoading").hidden = true;
+    }
     return;
   }
   $("#threeLoading").hidden = false;
@@ -1379,13 +1622,14 @@ async function setMapMode(next) {
   }
 }
 $$("[data-map-mode]").forEach(
-  (b) => (b.onclick = () => setMapMode(b.dataset.mapMode)),
+  (b) => (b.onclick = () => setMapMode(b.dataset.mapMode).then(applyLayer)),
 );
 window.addEventListener("pagehide", () => {
   pausePlayback();
   advisorController?.cancel();
   eventIsland?.destroy();
   terrain3d?.dispose();
+  atlasMap?.dispose();
 });
 
 const narrowViewport = matchMedia("(max-width: 760px)");

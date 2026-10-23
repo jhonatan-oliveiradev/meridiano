@@ -1,4 +1,4 @@
-import { advance, budget, policyDefs } from "./model.js";
+import { advance, budget, policyDefs, regionsOf } from "./model.js";
 
 // Fictional game rules. All effects last one turn; cost is a one-time % of GDP.
 const incidents = [
@@ -124,6 +124,17 @@ const incidents = [
     ],
   },
 ];
+function incidentRegion(s, key) {
+  const score = (r) =>
+    key === "water"
+      ? (r.sector.includes("Ag") ? 2 : 0) + r.terrain
+      : key === "services"
+        ? r.share / r.access
+        : key === "freight"
+          ? (r.sector.includes("Portos") ? 2 : 0) + r.access
+          : r.share;
+  return [...regionsOf(s)].sort((a, b) => score(b) - score(a))[0].name;
+}
 export function decisionFor(s) {
   const pending = s.pendingDecision;
   if (!pending) return null;
@@ -132,6 +143,7 @@ export function decisionFor(s) {
   const { eligible, ...event } = template;
   return {
     ...structuredClone(event),
+    ...(s.territory ? { region: incidentRegion(s, event.key) } : {}),
     id: pending.id,
     quarter: pending.quarter,
   };

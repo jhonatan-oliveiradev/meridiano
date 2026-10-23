@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="playful.css" />
     <link rel="stylesheet" href="conversation.css" />
     <link rel="stylesheet" href="decisions.css" />
+    <link rel="stylesheet" href="territory.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -148,7 +149,7 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.6</span>
+          <span></span> Cenário fictício <span class="small-label">v0.7</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -168,8 +169,9 @@
         </div>
         <div class="sidebar-section territory-list">
           <div class="section-heading">
-            Unidades federativas <span>6 estados</span>
+            Unidades federativas <span id="regionCount">6 estados</span>
           </div>
+          <p class="territory-facts" id="territoryFacts"></p>
           <div id="regionList"></div>
         </div>
         <div class="sidebar-note">
@@ -250,8 +252,13 @@
               ><button data-map-mode="atlas" aria-pressed="false">Atlas</button>
             </div>
             <div id="terrain3d" hidden></div>
+            <div
+              id="atlasInteractive"
+              hidden
+              aria-label="Atlas interativo do país"
+            ></div>
             <div id="threeLoading" hidden role="status">
-              Preparando relevo 3D…
+              Preparando visualização…
             </div>
             <div id="mapViewport">
               <svg
@@ -303,6 +310,7 @@
                     stroke-width="1.2"
                   />
                   <g id="geoLabels"></g>
+                  <g id="urbanFootprints"></g>
                   <g id="cities"></g>
                 </g>
               </svg>
@@ -313,6 +321,7 @@
                 Camadas</span
               ><button class="active" data-layer="relevo">Relevo</button
               ><button data-layer="populacao">População</button
+              ><button data-layer="densidade">Densidade</button
               ><button data-layer="renda">Renda</button
               ><button data-layer="bemestar">Bem-estar</button>
             </div>

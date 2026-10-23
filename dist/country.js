@@ -1,5 +1,16 @@
 import { initialState, policyDefs } from "./model.js";
 import { rng } from "./geography.js";
+import { generateTerritory } from "./territory.js";
+export function createCountry(config = {}) {
+  const s = initialState(config);
+  s.territory = generateTerritory({
+    seed: s.seed,
+    population: s.metrics.population,
+    areaKm2: config.areaKm2,
+    kind: config.kind,
+  });
+  return s;
+}
 export const governments = [
   "República democrática",
   "República parlamentarista",
@@ -104,5 +115,6 @@ export function randomCountry(seed) {
         "População, economia e políticas foram geradas para este país. Abra Políticas para ajustar as escolhas.",
     },
   ];
+  s.territory = generateTerritory({ seed, population: s.metrics.population });
   return s;
 }

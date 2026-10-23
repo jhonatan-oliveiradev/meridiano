@@ -20,6 +20,12 @@ for (const f of [
   "decision-ui.js",
   "decisions.css",
   "ai-blob.js",
+  "territory.js",
+  "territory.css",
+  "atlas-data.js",
+  "atlas-map.js",
+  "vendor/geography-engine.js",
+  "vendor/maplibre-gl-worker.mjs",
   "composer-dock.js",
   "vendor/paper/shaders/warp.js",
 ])

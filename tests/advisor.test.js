@@ -283,3 +283,31 @@ test("actual timeout is reported separately from network failure", async () => {
       !e.message.includes("private"),
   );
 });
+
+test("geography context is bounded and allowlisted, with generated states instead of legacy names", async () => {
+  const { createCountry } = await import("../dist/country.js");
+  const country = createCountry({ seed: 40315, population: 67 });
+  const snapshot = snapshotOf(country);
+  assert.ok(JSON.stringify(snapshot).length < 24000);
+  assert.equal(snapshot.territory.land, undefined);
+  snapshot.territory.secret = "drop";
+  snapshot.territory.regions[0].shape = "drop";
+  const req = validateRequest({ mode: "analysis", snapshot });
+  assert.equal(req.snapshot.territory.secret, undefined);
+  assert.equal(req.snapshot.territory.regions[0].shape, undefined);
+  let context;
+  await generateAdvice(req, {
+    apiKey: "test",
+    fetcher: async (url, options) => {
+      context = JSON.parse(JSON.parse(options.body).contents[0].parts[0].text);
+      return ok();
+    },
+  });
+  assert.deepEqual(
+    context.regions.map((r) => r.name),
+    country.territory.regions.map((r) => r.name),
+  );
+  assert.ok(context.regions.every((r) => r.density > 0));
+  req.snapshot.territory.regions[0].share = 2;
+  assert.throws(() => validateRequest(req), AdvisorError);
+});

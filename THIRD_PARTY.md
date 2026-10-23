@@ -18,3 +18,9 @@ The Avatar Lab application and its published renderer packages are AGPL-3.0-only
 
 - **AI Blob Warp (Cult UI)**: circular frame, Warp parameters and transform pulse adapted from `https://www.cult-ui.com/r/ai-blob-warp.json` on 2026-10-23 into `dist/ai-blob.js` and `dist/conversation.css`. Retains the existing Cult UI MIT notice. The application uses the native ESM Paper shader instead of the React/Motion wrappers.
 - **Paper Shaders 0.0.82** by Paper Design, Apache-2.0, pinned dependency with no transitive runtime dependencies. Only Warp and its runtime dependencies are copied by `scripts/vendor.mjs` into the generated local vendor directory. LICENSE and NOTICE accompany the distribution. Imports load lazily on first compact use; the 56px control renders at at most 12,544 physical pixels, pauses while expanded/offscreen/hidden or with reduced motion, and has a static CSS fallback. https://github.com/paper-design/shaders
+
+## v0.7 · geografia e Atlas
+
+- **D3 Delaunay 6.0.4** (ISC), **simplex-noise 4.0.3** (MIT) e **polygon-clipping 0.15.7** (MIT) formam o bundle ESM local `geography-engine.js`, gerado por esbuild 0.28.2 no build. Delaunator (ISC), robust-predicates (Unlicense) e splaytree (MIT) são dependências transitivas do gerador. Avisos embutidos são preservados e licenças são copiadas para `dist/vendor/`; splaytree publica sua licença no Readme, de onde o script a extrai.
+- **MapLibre GL JS 6.15.0** (BSD-3-Clause, com avisos de terceiros no LICENSE.txt distribuído) é carregado sob demanda, junto do worker ESM e CSS locais. Licença copiada para `dist/vendor/maplibre-gl-LICENSE.txt`. Usa GeoJSON gerado pelo Meridiano e fonte Manrope local; sem tiles, glyph server, basemap ou sprites externos. https://maplibre.org/maplibre-gl-js/docs/
+- Nenhum código ou recurso visual do Terraink foi copiado. A geração de terreno e as regras demográficas são próprias; não reproduzem dados geográficos reais.

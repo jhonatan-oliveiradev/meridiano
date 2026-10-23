@@ -1,11 +1,18 @@
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
-import { elevation, landPoints, contains, voronoiCell } from "./geography.js";
-import { regionDefs, regionalMetrics, clamp } from "./model.js";
+import {
+  elevation,
+  landPoints,
+  contains,
+  voronoiCell,
+  regionIndexAt,
+} from "./geography.js";
+import { regionDefs, regionsOf, regionalMetrics, clamp } from "./model.js";
 
-export function buildTerrainGeometry(seed) {
-  const land = landPoints(seed);
-  const height = (x, y) => 4 + elevation(x, y, seed) * 88;
+export function buildTerrainGeometry(seed, territory = null) {
+  const land = territory?.land ?? landPoints(seed);
+  const defs = territory?.regions ?? regionDefs;
+  const height = (x, y) => 4 + elevation(x, y, seed, territory?.profile) * 88;
   const positions = [],
     colors = [],
     indices = [],
@@ -19,15 +26,7 @@ export function buildTerrainGeometry(seed) {
         y = 55 + j * dy;
       positions.push(x - 460, height(x, y), y - 370);
       colors.push(1, 1, 1);
-      let ri = 0,
-        dist = Infinity;
-      regionDefs.forEach((r, k) => {
-        const d = (r.x - x) ** 2 + (r.y - y) ** 2;
-        if (d < dist) {
-          dist = d;
-          ri = k;
-        }
-      });
+      const ri = regionIndexAt(defs, x, y);
       owners.push({ region: ri, x, y });
       if (i < side - 1 && j < side - 1) {
         let a = j * side + i,
@@ -58,7 +57,8 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     layer = "relevo",
     dark = document.documentElement.dataset.theme === "dark",
     currentState = state;
-  const land = landPoints(state.seed),
+  const defs = regionsOf(state);
+  const land = state.territory?.land ?? landPoints(state.seed),
     scene = new THREE.Scene();
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -94,10 +94,14 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
   water.rotation.x = -Math.PI / 2;
   water.position.y = -3;
   scene.add(water);
-  const height = (x, y) => 4 + elevation(x, y, state.seed) * 88;
+  const height = (x, y) =>
+    4 + elevation(x, y, state.seed, state.territory?.profile) * 88;
   const toWorld = (x, y, offset = 0) =>
     new THREE.Vector3(x - 460, height(x, y) + offset, y - 370);
-  const { geometry, owners } = buildTerrainGeometry(state.seed);
+  const { geometry, owners } = buildTerrainGeometry(
+    state.seed,
+    state.territory,
+  );
   const material = new THREE.MeshStandardMaterial({
     vertexColors: true,
     roughness: 1,
@@ -115,24 +119,27 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     borders.add(line);
     return line;
   }
-  regionDefs.forEach((r, index) => {
-    const poly = voronoiCell(r, regionDefs),
+  defs.forEach((r, index) => {
+    const rings = r.shape
+        ? r.shape.flatMap((poly) => poly)
+        : [voronoiCell(r, defs)],
       points = [];
-    for (let k = 0; k < poly.length; k++) {
-      let a = poly[k],
-        b = poly[(k + 1) % poly.length],
-        steps = Math.ceil(Math.hypot(a[0] - b[0], a[1] - b[1]) / 5);
-      for (let t = 0; t < steps; t++) {
-        const t1 = t / steps,
-          t2 = (t + 1) / steps,
-          x1 = a[0] + (b[0] - a[0]) * t1,
-          y1 = a[1] + (b[1] - a[1]) * t1,
-          x2 = a[0] + (b[0] - a[0]) * t2,
-          y2 = a[1] + (b[1] - a[1]) * t2;
-        if (contains(land, (x1 + x2) / 2, (y1 + y2) / 2))
-          points.push(toWorld(x1, y1, 1.2), toWorld(x2, y2, 1.2));
+    for (const poly of rings)
+      for (let k = 0; k < poly.length; k++) {
+        let a = poly[k],
+          b = poly[(k + 1) % poly.length],
+          steps = Math.ceil(Math.hypot(a[0] - b[0], a[1] - b[1]) / 5);
+        for (let t = 0; t < steps; t++) {
+          const t1 = t / steps,
+            t2 = (t + 1) / steps,
+            x1 = a[0] + (b[0] - a[0]) * t1,
+            y1 = a[1] + (b[1] - a[1]) * t1,
+            x2 = a[0] + (b[0] - a[0]) * t2,
+            y2 = a[1] + (b[1] - a[1]) * t2;
+          if (contains(land, (x1 + x2) / 2, (y1 + y2) / 2))
+            points.push(toWorld(x1, y1, 1.2), toWorld(x2, y2, 1.2));
+        }
       }
-    }
     const line = lineFrom(points, 0xffffff, 0.5);
     line.userData.region = index;
   });
@@ -188,14 +195,7 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     if (hit) {
       const x = hit.point.x + 460,
         y = hit.point.z + 370;
-      let closest = 0;
-      regionDefs.forEach((r, i) => {
-        if (
-          (r.x - x) ** 2 + (r.y - y) ** 2 <
-          (regionDefs[closest].x - x) ** 2 + (regionDefs[closest].y - y) ** 2
-        )
-          closest = i;
-      });
+      const closest = regionIndexAt(defs, x, y);
       onSelect(closest, null);
     }
   }
@@ -217,25 +217,33 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     recolor();
   }
   function recolor() {
-    const c = new THREE.Color(),
+    const metrics = defs.map((_, i) => regionalMetrics(currentState, i)),
+      maxDensity = Math.max(1, ...metrics.map((m) => m.density ?? 0)),
+      maxShare = Math.max(...defs.map((r) => r.share)),
+      c = new THREE.Color(),
       low = new THREE.Color(dark ? "#466f64" : "#729b7b"),
       high = new THREE.Color(dark ? "#9aafa4" : "#e7e4cc");
     owners.forEach((v, i) => {
       if (layer === "relevo")
-        c.copy(low).lerp(high, elevation(v.x, v.y, state.seed));
+        c.copy(low).lerp(
+          high,
+          elevation(v.x, v.y, state.seed, state.territory?.profile),
+        );
       else {
-        const m = regionalMetrics(currentState, v.region),
+        const m = metrics[v.region],
           t =
             layer === "populacao"
-              ? regionDefs[v.region].share / 0.3
-              : layer === "renda"
-                ? (m.income /
-                    ((currentState.metrics.gdp /
-                      currentState.metrics.population) *
-                      1000) -
-                    0.5) /
-                  0.8
-                : m.welfare / 100;
+              ? defs[v.region].share / maxShare
+              : layer === "densidade"
+                ? Math.log1p(m.density ?? 0) / Math.log1p(maxDensity)
+                : layer === "renda"
+                  ? (m.income /
+                      ((currentState.metrics.gdp /
+                        currentState.metrics.population) *
+                        1000) -
+                      0.5) /
+                    0.8
+                  : m.welfare / 100;
         c.set(dark ? "#274f64" : "#cfe9db").lerp(
           new THREE.Color(dark ? "#5aade4" : "#267ca4"),
           clamp(t, 0, 1),
@@ -309,7 +317,7 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
       requestDraw();
     },
     focus(index) {
-      const r = regionDefs[index];
+      const r = defs[index];
       controls.target.copy(toWorld(r.x, r.y));
       camera.position
         .copy(controls.target)

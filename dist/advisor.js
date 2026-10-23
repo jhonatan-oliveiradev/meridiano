@@ -17,6 +17,26 @@ export function snapshotOf(s) {
     policies: { ...s.policies },
     metrics: { ...s.metrics },
     capacity: s.capacity,
+    ...(s.territory
+      ? {
+          territory: {
+            version: 2,
+            areaKm2: s.territory.areaKm2,
+            urbanization: s.territory.urbanization,
+            municipalityCount: s.territory.cities.length,
+            regions: s.territory.regions.map(
+              ({ name, share, areaKm2, income, terrain, access }) => ({
+                name,
+                share,
+                areaKm2,
+                income,
+                terrain,
+                access,
+              }),
+            ),
+          },
+        }
+      : {}),
     previous: s.history.length > 1 ? { ...s.history.at(-2) } : null,
   };
 }
