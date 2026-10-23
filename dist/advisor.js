@@ -1,6 +1,7 @@
 import { initCabinetAvatar } from "./cabinet-avatar.js";
 import { elapsedTimer } from "./interactions.js";
 import { createTextReveal } from "./text-reveal.js";
+import { initComposerDock } from "./composer-dock.js";
 const $ = (s) => document.querySelector(s);
 const date = (q) => `${2027 + Math.floor(q / 4)} · ${(q % 4) + 1}º trimestre`;
 const fmt = (n) =>
@@ -27,6 +28,7 @@ export function initAdvisor({ getState, notify }) {
     message: "#largeAvatarMessage",
   });
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const dock = initComposerDock(reduced);
   const reveal = createTextReveal({ reducedMotion: () => reduced.matches });
   const scroll = $("#advisorScroll");
   let writing = false,
@@ -40,6 +42,7 @@ export function initAdvisor({ getState, notify }) {
   }
   function setWriting(on) {
     writing = on;
+    dock.setResponding(on || !!active);
     $("#revealControls").hidden = !on;
     result.setAttribute("aria-busy", String(on));
     if (!on)
@@ -101,6 +104,7 @@ export function initAdvisor({ getState, notify }) {
       active?.abort();
       active = null;
       busy(false);
+      dock.reset();
       fingerprint = next;
       error.textContent = "";
       $("#advisorStale").hidden =
@@ -161,6 +165,7 @@ export function initAdvisor({ getState, notify }) {
     );
   }
   function busy(on) {
+    dock.setResponding(on || writing);
     if (on) elapsed.start();
     else elapsed.stop();
     avatarState(on ? "thinking" : writing ? "speaking" : "idle");
@@ -256,15 +261,16 @@ export function initAdvisor({ getState, notify }) {
   async function ask(mode) {
     const input = $("#advisorQuestion"),
       question = input.value.trim();
+    if (active) return;
     if (mode === "question" && !question) {
       error.textContent = "Escreva uma pergunta sobre o país.";
       input.setAttribute("aria-invalid", "true");
       input.focus();
       return;
     }
-    if (active) return;
     if (mode === "question") input.value = "";
     reveal.finish();
+    dock.begin();
     input.removeAttribute("aria-invalid");
     error.textContent = "";
     const snapshot = snapshotOf(getState()),
@@ -327,6 +333,7 @@ export function initAdvisor({ getState, notify }) {
           error.textContent =
             "A consulta demorou mais que o esperado. Tente novamente.";
         else if (!controller.signal.aborted) error.textContent = e.message;
+        if (error.textContent) dock.expand({ focus: true });
       }
     } finally {
       clearTimeout(timeout);
@@ -362,10 +369,12 @@ export function initAdvisor({ getState, notify }) {
     active = null;
     busy(false);
     status.textContent = "Consulta cancelada";
+    dock.expand({ focus: true });
   };
   document.querySelectorAll("[data-question]").forEach(
     (b) =>
       (b.onclick = () => {
+        dock.expand();
         $("#advisorQuestion").value = b.dataset.question;
         $("#advisorQuestion").focus();
       }),
@@ -387,6 +396,7 @@ export function initAdvisor({ getState, notify }) {
       elapsed.stop();
       reveal.finish();
       avatarState("idle");
+      dock.destroy();
     },
   };
 }

@@ -52,3 +52,13 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Desktop 1363×936: raiz 1363×936 sem overflow externo, temas claro/escuro inspecionados. Celular em iframe de 390×844: largura client/scroll 380/380 (barra do navegador), rolagem vertical natural, política e diálogo de escolhas operáveis. Não equivale a um teste físico de toque.
 - O contexto do Nilo agora é invalidado também quando um slider muda, antes do avanço. Consulta após edição verificada com transporte de provedor simulado apenas no processo de QA local; nenhuma mudança de provedor, chave real ou modo simulado integra o produto.
 - Arquivos e preâmbulos de QA removidos do produto antes do build. Regras e limitações em DECISION-CYCLE.md. Sem novas dependências ou configuração de ambiente.
+
+## Compositor compacto · 2026-10-23
+
+- Consulta pelo teclado e botão recolhe; resposta curta/longa continua no leitor e o painel permanece compacto ao terminar. Reabrir durante consulta e escrever um novo rascunho conservou texto, foco e modo expandido após a resposta.
+- Recolher, Escape, expandir por Enter e repetição de estados conferidos por interface. Controles recolhidos ficam inert; foco passa ao botão Escrever para Nilo e retorna ao textarea.
+- Cancelamento reabriu e focou o campo. Com servidor sem chave local, NOT_CONFIGURED também reabriu o campo e apresentou a mensagem existente. O transporte simulado foi usado apenas para as respostas bem-sucedidas no QA local e removido antes do build.
+- Desktop 1363×936: leitor 334,84px → 446,84px; dock 168px → 56px. Raiz 1363×936 sem rolagem externa; temas claro e escuro inspecionados.
+- Iframe mobile 390×844: leitor 360px → 460px; dock 156px → 56px; largura client/scroll 380/380, sem overflow horizontal. Expandir foca o input. Não houve teste físico de toque.
+- O browser de QA recusou criação de contexto WebGL2: Paper Shaders: WebGL is not supported in this browser. Fallback CSS, clique, foco, erro e recolhimento foram validados; renderização e desempenho GPU do shader seguem pendentes em dispositivo com WebGL. Uniforms e ciclo de vida usam a API do pacote fixado 0.0.82, consultada no código instalado.
+- Movimento reduzido tem alternativa sem transições/pulso e velocidade zero do shader; a preferência do sistema não foi emulada neste browser. Imports são locais e tardios; licenças Apache-2.0/NOTICE acompanham o vendor gerado. Sem dependências React/Motion novas.

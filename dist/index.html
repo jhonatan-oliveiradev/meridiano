@@ -647,33 +647,79 @@
                   </button>
                 </div>
               </aside>
-              <form id="advisorForm" class="prompt-composer" novalidate>
-                <div class="composer-top">
-                  <span class="composer-avatar" aria-hidden="true"
-                    ><img src="assets/nilo-neutral.svg" alt="" /></span
-                  ><span>Converse com Nilo</span
-                  ><span class="composer-context" id="composerContext"
-                    >Aurora · T1</span
+              <div
+                class="composer-dock"
+                id="composerDock"
+                data-compact="false"
+                data-responding="false"
+              >
+                <div class="composer-surface">
+                  <form id="advisorForm" class="prompt-composer" novalidate>
+                    <div class="composer-top">
+                      <span class="composer-avatar" aria-hidden="true"
+                        ><img src="assets/nilo-neutral.svg" alt="" /></span
+                      ><span>Converse com Nilo</span
+                      ><span class="composer-context" id="composerContext"
+                        >Aurora · T1</span
+                      >
+                      <button
+                        id="minimizeComposer"
+                        class="composer-minimize"
+                        type="button"
+                        aria-label="Recolher campo de mensagem"
+                        title="Recolher campo de mensagem"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                    </div>
+                    <label class="sr-only" for="advisorQuestion"
+                      >Pergunta sobre o país</label
+                    ><textarea
+                      id="advisorQuestion"
+                      placeholder="O que você quer mudar no país?"
+                      maxlength="600"
+                      rows="2"
+                      aria-describedby="advisorError"
+                    ></textarea>
+                    <div class="advisor-input-actions">
+                      <span
+                        ><kbd>Enter</kbd> envia · <kbd>Ctrl</kbd> +
+                        <kbd>Enter</kbd> quebra linha</span
+                      ><button id="askAdvisor" class="primary" type="submit">
+                        Enviar
+                        <svg><use href="assets/reicon.svg#i-send" /></svg>
+                      </button>
+                    </div>
+                  </form>
+                  <button
+                    id="expandComposer"
+                    class="composer-orb"
+                    type="button"
+                    aria-label="Escrever para Nilo"
+                    aria-expanded="true"
+                    aria-controls="advisorForm"
+                    aria-hidden="true"
+                    tabindex="-1"
                   >
-                </div>
-                <label class="sr-only" for="advisorQuestion"
-                  >Pergunta sobre o país</label
-                ><textarea
-                  id="advisorQuestion"
-                  placeholder="O que você quer mudar no país?"
-                  maxlength="600"
-                  rows="2"
-                  aria-describedby="advisorError"
-                ></textarea>
-                <div class="advisor-input-actions">
-                  <span
-                    ><kbd>Enter</kbd> envia · <kbd>Ctrl</kbd> +
-                    <kbd>Enter</kbd> quebra linha</span
-                  ><button id="askAdvisor" class="primary" type="submit">
-                    Enviar <svg><use href="assets/reicon.svg#i-send" /></svg>
+                    <span
+                      id="composerBlob"
+                      class="composer-blob"
+                      aria-hidden="true"
+                    ></span>
+                    <span class="composer-orb-icon" aria-hidden="true"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          d="m15 5 4 4M5 19l4-1L20 7a2.8 2.8 0 0 0-4-4L5 14Z"
+                        /></svg
+                    ></span>
                   </button>
                 </div>
-              </form>
+                <span class="composer-hint" aria-hidden="true"
+                  >Escrever para Nilo</span
+                >
+              </div>
               <p class="advisor-model-note">
                 Análise assistida por IA. Sugestões não alteram as políticas do
                 país.
