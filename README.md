@@ -90,3 +90,10 @@ O nome Meridiano é provisório. Sem licença de distribuição definida nesta e
 ## Avatar e cargos
 
 Os cargos são papéis fictícios de apoio. Veja [origem dos assets e fontes](THIRD_PARTY.md). A definição portátil e os SVGs originais do Lab estão em `docs/avatar-source/`; `python3 scripts/prepare-avatar.py` recompõe as adaptações visuais locais. A aplicação não importa o runtime AGPL do Lab.
+
+
+### v0.4 · mesa de governo
+
+Ilha de eventos por trimestre, compositor com contexto e Ctrl/Cmd+Enter, relógio da consulta, boletim animado, pontos do gráfico exploráveis por teclado e demonstrativo do orçamento. O modo Atlas detalha cidades e vias fictícias. Ícones Reicon locais; referências e adaptações em [THIRD_PARTY.md](THIRD_PARTY.md).
+
+A API usa o Flash-Lite atual por padrão e diferencia falhas de chave, quota, acesso e modelo. Se houver `GEMINI_MODEL` antigo na Vercel, prefira `gemini-3.5-flash-lite` e faça redeploy. Configurar uma chave não garante que o projeto tenha quota ou permissão; veja [diagnóstico](docs/AI.md).

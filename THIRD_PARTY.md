@@ -7,3 +7,11 @@
 The Avatar Lab application and its published renderer packages are AGPL-3.0-only. Those runtime packages and their rendering code are not bundled in Meridiano. This integration uses the character data and artwork exported through the authoring interface, plus Meridiano's own DOM/CSS controller. It does not claim support for every animation in the Lab's runtime catalog. The exported .avatar.json remains available for further editing in the Lab.
 
 **Color reference:** https://github.com/jhonatan-oliveiradev/nx-creative-studio, app/globals.css: #c7ff3d lime, #ff5a19 orange, #070807 background, #0d0f0d surface. No source UI components from that repository were copied.
+
+
+## v0.4 interface research and adaptations
+
+- **Reicon 1.2.5** by devchauhan, MIT. `scripts/vendor-reicon.mjs` extracts a curated set of outline paths from the installed vanilla package into the local `dist/assets/reicon.svg` sprite. No icon CDN or full catalog is shipped to the browser. License: `docs/licenses/reicon.txt`. https://reicon.dev · https://github.com/dqev/reicon
+- **Cult UI** by Jordan Gilliam, MIT. Dynamic Island, Prompt Composer, Terminal Animation, Analytics Chart and Timer were studied from their public registry sources at https://www.cult-ui.com/r/{component-name}.json on 2026-10-23. `dist/interactions.js`, `dist/playful.css`, the composer markup and chart interactions are framework adaptations for Meridiano's existing DOM/ESM application: compact/expanded event shell, context-aware multiline input, line reveals, point details and elapsed request time. They do not import the original React runtime or claim API compatibility with the React primitives. Retained copyright/license: `docs/licenses/cult-ui.txt`.
+- **Cojeev / 000h Agent State** (https://cojeev.com/ui/docs/agent-state/) informed the request-status field's compact, expressive movement. Meridiano uses its own CSS bars and Nilo's palette; no Cojeev component source is distributed.
+- **Terraink** was researched at https://terraink.app and https://github.com/yousifamanuel/terraink. Its renderer is MapLibre GL JS with OpenStreetMap data. No Terraink code, branding, tiles or datasets are included. Meridiano's Atlas mode and road/street geometry remain locally generated fictional data, with no implied real-world coordinates, routing or travel-time model.

@@ -7,6 +7,7 @@ import {
   generateAdvice,
   validateResponse,
   AdvisorError,
+  DEFAULT_MODEL,
 } from "../server/advisor.js";
 import handler, { takeQuota, sameOrigin } from "../api/advisor.js";
 const request = () =>
@@ -121,7 +122,10 @@ test("provider rate limit and timeout produce safe errors", async () => {
         throw Error("sensitive backend details");
       },
     }),
-    (e) => e.status === 504 && !e.message.includes("sensitive"),
+    (e) =>
+      e.status === 502 &&
+      e.code === "PROVIDER_NETWORK" &&
+      !e.message.includes("sensitive"),
   );
 });
 test("malformed/truncated model output is rejected; strings remain plain data", async () => {
@@ -184,7 +188,10 @@ test("status reports availability without exposing a key", async () => {
     process.env.GEMINI_API_KEY = "test-key-never-return";
     const r = res();
     await handler({ method: "GET", headers: {} }, r);
-    assert.deepEqual(r.body, { available: true });
+    assert.deepEqual(r.body, {
+      available: true,
+      model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
+    });
     assert.ok(!JSON.stringify(r.body).includes("test-key"));
   } finally {
     if (old === undefined) delete process.env.GEMINI_API_KEY;
@@ -196,4 +203,83 @@ test("quota is bounded per identity and resets", () => {
   for (let i = 0; i < 4; i++) assert.equal(takeQuota("test-ip", t), true);
   assert.equal(takeQuota("test-ip", t), false);
   assert.equal(takeQuota("test-ip", t + 61000), true);
+});
+test("provider failures distinguish key, permission, request, quota and unavailable model without raw details", async () => {
+  for (const [status, detail, code] of [
+    [
+      400,
+      {
+        message: "API key not valid. secret",
+        details: [{ reason: "API_KEY_INVALID" }],
+      },
+      "PROVIDER_KEY",
+    ],
+    [403, { message: "permission denied secret" }, "PROVIDER_ACCESS"],
+    [
+      400,
+      { message: "unknown generation property secret" },
+      "PROVIDER_REQUEST",
+    ],
+    [404, { message: "model not found secret" }, "MODEL_UNAVAILABLE"],
+    [429, { message: "secret quota metadata" }, "PROVIDER_LIMIT"],
+  ]) {
+    let calls = 0;
+    await assert.rejects(
+      generateAdvice(request(), {
+        apiKey: "fake",
+        fetcher: async () => {
+          calls++;
+          return new Response(JSON.stringify({ error: detail }), { status });
+        },
+      }),
+      (e) => e.code === code && !e.message.includes("secret"),
+    );
+    assert.equal(calls, 1);
+  }
+});
+test("legacy model unavailability migrates once; key and quota do not cause model hopping", async () => {
+  const models = [];
+  const result = await generateAdvice(request(), {
+    apiKey: "fake",
+    model: "gemini-2.5-flash-lite",
+    fetcher: async (url) => {
+      models.push(url);
+      return models.length === 1
+        ? new Response(
+            JSON.stringify({ error: { message: "model not found" } }),
+            { status: 404 },
+          )
+        : ok();
+    },
+  });
+  assert.equal(models.length, 2);
+  assert.ok(models[1].includes(DEFAULT_MODEL));
+  assert.equal(result.model, DEFAULT_MODEL);
+  let calls = 0;
+  await assert.rejects(
+    generateAdvice(request(), {
+      apiKey: "fake",
+      model: "gemini-2.5-flash-lite",
+      fetcher: async () => {
+        calls++;
+        return new Response("{}", { status: 429 });
+      },
+    }),
+    (e) => e.code === "PROVIDER_LIMIT",
+  );
+  assert.equal(calls, 1);
+});
+test("actual timeout is reported separately from network failure", async () => {
+  await assert.rejects(
+    generateAdvice(request(), {
+      apiKey: "fake",
+      fetcher: async () => {
+        throw new DOMException("private", "TimeoutError");
+      },
+    }),
+    (e) =>
+      e.status === 504 &&
+      e.code === "TIMEOUT" &&
+      !e.message.includes("private"),
+  );
 });

@@ -10,6 +10,10 @@ for (const f of [
   "terrain3d.js",
   "studio.css",
   "country.js",
+  "interactions.js",
+  "playful.css",
+  "cabinet-avatar.js",
+  "assets/reicon.svg",
 ])
   await access(new URL("../dist/" + f, import.meta.url));
 await rm(new URL("../build", import.meta.url), {

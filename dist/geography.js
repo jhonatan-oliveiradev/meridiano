@@ -145,3 +145,54 @@ export function generateCities(seed, regions, land) {
   }
   return cities;
 }
+// Fictional infrastructure, deterministic and decorative. It does not change
+// travel times or economic access; those remain explicit model parameters.
+export function transportNetwork(seed, cities, land) {
+  const random = rng(seed + 701),
+    roads = [],
+    streets = [];
+  const connected = new Set(cities.length ? [0] : []);
+  while (connected.size < cities.length) {
+    let best = null;
+    for (const a of connected)
+      for (let b = 0; b < cities.length; b++) {
+        if (connected.has(b)) continue;
+        const distance = Math.hypot(
+          cities[a].x - cities[b].x,
+          cities[a].y - cities[b].y,
+        );
+        if (!best || distance < best.distance) best = { a, b, distance };
+      }
+    if (!best) break;
+    const a = cities[best.a],
+      b = cities[best.b];
+    // A midpoint bends the connector without placing it far from its towns.
+    roads.push([
+      [a.x, a.y],
+      [
+        (a.x + b.x) / 2 + (random() - 0.5) * 8,
+        (a.y + b.y) / 2 + (random() - 0.5) * 8,
+      ],
+      [b.x, b.y],
+    ]);
+    connected.add(best.b);
+  }
+  for (const c of cities) {
+    const radius = c.major ? 12 : 7,
+      angle = random() * 0.6;
+    for (let i = -2; i <= 2; i++)
+      for (const axis of [0, 1]) {
+        const points = [-radius, radius].map((v) => {
+          const x = axis === 0 ? v : i * 3,
+            y = axis === 0 ? i * 3 : v;
+          return [
+            c.x + x * Math.cos(angle) - y * Math.sin(angle),
+            c.y + x * Math.sin(angle) + y * Math.cos(angle),
+          ];
+        });
+        if (points.every((p) => contains(land, p[0], p[1])))
+          streets.push(points);
+      }
+  }
+  return { roads, streets };
+}

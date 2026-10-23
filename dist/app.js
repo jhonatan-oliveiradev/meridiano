@@ -1,5 +1,6 @@
 import { cabinetFor, governments, randomCountry } from "./country.js";
 import { initAdvisor } from "./advisor.js";
+import { initEventIsland, renderBulletin } from "./interactions.js";
 import {
   initialState,
   advance,
@@ -15,6 +16,7 @@ import {
   voronoiCell,
   elevation,
   generateCities,
+  transportNetwork,
 } from "./geography.js";
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)],
@@ -48,6 +50,7 @@ let state = initialState(),
   toastTimer,
   modalTrigger;
 const svgNS = "http://www.w3.org/2000/svg";
+let eventIsland = null;
 let advisorController = null,
   terrain3d = null,
   mapMode = "2d",
@@ -200,6 +203,8 @@ function updateUI() {
   applyLayer();
   advisorController?.stateChanged(state);
   updateCabinetLabels();
+  eventIsland?.update(state);
+  renderBulletin(state);
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
@@ -265,6 +270,16 @@ function renderBudget() {
   const b = budget(state);
   $("#policyBudget").innerHTML =
     `<div><span>Receita anual / PIB</span><strong>${fmt(b.revenue)}%</strong></div><div><span>Despesa + juros / PIB</span><strong>${fmt(b.spending + b.interest)}%</strong></div><div><span>Saldo projetado / PIB</span><strong>${b.balance > 0 ? "+" : ""}${fmt(b.balance)}%</strong></div><div class="budget-description">${b.balance < 0 ? "O déficit será financiado por dívida." : "O superávit permite reduzir a dívida."} Projeção com a configuração atual.</div>`;
+  const costs = [
+    ["Renda básica", b.ubi],
+    ["Previdência", b.pension],
+    ["Saúde e educação", state.policies.services],
+    ["Infraestrutura", state.policies.infrastructure],
+    ["Outros gastos", 11],
+    ["Juros", b.interest],
+  ];
+  $("#policyLedger").innerHTML =
+    `<div class="ledger-title"><svg><use href="assets/reicon.svg#i-bank" /></svg><span>CONTAS DO PAÍS</span></div><h4>Para onde vai a receita</h4><p>Projeção anual · % do PIB</p><div class="ledger-stack" aria-hidden="true">${costs.map(([_, v], i) => `<i style="flex:${v};--tone:${i}"></i>`).join("")}</div><div class="ledger-items">${costs.map(([n, v], i) => `<div><i style="--tone:${i}"></i><span>${n}</span><strong>${fmt(v)}%</strong></div>`).join("")}</div><div class="ledger-balance ${b.balance < 0 ? "negative" : ""}"><span>Saldo projetado</span><strong>${b.balance > 0 ? "+" : ""}${fmt(b.balance)}%</strong><p>${b.balance < 0 ? "A diferença será financiada pela dívida." : "O saldo pode reduzir a dívida."}</p></div><div class="execution-meter"><span>Capacidade de execução</span><strong>${fmt(state.capacity * 100, 0)}/100</strong><meter min="0" max="100" value="${state.capacity * 100}"></meter><p>As políticas entram no próximo trimestre. A execução melhora aos poucos.</p></div>`;
   for (const def of policyDefs) {
     const out = $(`#output-${def.key}`);
     if (out) out.textContent = policyValue(def, state.policies[def.key]);
@@ -293,7 +308,7 @@ function renderPolicies() {
   $("#policies").innerHTML = policyDefs
     .map(
       (p) =>
-        `<article class="policy"><div class="policy-head"><span class="policy-icon" aria-hidden="true">${p.icon}</span><span class="eyebrow">POLÍTICA NACIONAL</span></div><h4>${p.name}</h4><p>${p.description}</p><label for="policy-${p.key}">${p.label}<output id="output-${p.key}" for="policy-${p.key}">${policyValue(p, state.policies[p.key])}</output></label><input id="policy-${p.key}" data-policy="${p.key}" type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${state.policies[p.key]}"><div class="policy-range"><span>${policyValue(p, p.min)}</span><span>${policyValue(p, p.max)}</span></div><div class="policy-cost" id="cost-${p.key}"></div></article>`,
+        `<article class="policy"><div class="policy-head"><span class="policy-icon" aria-hidden="true"><svg><use href="assets/reicon.svg#i-${{ income: "coin", pension: "people", labor: "shield", tax: "bank", services: "health", infrastructure: "buildings" }[p.key]}" /></svg></span><span class="eyebrow">POLÍTICA NACIONAL</span></div><h4>${p.name}</h4><p>${p.description}</p><label for="policy-${p.key}">${p.label}<output id="output-${p.key}" for="policy-${p.key}">${policyValue(p, state.policies[p.key])}</output></label><input id="policy-${p.key}" data-policy="${p.key}" type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${state.policies[p.key]}"><div class="policy-range"><span>${policyValue(p, p.min)}</span><span>${policyValue(p, p.max)}</span></div><div class="policy-cost" id="cost-${p.key}"></div></article>`,
     )
     .join("");
   renderBudget();
@@ -312,9 +327,10 @@ function renderIndicators() {
   $("#indicatorCards").innerHTML = metricDefs
     .map(([k, n, u]) => {
       const delta = m[k] - first[k];
-      return `<article class="indicator-card"><span>${n}</span><strong>${fmt(m[k])}<span style="font-size:13px">${u}</span></strong><small>${delta >= 0 ? "+" : ""}${fmt(delta)} ${u === "%" ? "p.p." : u === "/100" ? "pontos" : u.trim()} desde o início</small></article>`;
+      return `<button type="button" class="indicator-card" data-chart-key="${k}" aria-pressed="${$("#chartMetric").value === k}"><span>${n}<span class="metric-arrow" aria-hidden="true">↗</span></span><strong>${fmt(m[k])}<span style="font-size:13px">${u}</span></strong><small>${delta >= 0 ? "+" : ""}${fmt(delta)} ${u === "%" ? "p.p." : u === "/100" ? "pontos" : u.trim()} desde o início</small></button>`;
     })
     .join("");
+  renderBulletin(state);
   $("#events").innerHTML = state.events
     .map(
       (e) =>
@@ -323,6 +339,13 @@ function renderIndicators() {
     .join("");
   renderChart();
 }
+$("#indicatorCards").addEventListener("click", (e) => {
+  const key = e.target.closest("[data-chart-key]")?.dataset.chartKey;
+  if (key) {
+    $("#chartMetric").value = key;
+    renderIndicators();
+  }
+});
 function renderChart() {
   const key = $("#chartMetric").value,
     h = state.history,
@@ -342,6 +365,24 @@ function renderChart() {
       `${metricDefs.find((d) => d[0] === key)[1]}: ${fmt(values[0])} no início; ${fmt(values.at(-1))} em ${date(state.quarter)}`,
     ),
   );
+  const defs = svgEl("defs"),
+    gradient = svgEl("linearGradient", {
+      id: "historyGradient",
+      x1: "0%",
+      y1: "0%",
+      x2: "100%",
+      y2: "0%",
+    });
+  gradient.append(
+    svgEl("stop", {
+      offset: "0%",
+      "stop-color": "var(--primary)",
+      "stop-opacity": 0.55,
+    }),
+    svgEl("stop", { offset: "100%", "stop-color": "var(--primary)" }),
+  );
+  defs.append(gradient);
+  chart.append(defs);
   for (let i = 0; i < 5; i++) {
     let y = 35 + i * 48.75;
     chart.append(
@@ -364,7 +405,7 @@ function renderChart() {
             .getPropertyValue("--muted")
             .trim(),
           "font-size": 10,
-          "font-family": "Arial",
+          "font-family": "Manrope, sans-serif",
         },
         fmt(max - ((max - min) * i) / 4),
       ),
@@ -384,27 +425,46 @@ function renderChart() {
       svgEl("path", {
         d: path,
         fill: "none",
-        stroke: getComputedStyle(document.documentElement)
-          .getPropertyValue("--primary")
-          .trim(),
+        stroke: "url(#historyGradient)",
         "stroke-width": 2.5,
       }),
     );
   }
-  points
-    .filter((p, i) => h.length < 20 || i === h.length - 1 || i === 0)
-    .forEach((p) =>
-      chart.append(
-        svgEl("circle", {
-          cx: p[0],
-          cy: p[1],
-          r: 3.5,
-          fill: getComputedStyle(document.documentElement)
-            .getPropertyValue("--primary")
-            .trim(),
-        }),
-      ),
-    );
+  points.forEach((p, i) => {
+    const point = svgEl("circle", {
+      cx: p[0],
+      cy: p[1],
+      r: 4,
+      tabindex: "0",
+      role: "button",
+      "aria-label": `${date(h[i].quarter)}: ${fmt(values[i])}`,
+      class: "chart-point",
+      fill: getComputedStyle(document.documentElement)
+        .getPropertyValue("--primary")
+        .trim(),
+    });
+    const show = () => {
+      $("#chartTooltip").textContent =
+        `${date(h[i].quarter)} · ${metricDefs.find((d) => d[0] === key)[1]}: ${fmt(values[i])}${metricDefs.find((d) => d[0] === key)[2]}`;
+      chart
+        .querySelectorAll(".chart-point")
+        .forEach((el) => el.classList.toggle("selected", el === point));
+    };
+    point.addEventListener("pointerenter", show);
+    point.addEventListener("focus", show);
+    point.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        const step = e.key === "ArrowRight" ? 1 : -1;
+        chart
+          .querySelectorAll(".chart-point")
+          [clamp(i + step, 0, points.length - 1)].focus();
+      }
+    });
+    chart.append(point);
+  });
+  $("#chartTooltip").textContent =
+    `${date(state.quarter)} · ${fmt(values.at(-1))}${metricDefs.find((d) => d[0] === key)[2]}`;
   chart.append(
     svgEl(
       "text",
@@ -415,7 +475,7 @@ function renderChart() {
           .getPropertyValue("--muted")
           .trim(),
         "font-size": 10,
-        "font-family": "Arial",
+        "font-family": "Manrope, sans-serif",
       },
       date(0),
     ),
@@ -431,7 +491,7 @@ function renderChart() {
           .trim(),
         "font-size": 10,
         "text-anchor": "end",
-        "font-family": "Arial",
+        "font-family": "Manrope, sans-serif",
       },
       date(state.quarter),
     ),
@@ -539,6 +599,12 @@ function drawMap() {
     $("#regions").append(el);
   });
   cities = generateCities(state.seed, regionDefs, land);
+  const network = transportNetwork(state.seed, cities, land);
+  $("#streetNetwork").replaceChildren(
+    ...network.streets.map((points) =>
+      svgEl("path", { d: "M" + points.map((p) => p.join(",")).join("L") }),
+    ),
+  );
   $("#municipalities").replaceChildren();
   $$("[data-state-clip]").forEach((el) => el.remove());
   regionDefs.forEach((r, i) => {
@@ -648,6 +714,18 @@ function drawMap() {
   $("#rivers").innerHTML =
     '<path d="M343 168 C380 220 327 262 393 300 S453 345 469 393 S530 425 550 470 S620 465 673 515" fill="none" stroke="#edf4db" stroke-width="5" opacity=".6"/><path d="M343 168 C380 220 327 262 393 300 S453 345 469 393 S530 425 550 470 S620 465 673 515" fill="none" stroke="#7caaa9" stroke-width="2.3"/><path d="M334 456 Q380 435 438 426 T550 470M515 183 Q490 250 452 284T441 368" fill="none" stroke="#85afaa" stroke-width="1.5"/>';
   $("#roads").replaceChildren();
+  network.roads.forEach((points) =>
+    $("#roads").append(
+      svgEl("path", {
+        d: "M" + points.map((p) => p.join(",")).join("L"),
+        class: "transport-road",
+        fill: "none",
+        stroke: "#dbb46d",
+        "stroke-width": 1.2,
+        opacity: 0.65,
+      }),
+    ),
+  );
   for (let i = 0; i < regionDefs.length; i++) {
     if (i === 3) continue;
     const r = regionDefs[i],
@@ -906,7 +984,7 @@ function renderScenarios() {
             `<article class="scenario-card"><div><h4>${esc(s.name)}</h4><p>${esc(s.state.name)} · ${date(s.state.quarter)} · Semente ${s.state.seed}</p></div><div class="scenario-numbers"><div><span>Bem-estar</span><strong>${fmt(s.state.metrics.welfare, 0)}/100</strong></div><div><span>Pobreza</span><strong>${fmt(s.state.metrics.poverty)}%</strong></div></div><div class="scenario-buttons"><button class="secondary" data-load="${s.id}">Retomar</button><button class="secondary" data-compare="${s.id}">Comparar</button><button class="remove" data-remove="${s.id}" aria-label="Excluir cenário ${esc(s.name)}">Excluir</button></div></article>`,
         )
         .join("")
-    : '<div class="empty"><svg style="width:30px;height:30px"><use href="#i-layers"/></svg><h4>Nenhum cenário salvo</h4><p>Salve o cenário atual para retomar ou comparar depois.</p></div>';
+    : '<div class="empty"><svg style="width:30px;height:30px"><use href="assets/reicon.svg#i-layers"/></svg><h4>Nenhum cenário salvo</h4><p>Salve o cenário atual para retomar ou comparar depois.</p></div>';
 }
 function compareScenario(s) {
   openModal(
@@ -982,7 +1060,7 @@ $("#configure").onclick = () => countryForm();
 $("#newCountry").onclick = () => countryForm(true);
 $("#methods").onclick = showMethods;
 $("#mapMethods").onclick = showMethods;
-$("#chartMetric").onchange = renderChart;
+$("#chartMetric").onchange = renderIndicators;
 $("#closeModal").onclick = closeModal;
 $("#modal").addEventListener("click", (e) => {
   if (e.target === $("#modal")) {
@@ -1106,6 +1184,7 @@ window.addEventListener("pointercancel", () => {
 readStorage();
 drawMap();
 renderPolicies();
+eventIsland = initEventIsland({ onDetails: () => setView("indicadores") });
 advisorController = initAdvisor({ getState: () => state, notify });
 updateUI();
 setView(location.hash.slice(1) || "territorio");
@@ -1127,6 +1206,7 @@ function stepForward(manual = false) {
   }
   state = advance(state);
   updateUI();
+  eventIsland?.update(state, true);
   persist();
   const root = $(".app");
   root.classList.remove("pulse-turn");
@@ -1205,14 +1285,17 @@ async function setMapMode(next) {
   });
   const shell = $(".map-shell"),
     host = $("#terrain3d");
-  if (next === "2d") {
+  shell.classList.toggle("cartographic", next === "atlas");
+  if (next !== "3d") {
     terrain3d?.dispose();
     terrain3d = null;
     host.hidden = true;
     $("#threeLoading").hidden = true;
     shell.classList.remove("three-active");
     $("#mapInteractionHint").textContent =
-      "Arraste para navegar. Selecione um estado ou município.";
+      next === "atlas"
+        ? "Vias e cidades fictícias. Aproxime para explorar o traçado urbano."
+        : "Arraste para navegar. Selecione um estado ou município.";
     return;
   }
   $("#threeLoading").hidden = false;
@@ -1250,6 +1333,7 @@ $$("[data-map-mode]").forEach(
 window.addEventListener("pagehide", () => {
   pausePlayback();
   advisorController?.cancel();
+  eventIsland?.destroy();
   terrain3d?.dispose();
 });
 

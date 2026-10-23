@@ -20,3 +20,14 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Browser iframe 1280×720: root 720/720, width 1280/1280; 1024×600: root 600/600, width 1024/1024. Mobile 390×844 allows natural vertical scrolling and no horizontal overflow.
 - Browser: randomization fills preview, manual choice of parliamentary republic is preserved on creation, initial indicators differ from Aurora, and office becomes Primeiro-ministro. Nilo SVG loads; click changes greeting. Fonts, colors and both themes inspected. Original poses exported through Avatar Lab UI, not reconstructed from a screenshot.
 - Existing limitations for live Gemini credentials and WebGL GPU validation still apply. No benchmark or scientific calibration claims.
+
+
+## v0.4
+
+- Production issue reproduced with one fictional default-country POST: HTTP 502 / PROVIDER_ERROR; GET/UI confirmed a configured key. The previous implementation discarded Google's error details. Vercel runtime-log access returned 403; environment metadata access was also unavailable. No real key was read or copied. The legacy 2.5 access restriction is a likely cause, not a confirmed provider error body.
+- Default changed to the documented current Flash-Lite; one bounded fallback for unavailable legacy 2.5 models, precise safe error codes and metadata-only server logging. Live success with the user's key remains to be confirmed after deployment.
+- 24 automated tests passed. Five new cases cover error classification, bounded legacy migration/no model hopping on quota, actual timeout vs network, event fidelity and connected deterministic road/street geometry.
+- Browser normal production code: quarter advances open the island with exact model events; Escape closes; card selects debt series; ArrowRight moves point focus and the exact readout. Atlas selection exposes fictional transport/street detail. Light/dark inspected; no application console errors (extension metadata noise excluded).
+- Browser with a temporary local provider transport: actual frontend POST → local API handler → mocked Gemini response → structured rendering. Also API-key error code, Ctrl+Enter, active loading/timer and cancellation. The test prelude was removed; no mock mode, test key or fixture response is included in the shipped application.
+- Layout: 1363×936 root equals viewport and content width equals main; iframe 1920×920 root 1920/1920 and 920/920; 1024×600 root 1024/1024 and 600/600. Mobile 390×844 document client/scroll width 380/380 (scrollbar); natural vertical scrolling. These are browser viewport checks, not physical touch/device tests.
+- Motion CSS includes a reduced-motion alternate; static audit's missing-reduced-motion lead was a false negative (it scans a limited set of file types). Loops run only for active request state. GPU WebGL and FPS remain unverified as described in v0.2.
