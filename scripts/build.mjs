@@ -16,6 +16,9 @@ for (const f of [
   "assets/reicon.svg",
   "conversation.css",
   "text-reveal.js",
+  "simulation.js",
+  "decision-ui.js",
+  "decisions.css",
 ])
   await access(new URL("../dist/" + f, import.meta.url));
 await rm(new URL("../build", import.meta.url), {

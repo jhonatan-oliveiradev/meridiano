@@ -1,9 +1,10 @@
 import { cabinetFor, governments, randomCountry } from "./country.js";
 import { initAdvisor } from "./advisor.js";
 import { initEventIsland, renderBulletin } from "./interactions.js";
+import { advanceTurn, decisionFor } from "./simulation.js";
+import { initDecisionUI, policyGuidance } from "./decision-ui.js";
 import {
   initialState,
-  advance,
   budget,
   policyDefs,
   regionDefs,
@@ -51,6 +52,7 @@ let state = initialState(),
   modalTrigger;
 const svgNS = "http://www.w3.org/2000/svg";
 let eventIsland = null;
+let decisionUI = null;
 let advisorController = null,
   terrain3d = null,
   mapMode = "2d",
@@ -191,7 +193,9 @@ function updateUI() {
   $("#advance").innerHTML =
     state.quarter >= 160
       ? "Limite de 40 anos"
-      : 'Avançar trimestre <svg><use href="#i-arrow"/></svg>';
+      : decisionFor(state)
+        ? 'Resolver acontecimento <svg><use href="#i-arrow"/></svg>'
+        : 'Avançar trimestre <svg><use href="#i-arrow"/></svg>';
   $("#mapSeed").textContent = "SEMENTE " + state.seed;
   $(".map-shell").setAttribute(
     "aria-label",
@@ -205,6 +209,7 @@ function updateUI() {
   updateCabinetLabels();
   eventIsland?.update(state);
   renderBulletin(state);
+  decisionUI?.update();
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
@@ -305,6 +310,7 @@ function policyValue(def, v) {
       : fmt(v, def.step < 1 ? 1 : 0) + "%";
 }
 function renderPolicies() {
+  state.policyBaseline ??= { ...state.policies };
   $("#policies").innerHTML = policyDefs
     .map(
       (p) =>
@@ -312,6 +318,19 @@ function renderPolicies() {
     )
     .join("");
   renderBudget();
+  for (const p of policyDefs) {
+    const note = document.createElement("details");
+    note.className = "policy-guidance";
+    const summary = document.createElement("summary");
+    summary.textContent = "Quem é afetado e quando";
+    note.append(summary);
+    for (const text of policyGuidance[p.key]) {
+      const line = document.createElement("p");
+      line.textContent = text;
+      note.append(line);
+    }
+    $(`#policy-${p.key}`).closest("article").append(note);
+  }
 }
 const metricDefs = [
   ["welfare", "Bem-estar", "/100"],
@@ -817,17 +836,21 @@ function resetMap() {
 }
 function openModal(html) {
   pausePlayback();
-  modalTrigger = document.activeElement;
+  if (!$("#modal").open) modalTrigger = document.activeElement;
   $("#modalBody").innerHTML = html;
-  $("#modal").showModal();
+  if (!$("#modal").open) $("#modal").showModal();
+  if ($("#modalBody .cycle-dialog")) {
+    $("#modalTitle").tabIndex = -1;
+    $("#modalTitle").focus();
+  }
 }
 function closeModal() {
   $("#modal").close();
-  modalTrigger?.focus();
+  if (modalTrigger?.isConnected) modalTrigger.focus();
 }
 function showMethods() {
   openModal(
-    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Seis estados, municípios e relevo gerados por semente. Acesso e perfil de renda definem diferenças regionais. Infraestrutura melhora o acesso com menor retorno nas serras. Nesta versão, municípios dividem igualmente a população do estado e compartilham seus índices. Rios e estradas são representações esquemáticas.</p></div><div class="method-block"><h4>Limites da versão 0.1</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
+    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Seis estados, municípios e relevo gerados por semente. Acesso e perfil de renda definem diferenças regionais. Infraestrutura melhora o acesso com menor retorno nas serras. Nesta versão, municípios dividem igualmente a população do estado e compartilham seus índices. Rios e estradas são representações esquemáticas.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; seus modificadores duram um trimestre e o custo extraordinário é financiado por dívida uma única vez. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
   );
 }
 function countryForm(isNew = false) {
@@ -1051,6 +1074,8 @@ $("#policies").addEventListener("input", (e) => {
   if (!key) return;
   state.policies[key] = Number(e.target.value);
   renderBudget();
+  decisionUI?.renderForecast();
+  advisorController?.stateChanged(state);
   persist();
 });
 $("#advance").onclick = () => stepForward(true);
@@ -1184,7 +1209,23 @@ window.addEventListener("pointercancel", () => {
 readStorage();
 drawMap();
 renderPolicies();
-eventIsland = initEventIsland({ onDetails: () => setView("indicadores") });
+decisionUI = initDecisionUI({
+  getState: () => state,
+  setState: (next) => {
+    state = next;
+    renderPolicies();
+    updateUI();
+    persist();
+  },
+  openModal,
+  closeModal,
+  setView,
+  notify,
+});
+eventIsland = initEventIsland({
+  onDetails: () =>
+    decisionFor(state) ? decisionUI.showDecision() : setView("indicadores"),
+});
 advisorController = initAdvisor({ getState: () => state, notify });
 updateUI();
 setView(location.hash.slice(1) || "territorio");
@@ -1204,14 +1245,20 @@ function stepForward(manual = false) {
     pausePlayback();
     return;
   }
-  state = advance(state);
+  if (decisionFor(state)) {
+    pausePlayback();
+    decisionUI.showDecision();
+    return;
+  }
+  state = advanceTurn(state);
   updateUI();
   eventIsland?.update(state, true);
   persist();
+  if (decisionFor(state)) pausePlayback();
   const root = $(".app");
   root.classList.remove("pulse-turn");
   requestAnimationFrame(() => root.classList.add("pulse-turn"));
-  if (manual) notify(`${date(state.quarter)}: trimestre concluído.`);
+  if (manual) decisionUI.showReport();
   if (!reducedMotion.matches) {
     $("#sideMetrics").animate([{ opacity: 0.45 }, { opacity: 1 }], {
       duration: 350,
@@ -1221,6 +1268,10 @@ function stepForward(manual = false) {
 function play() {
   pausePlayback();
   if (state.quarter >= 160) return;
+  if (decisionFor(state)) {
+    decisionUI.showDecision();
+    return;
+  }
   const speed = Number($("#playSpeed").value);
   playTimer = setInterval(() => {
     if (document.hidden || $("#modal").open) {

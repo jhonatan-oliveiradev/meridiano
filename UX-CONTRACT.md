@@ -39,7 +39,7 @@ Nilo remains optional decoration around the existing usable adviser. Click/keybo
 - O demonstrativo de políticas é uma projeção anual e acompanha os controles; efeitos continuam entrando no próximo trimestre.
 - A ilha anuncia somente eventos produzidos pelo modelo no trimestre simulado. Não há notícias reais ou eventos aleatórios inventados por IA. Pode recolher, reabrir, fechar com Escape ou ir aos indicadores.
 - Cartões de indicadores selecionam a série. Pontos do gráfico oferecem valor por mouse/foco e navegação pelas setas.
-- O compositor envia por botão ou Ctrl/Cmd+Enter. Exibe espera e tempo somente enquanto uma requisição está ativa; cancelamento não apaga uma análise anterior.
+- O compositor limpa o campo no envio aceito, por botão ou Enter; Ctrl/Cmd+Enter insere uma nova linha. Exibe espera e tempo somente enquanto uma requisição está ativa; cancelamento não apaga uma análise anterior.
 - O modo Atlas exibe rede viária fictícia. O traçado é decorativo e não altera os cálculos de execução/transporte.
 - Motion reduzido elimina loops e entradas decorativas. Os controles e dados permanecem disponíveis.
 
@@ -51,3 +51,12 @@ Nilo remains optional decoration around the existing usable adviser. Click/keybo
 - Revelação progressiva pode ser concluída pelo botão Mostrar resposta completa. Rolar para cima interrompe o acompanhamento automático; trocar o cenário ou ocultar a aba conclui a apresentação. O leitor de tela não recebe cada fragmento como uma notificação.
 - Movimento reduzido apresenta todo o texto imediatamente. Não há atraso artificial na chamada de rede.
 - Nilo maior aparece a partir de 1280 px, numa coluna que não disputa altura com o compositor. Cumprimento e giro funcionam por teclado; ficam indisponíveis durante a consulta/revelação. Não há rastreamento por câmera.
+
+## v0.6 · ciclo de decisões
+
+- Previsão compara até quatro trimestres com as políticas no início do trimestre; mostra também o próximo trimestre nos detalhes. Inclui decisões escolhidas, sem inventar respostas a pendências nem acontecimentos futuros.
+- Desfazer restaura apenas as políticas editadas; decisões já escolhidas continuam agendadas.
+- Avanço manual abre balanço; reprodução disponibiliza o balanço sem interromper cada turno. Acontecimentos pendentes interrompem a reprodução e bloqueiam o avanço até uma resposta válida.
+- Escolhas mostram custo extraordinário e modificadores antes da confirmação. Fechar ou decidir depois conserva a pendência. Uma resposta vale uma vez no próximo trimestre.
+- Balanço e pendência ficam acessíveis na linha de tempo desktop e em Indicadores; no celular, a ação de avanço e a ilha permitem resolver o acontecimento.
+- Salvar, retomar e recarregar conservam campos novos opcionais sem invalidar cenários v1. Grupos e prazos são descritos como regras sintéticas; acontecimentos têm origem regional narrativa e impacto nacional nesta etapa.

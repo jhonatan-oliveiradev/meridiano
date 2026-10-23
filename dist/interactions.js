@@ -17,10 +17,16 @@ export function initEventIsland({ onDetails }) {
   }
   function render(s, announce = false) {
     current = s;
+    if (!announce) root.querySelector(".island-live").textContent = "";
     root.querySelector(".island-period").textContent = period(s.quarter);
-    root.querySelector(".island-label").textContent = s.quarter
-      ? "Boletim nacional"
-      : "País em observação";
+    root.querySelector(".island-label").textContent = s.pendingDecision
+      ? "Decisão pendente"
+      : s.quarter
+        ? "Boletim nacional"
+        : "País em observação";
+    root.querySelector(".island-details").textContent = s.pendingDecision
+      ? "Avaliar opções ↗"
+      : "Ver indicadores ↗";
     root.querySelector(".island-country").textContent = s.name;
     const list = root.querySelector(".island-events");
     list.replaceChildren(
