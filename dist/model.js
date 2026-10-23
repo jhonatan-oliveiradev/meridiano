@@ -1,3 +1,8 @@
+import {
+  investmentFinance,
+  advanceInvestments,
+  investmentEffects,
+} from "./investment-ledger.js";
 // Experimental, deterministic model. Coefficients are illustrative, not estimates.
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const policyDefs = [
@@ -198,11 +203,17 @@ export function budget(s) {
     m = s.metrics;
   const ubi = ((p.income * 12 * m.population) / (m.gdp * 1000)) * 100;
   const pension = p.pension * 0.075;
-  const spending = 11 + p.services + p.infrastructure + ubi + pension;
+  const investment = investmentFinance(s);
+  const projects =
+    ((investment.constructionQuarter + investment.upkeepQuarter) * 400) / m.gdp;
+  const spending =
+    11 + p.services + p.infrastructure + ubi + pension + projects;
   const interest = m.debt * 0.055;
   return {
     ubi,
     pension,
+    projects,
+    investment,
     spending,
     interest,
     revenue: p.tax,
@@ -216,6 +227,8 @@ export function advance(s, effect = {}) {
     m = n.metrics,
     b = budget(n),
     prev = { ...m };
+  const projectEvents = advanceInvestments(n) ?? [];
+  const projectEffect = investmentEffects(n);
   n.capacity = clamp(
     n.capacity + 0.0009 * (p.services - 8) + 0.0005 * (p.infrastructure - 3),
     0.35,
@@ -228,6 +241,7 @@ export function advance(s, effect = {}) {
   const annualGrowth = clamp(
     2 +
       (effect.growth ?? 0) +
+      projectEffect.growth +
       0.12 * (p.infrastructure - 3) * n.capacity +
       0.12 * (p.services - 8) * n.capacity -
       0.045 * Math.max(0, p.tax - 32) -
@@ -243,6 +257,7 @@ export function advance(s, effect = {}) {
   m.population *= 1.002;
   const povertyTarget = clamp(
     25 -
+      projectEffect.poverty -
       1.3 * b.ubi * n.capacity -
       0.055 * (p.pension - 65) -
       0.065 * (p.labor - 50) -
@@ -287,6 +302,7 @@ export function advance(s, effect = {}) {
   const access = regionsOf(n).reduce((a, r) => a + r.share * r.access, 0);
   const welfareTarget = clamp(
     58 +
+      projectEffect.welfare +
       0.8 * (p.services - 8) * n.capacity +
       0.15 * (p.labor - 50) +
       0.065 * (p.pension - 65) +
@@ -312,6 +328,11 @@ export function advance(s, effect = {}) {
   );
   n.quarter++;
   n.history.push({ quarter: n.quarter, ...m });
+  n.investmentReport = {
+    ...b.investment,
+    annualizedShare: b.projects,
+    transitions: projectEvents,
+  };
   n.events = [
     {
       title: `Atividade econômica: ${annualGrowth >= 0 ? "+" : ""}${annualGrowth.toFixed(1).replace(".", ",")}% ao ano`,
@@ -332,14 +353,27 @@ export function advance(s, effect = {}) {
       detail: `Saldo anual projetado: ${b.balance.toFixed(1).replace(".", ",")}% do PIB, incluindo juros. A dívida absorve o saldo trimestral.`,
     },
   ];
+  for (const event of projectEvents)
+    n.events.push({
+      title:
+        event.phase === "operating"
+          ? "Programa em operação"
+          : event.phase === "ready"
+            ? "Obra entregue"
+            : "Construção iniciada",
+      detail: `${regionsOf(n)[event.region].name}: ${event.type === "water" ? "água e saneamento" : event.type === "health" ? "atenção básica" : event.type === "education" ? "escolas e formação" : "mobilidade regional"}. ${event.phase === "ready" ? "Manutenção e benefícios começam no próximo trimestre." : event.phase === "operating" ? "Manutenção incluída no orçamento; benefícios em vigor." : "Pagamentos acompanham o avanço físico."}`,
+    });
   return n;
 }
 export function regionalMetrics(s, index) {
   const r = regionsOf(s)[index],
     m = s.metrics,
-    p = s.policies;
+    p = s.policies,
+    project = investmentEffects(s, index);
   const execution = clamp(
-    r.access + ((p.infrastructure - 3) * 0.008) / r.terrain,
+    r.access +
+      project.access / 100 +
+      ((p.infrastructure - 3) * 0.008) / r.terrain,
     0.3,
     1,
   );
@@ -347,12 +381,15 @@ export function regionalMetrics(s, index) {
     population: m.population * r.share,
     income: (m.gdp / m.population) * 1000 * r.income,
     poverty: clamp(
-      m.poverty + (1 - r.income) * 17 - (p.income / 800) * (1 - r.income) * 3,
+      m.poverty -
+        project.poverty +
+        (1 - r.income) * 17 -
+        (p.income / 800) * (1 - r.income) * 3,
       1,
       90,
     ),
     welfare: clamp(
-      m.welfare + (execution - 0.8) * 24 + (r.income - 1) * 8,
+      m.welfare + project.welfare + (execution - 0.8) * 24 + (r.income - 1) * 8,
       0,
       100,
     ),
@@ -381,6 +418,7 @@ export function municipalMetrics(s, city) {
     access:
       clamp(
         city.access +
+          investmentEffects(s, city.region).access / 100 +
           ((s.policies.infrastructure - 3) * 0.008) /
             regionsOf(s)[city.region].terrain,
         0.3,

@@ -1,3 +1,4 @@
+import { investmentSnapshot } from "./investment-ledger.js";
 import { initCabinetAvatar } from "./cabinet-avatar.js";
 import { elapsedTimer } from "./interactions.js";
 import { createTextReveal } from "./text-reveal.js";
@@ -17,6 +18,7 @@ export function snapshotOf(s) {
     policies: { ...s.policies },
     metrics: { ...s.metrics },
     capacity: s.capacity,
+    ...(s.investments?.length ? { investments: investmentSnapshot(s) } : {}),
     ...(s.territory
       ? {
           territory: {

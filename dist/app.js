@@ -1,3 +1,4 @@
+import { initInvestmentUI } from "./investment-ui.js";
 import { generateTerritory, landforms } from "./territory.js";
 import {
   cabinetFor,
@@ -62,6 +63,7 @@ const svgNS = "http://www.w3.org/2000/svg";
 let regions = regionsOf(state);
 let eventIsland = null;
 let decisionUI = null;
+let investmentUI = null;
 let atlasMap = null;
 let advisorController = null,
   terrain3d = null,
@@ -226,6 +228,7 @@ function updateUI() {
   eventIsland?.update(state);
   renderBulletin(state);
   decisionUI?.update();
+  investmentUI?.update();
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
@@ -270,15 +273,13 @@ function renderRegion() {
     ["Renda por habitante", "M$ " + fmt(m.income, 0)],
     ["Bem-estar", fmt(m.welfare, 0) + "/100"],
     ["Pobreza", fmt(m.poverty) + "%"],
+    ["Acesso a serviços", fmt(m.access, 0) + "/100"],
     ...(m.areaKm2
       ? [
           ["Área", fmt(m.areaKm2, 0) + " km²"],
           ["Densidade", fmt(m.density) + " hab./km²"],
           ...(selectedCity
-            ? [
-                ["População urbana", fmt(m.urbanization, 0) + "%"],
-                ["Acesso a serviços", fmt(m.access, 0) + "/100"],
-              ]
+            ? [["População urbana", fmt(m.urbanization, 0) + "%"]]
             : []),
         ]
       : []),
@@ -299,6 +300,7 @@ function renderRegion() {
   );
   terrain3d?.update(state, { selected, layer });
   atlasMap?.update(state, { selected, layer });
+  investmentUI?.renderRegion();
 }
 function selectRegion(i, city = null) {
   selected = i;
@@ -309,13 +311,14 @@ function selectRegion(i, city = null) {
 function renderBudget() {
   const b = budget(state);
   $("#policyBudget").innerHTML =
-    `<div><span>Receita anual / PIB</span><strong>${fmt(b.revenue)}%</strong></div><div><span>Despesa + juros / PIB</span><strong>${fmt(b.spending + b.interest)}%</strong></div><div><span>Saldo projetado / PIB</span><strong>${b.balance > 0 ? "+" : ""}${fmt(b.balance)}%</strong></div><div class="budget-description">${b.balance < 0 ? "O déficit será financiado por dívida." : "O superávit permite reduzir a dívida."} Projeção com a configuração atual.</div>`;
+    `<div><span>Receita anual / PIB</span><strong>${fmt(b.revenue)}%</strong></div><div><span>Despesa + juros / PIB</span><strong>${fmt(b.spending + b.interest)}%</strong></div><div><span>Saldo projetado / PIB</span><strong>${b.balance > 0 ? "+" : ""}${fmt(b.balance)}%</strong></div><div class="budget-description">${b.balance < 0 ? "O déficit será financiado por dívida." : "O superávit permite reduzir a dívida."} Programas regionais: pagamentos do próximo trimestre em equivalente anual.</div>`;
   const costs = [
     ["Renda básica", b.ubi],
     ["Previdência", b.pension],
     ["Saúde e educação", state.policies.services],
     ["Infraestrutura", state.policies.infrastructure],
     ["Outros gastos", 11],
+    ["Programas regionais (anualizado)", b.projects],
     ["Juros", b.interest],
   ];
   $("#policyLedger").innerHTML =
@@ -994,7 +997,7 @@ function closeModal() {
 }
 function showMethods() {
   openModal(
-    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Países novos têm área, relevo e divisões reproduzíveis pela semente. Extensão e população inicial influenciam o número de estados e municípios. Costa, rios e relevo influenciam a ocupação; cada município tem população urbana e rural, área e densidade próprias. A população cresce sem migração e as divisas permanecem estáveis. Renda, pobreza e bem-estar municipais ainda seguem o estado. Cenários antigos conservam seus seis estados e a distribuição original, sem área inventada. Estradas são esquemáticas, sem cálculo de rotas.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; seus modificadores duram um trimestre e o custo extraordinário é financiado por dívida uma única vez. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
+    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Programas regionais (% PIB anualizado) = (obra + manutenção no próximo trimestre) × 4 ÷ PIB × 100<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência + programas regionais) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Países novos têm área, relevo e divisões reproduzíveis pela semente. Extensão e população inicial influenciam o número de estados e municípios. Costa, rios e relevo influenciam a ocupação; cada município tem população urbana e rural, área e densidade próprias. A população cresce sem migração e as divisas permanecem estáveis. Renda, pobreza e bem-estar municipais ainda seguem o estado. Cenários antigos conservam seus seis estados e a distribuição original, sem área inventada. Estradas são esquemáticas, sem cálculo de rotas.</p></div><div class="method-block"><h4>Investimentos regionais</h4><p>Programas estaduais passam por planejamento, construção, entrega e operação. O planejamento custa 10%; o restante é pago por avanço físico. Capacidade e relevo alteram o prazo. Manutenção e benefícios começam no avanço seguinte à entrega. São despesas adicionais às políticas nacionais. Até três implantações simultâneas; cancelamento sem custo apenas antes do primeiro avanço.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; seus modificadores duram um trimestre e o custo extraordinário é financiado por dívida uma única vez. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
   );
 }
 function countryForm(isNew = false) {
@@ -1400,6 +1403,20 @@ window.addEventListener("pointercancel", () => {
 readStorage();
 drawMap();
 renderPolicies();
+investmentUI = initInvestmentUI({
+  getState: () => state,
+  setState: (next) => {
+    state = next;
+    updateUI();
+    persist();
+  },
+  getSelected: () => selected,
+  selectRegion,
+  openModal,
+  closeModal,
+  setView,
+  notify,
+});
 decisionUI = initDecisionUI({
   getState: () => state,
   setState: (next) => {

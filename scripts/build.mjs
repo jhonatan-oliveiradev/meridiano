@@ -1,6 +1,10 @@
 import { mkdir, cp, access, rm } from "node:fs/promises";
 for (const f of [
   "index.html",
+  "investment-ledger.js",
+  "investments.js",
+  "investment-ui.js",
+  "investments.css",
   "style.css",
   "app.js",
   "model.js",

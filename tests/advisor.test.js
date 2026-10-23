@@ -311,3 +311,76 @@ test("geography context is bounded and allowlisted, with generated states instea
   req.snapshot.territory.regions[0].share = 2;
   assert.throws(() => validateRequest(req), AdvisorError);
 });
+
+test("investment context recomputes fiscal cost, strips extras and rejects invalid ledgers", async () => {
+  const { startInvestment } = await import("../dist/investments.js");
+  const { budget } = await import("../dist/model.js");
+  const s = startInvestment(initialState(), 5, "water");
+  const snapshot = snapshotOf(s);
+  snapshot.investments[0].secret = "drop";
+  const req = validateRequest({ mode: "analysis", snapshot });
+  assert.equal(req.snapshot.investments[0].secret, undefined);
+  assert.equal(budget(req.snapshot).spending, budget(s).spending);
+  let context;
+  await generateAdvice(req, {
+    apiKey: "test",
+    fetcher: async (url, options) => {
+      context = JSON.parse(JSON.parse(options.body).contents[0].parts[0].text);
+      return ok();
+    },
+  });
+  assert.equal(
+    context.budget.investment.constructionQuarter,
+    s.investments[0].cost * 0.1,
+  );
+  assert.equal(context.investments[0].regionName, "Terras do Sul");
+  assert.equal(context.snapshot.investments, undefined);
+  assert.equal(context.investments[0].workRequired, undefined);
+  assert.ok(context.investments[0].remainingTurns > 0);
+  for (const mutate of [
+    (p) => (p.paid = -1),
+    (p) => (p.cost = NaN),
+    (p) => (p.region = 99),
+    (p) => (p.phase = "unknown"),
+    (p) => (p.regionShare = 0.8),
+    (p) => (p.work = 1),
+  ]) {
+    const bad = structuredClone(snapshot);
+    mutate(bad.investments[0]);
+    assert.throws(
+      () => validateRequest({ mode: "analysis", snapshot: bad }),
+      AdvisorError,
+    );
+  }
+});
+
+test("all investment phases validate and a full 48-program portfolio fits the API body limit", async () => {
+  const { createCountry } = await import("../dist/country.js");
+  const { startInvestment } = await import("../dist/investments.js");
+  const { projectDefs, advanceInvestments } = await import(
+    "../dist/investment-ledger.js"
+  );
+  const s = createCountry({ seed: 2, population: 500, areaKm2: 8000000 });
+  assert.equal(s.territory.regions.length, 12);
+  const projects = [];
+  for (let index = 0; index < 12; index++)
+    for (const def of projectDefs) {
+      const n = startInvestment(s, index, def.key);
+      for (let i = 0; i < 20 && n.investments[0].phase !== "operating"; i++) {
+        validateRequest({ mode: "analysis", snapshot: snapshotOf(n) });
+        advanceInvestments(n);
+        n.quarter++;
+      }
+      assert.equal(n.investments[0].phase, "operating");
+      projects.push(n.investments[0]);
+    }
+  s.investments = projects;
+  s.quarter = 20;
+  const payload = {
+    mode: "question",
+    question: "Quais programas estão em operação?",
+    snapshot: snapshotOf(s),
+  };
+  assert.equal(validateRequest(payload).snapshot.investments.length, 48);
+  assert.ok(Buffer.byteLength(JSON.stringify(payload)) < 24000);
+});
