@@ -191,11 +191,16 @@ export function initAdvisor({
       answerFingerprint = fingerprint;
       $("#advisorStale").hidden = true;
     },
+    onIdentity(role) {
+      avatar.setCharacter(role.avatar);
+      largeAvatar.setCharacter(role.avatar);
+    },
     onSelect: onSelectRegion,
     onPrepare: onPrepareInvestment,
     notify,
   });
   function stateChanged(s) {
+    cabinet.updateIdentity();
     const next = JSON.stringify(snapshotOf(s));
     if (next !== fingerprint) {
       reveal.finish();

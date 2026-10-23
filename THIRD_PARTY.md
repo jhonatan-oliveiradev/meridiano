@@ -24,3 +24,8 @@ The Avatar Lab application and its published renderer packages are AGPL-3.0-only
 - **D3 Delaunay 6.0.4** (ISC), **simplex-noise 4.0.3** (MIT) e **polygon-clipping 0.15.7** (MIT) formam o bundle ESM local `geography-engine.js`, gerado por esbuild 0.28.2 no build. Delaunator (ISC), robust-predicates (Unlicense) e splaytree (MIT) são dependências transitivas do gerador. Avisos embutidos são preservados e licenças são copiadas para `dist/vendor/`; splaytree publica sua licença no Readme, de onde o script a extrai.
 - **MapLibre GL JS 6.15.0** (BSD-3-Clause, com avisos de terceiros no LICENSE.txt distribuído) é carregado sob demanda, junto do worker ESM e CSS locais. Licença copiada para `dist/vendor/maplibre-gl-LICENSE.txt`. Usa GeoJSON gerado pelo Meridiano e fonte Manrope local; sem tiles, glyph server, basemap ou sprites externos. https://maplibre.org/maplibre-gl-js/docs/
 - Nenhum código ou recurso visual do Terraink foi copiado. A geração de terreno e as regras demográficas são próprias; não reproduzem dados geográficos reais.
+
+
+## Personagens do gabinete · 2026-10-23
+
+**Lia**, **Caio** e **Iara** foram criados na interface do Avatar Lab (mesmo autor e condições dos exports do Nilo acima). Lia: diamante 235×260×215, coral #ff8a58; Caio: esfera 240×240×240, verde-água #79d8cb; Iara: cápsula lilás #b6a0ef. Definições originais `.avatar.json` e poses Photo Mode 00 (neutral), 01 (thinking) e 13 (happy) permanecem em `docs/avatar-source`. Os nomes thinking/happy são estados de apresentação do Meridiano; não são nomes oficiais desses presets no Lab. O script próprio adiciona gradientes e seletores de olhos aos SVGs. Nenhum runtime ou código de renderização do Lab é distribuído.

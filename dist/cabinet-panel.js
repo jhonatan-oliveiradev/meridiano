@@ -1,3 +1,4 @@
+import { cabinetFor } from "./country.js";
 import { cabinetRoles, roleFor, runCabinetTool } from "./cabinet-tools.js";
 const $ = (s) => document.querySelector(s);
 const node = (tag, text, className) => {
@@ -18,6 +19,7 @@ export function initCabinetPanel({
   setRole,
   getStamp,
   onQuick,
+  onIdentity,
   onSelect,
   onPrepare,
   notify,
@@ -30,18 +32,46 @@ export function initCabinetPanel({
     b.onclick = action;
     return b;
   }
+  function updateIdentity() {
+    const role = roleFor(getRole());
+    const title = role.title || cabinetFor(getState().government).title;
+    document
+      .querySelectorAll("[data-cabinet-name]")
+      .forEach((el) => (el.textContent = role.name));
+    document
+      .querySelectorAll("[data-active-cabinet-title]")
+      .forEach((el) => (el.textContent = title));
+    $(".nilo-stage").setAttribute("aria-label", `${role.name}, ${title}`);
+    $("#cabinetAvatar").setAttribute("aria-label", `Cumprimentar ${role.name}`);
+    $("#largeCabinetAvatar").setAttribute(
+      "aria-label",
+      `Cumprimentar ${role.name} em destaque`,
+    );
+    $("#niloSpin").setAttribute("aria-label", `Fazer ${role.name} girar`);
+    $(".composer-avatar img").src = `assets/${role.avatar}-neutral.svg`;
+    onIdentity?.(role);
+  }
   function updateRole() {
     const role = roleFor(getRole());
     $("#cabinetTeam").replaceChildren(
       ...cabinetRoles.map((r) => {
-        const b = node("button", r.name, "cabinet-member");
+        const b = node("button", undefined, "cabinet-member");
+        const img = node("img");
+        img.src = `assets/${r.avatar}-neutral.svg`;
+        img.alt = "";
+        img.width = 30;
+        img.height = 30;
+        const label = node("span");
+        label.append(node("strong", r.name), node("small", r.area));
+        b.append(img, label);
         b.type = "button";
         b.setAttribute("aria-pressed", String(r.id === role.id));
-        b.setAttribute("aria-label", `Consultar ${r.name}`);
+        b.setAttribute("aria-label", `Consultar ${r.name} · ${r.area}`);
         b.onclick = () => setRole(r.id);
         return b;
       }),
     );
+    updateIdentity();
     $("#cabinetScope").textContent = role.scope;
     $("#cabinetActiveOffice").textContent = role.office;
     $("#cabinetComposerTitle").textContent = `Converse com ${role.name}`;
@@ -182,7 +212,8 @@ export function initCabinetPanel({
         ? runCabinetTool(getState(), roleId, wire.request)
         : { kind: "notice", message: "Consulta indisponível para esta área." };
       const group = node("section", undefined, "cabinet-tool-group");
-      const source = roleFor(item.department ?? roleId)?.name ?? "Gabinete";
+      const member = roleFor(item.department ?? roleId);
+      const source = member ? `${member.name} · ${member.area}` : "Gabinete";
       group.append(
         node(
           "span",
@@ -307,5 +338,5 @@ export function initCabinetPanel({
   }
   updateRole();
   clear();
-  return { render, invalidate, clear, updateRole };
+  return { render, invalidate, clear, updateRole, updateIdentity };
 }
