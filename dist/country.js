@@ -21,9 +21,9 @@ export const governments = [
 export function cabinetFor(government) {
   const roles = {
     "República democrática": {
-      title: "Ministro da Fazenda",
-      short: "Fazenda",
-      office: "Ministério da Fazenda",
+      title: "Chefe de Gabinete",
+      short: "Gabinete",
+      office: "Gabinete do Governo",
     },
     "República parlamentarista": {
       title: "Primeiro-ministro",
@@ -41,9 +41,9 @@ export function cabinetFor(government) {
       office: "Conselho de Governo",
     },
     "Regime autoritário": {
-      title: "Chefe de Planejamento",
-      short: "Planejamento",
-      office: "Secretaria de Planejamento",
+      title: "Chefe do Conselho de Governo",
+      short: "Conselho de Governo",
+      office: "Gabinete do Governo",
     },
   };
   return {

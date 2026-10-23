@@ -205,6 +205,7 @@ export function initInvestmentUI({
     }
   });
   return {
+    showQuote,
     renderRegion,
     update() {
       renderRegion();

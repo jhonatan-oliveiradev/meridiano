@@ -40,12 +40,9 @@ test("cabinet title follows government without ideological economic bonuses", ()
     cabinetFor("República parlamentarista").title,
     "Primeiro-ministro",
   );
-  assert.equal(
-    cabinetFor("República democrática").title,
-    "Ministro da Fazenda",
-  );
+  assert.equal(cabinetFor("República democrática").title, "Chefe de Gabinete");
   assert.equal(cabinetFor("Democracia direta").short, "Conselho");
-  assert.equal(cabinetFor("Regime autoritário").short, "Planejamento");
+  assert.equal(cabinetFor("Regime autoritário").short, "Conselho de Governo");
   const a = initialState(),
     b = initialState({ government: "República parlamentarista" });
   assert.deepEqual(advance(a).metrics, advance(b).metrics);
