@@ -19,3 +19,15 @@ Source: user request for Gemini adviser, Apple-like design, dark/light themes an
 - Loading: buttons cannot launch duplicate requests; a cancellable loading row is visible. A missing key shows an unavailable state, not fabricated advice. Opening a dialog pauses playback. Playback also stops when the document is hidden or the 40-year horizon is reached.
 - 3D: terrain3d.js owns the optional Three.js scene; switching to 2D disposes renderer, controls, geometry, materials, observers and events. On-demand rendering only, no idle animation loop. WebGL failure returns to SVG and explains why. State selectors, zoom and recenter controls remain available. Mobile regional detail is placed after the map. The 3D scale bar is hidden because perspective does not preserve a single scale.
 - API: same-origin POST with JSON content and a custom header; bounded payload, strict snapshot ranges, output validation and short timeout. Per-IP warm-instance throttling is a best-effort limit, not a durable distributed quota. No server-side account or authorization model is introduced. Provider quotas and deployment firewall controls remain deployment responsibilities.
+
+
+## v0.3 user-approved additions
+Source: current request for viewport fit, custom fonts, Creative Studio colors, random countries and a government-specific cabinet/avatar.
+
+Desktop root cannot scroll: sidebar, content views and region inspector own overflow. Mobile retains natural page scroll. Fonts are locally hosted variable WOFF2 with swap fallback.
+
+The new-country dialog has “Gerar país aleatório”. It updates a draft and shows a preview without changing the active simulation. The existing explicit create action commits the draft; Cancel discards it. A seed reproduces the generator algorithm, not later user overrides. Generated name, government, economic orientation, external context, population, metrics, policies and capacity are recorded at quarter zero. Government and ideology remain independent from economic bonuses. Manual edits to name, government, context, population and seed are respected.
+
+country.js owns office mapping: democratic republic → finance minister; parliamentary republic / constitutional monarchy → prime minister; direct democracy → council coordinator; authoritarian regime → planning chief. These are fictional game roles, not universal constitutional claims. Existing #conselheiro links keep working. Title updates everywhere visible and in the provider instruction.
+
+Nilo remains optional decoration around the existing usable adviser. Click/keyboard activation greets; requests show a thinking pose, successful results a happy pose, failures a recoverable state. Local SVG assets load on first visibility. No third-party runtime, tracker or automatic AI call is added. Blinking and motion pause offscreen/hidden and with reduced motion. SVG files and original exported definitions are kept as project assets.

@@ -9,3 +9,4 @@ premium-audit.json
 .DS_Store
 dist/vendor/
 .vercel/
+dist/fonts/

@@ -1,3 +1,4 @@
+import { cabinetFor, governments, randomCountry } from "./country.js";
 import { initAdvisor } from "./advisor.js";
 import {
   initialState,
@@ -131,7 +132,7 @@ function setView(next) {
     politicas: "Políticas públicas",
     indicadores: "Indicadores",
     cenarios: "Cenários salvos",
-    conselheiro: "Conselheiro",
+    conselheiro: cabinetFor(state.government).office,
   }[view];
   $("#pageTitle").textContent = title;
   document.title = `${title} · ${state.name} — Meridiano`;
@@ -198,6 +199,7 @@ function updateUI() {
   if (view === "indicadores") renderIndicators();
   applyLayer();
   advisorController?.stateChanged(state);
+  updateCabinetLabels();
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
@@ -751,11 +753,12 @@ function showMethods() {
   );
 }
 function countryForm(isNew = false) {
+  let randomDraft = null;
   const s = isNew
     ? initialState({ name: "", seed: Math.floor(Math.random() * 99999) + 1 })
     : state;
   openModal(
-    `<h3 id="modalTitle">${isNew ? "Criar um novo país" : "Configurar país"}</h3><p>${isNew ? "Defina as condições de partida. O cenário ativo será substituído; cenários salvos serão preservados." : "Nome, regime e orientação são independentes. A semente e a população são condições iniciais e só mudam ao criar outro país."}</p><form id="countryForm" novalidate><div class="form-grid"><div class="field wide"><label for="inputName">Nome do país</label><input id="inputName" name="name" value="${esc(s.name)}" maxlength="40" placeholder="Como se chama seu país?" aria-describedby="nameError"><span class="field-error" id="nameError"></span></div><div class="field"><label for="government">Sistema político</label><select id="government" name="government">${["República democrática", "Monarquia constitucional", "Democracia direta", "Regime autoritário"].map((v) => `<option ${v === s.government ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field"><label for="economy">Orientação econômica</label><select id="economy" name="economy">${["Economia mista", "Liberal", "Neoliberal", "Social-democrata", "Socialista"].map((v) => `<option ${v === s.economy ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field wide"><label for="external">Contexto externo</label><select id="external" name="external">${Object.entries(
+    `<h3 id="modalTitle">${isNew ? "Criar um novo país" : "Configurar país"}</h3><p>${isNew ? "Defina as condições de partida. O cenário ativo será substituído; cenários salvos serão preservados." : "Nome, regime e orientação são independentes. A semente e a população são condições iniciais e só mudam ao criar outro país."}</p><form id="countryForm" novalidate>${isNew ? `<div class="country-randomizer"><div><strong>Prefere começar com um país pronto?</strong><span>Sorteie população, indicadores, governo e políticas.</span></div><button type="button" id="randomizeCountry" class="secondary">⚄ Gerar país aleatório</button></div><div id="randomSummary" class="random-summary" hidden aria-live="polite"></div>` : ""}<div class="form-grid"><div class="field wide"><label for="inputName">Nome do país</label><input id="inputName" name="name" value="${esc(s.name)}" maxlength="40" placeholder="Como se chama seu país?" aria-describedby="nameError"><span class="field-error" id="nameError"></span></div><div class="field"><label for="government">Sistema político</label><select id="government" name="government">${governments.map((v) => `<option ${v === s.government ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field"><label for="economy">Orientação econômica</label><select id="economy" name="economy">${["Economia mista", "Liberal", "Neoliberal", "Social-democrata", "Socialista"].map((v) => `<option ${v === s.economy ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field wide"><label for="external">Contexto externo</label><select id="external" name="external">${Object.entries(
       {
         estavel: "Comércio estável",
         recessao: "Recessão internacional",
@@ -771,6 +774,27 @@ function countryForm(isNew = false) {
         "",
       )}</select><small>Afeta o crescimento e a pressão inflacionária.</small></div>${isNew ? `<div class="field"><label for="population">População inicial (milhões)</label><input id="population" name="population" type="number" min="1" max="500" step="0.1" value="24.8" aria-describedby="numberError"></div><div class="field"><label for="seed">Semente territorial</label><input id="seed" name="seed" type="number" min="1" max="99999" step="1" value="${s.seed}" aria-describedby="numberError"></div><span class="field-error wide" id="numberError"></span>` : ""}</div><div class="modal-actions"><button type="button" class="secondary" data-close>Cancelar</button><button class="primary" type="submit">${isNew ? "Criar e substituir cenário ativo" : "Salvar configuração"}</button></div></form>`,
   );
+  if (isNew)
+    $("#randomizeCountry").onclick = () => {
+      const values = new Uint32Array(1);
+      crypto.getRandomValues(values);
+      randomDraft = randomCountry((values[0] % 99999) + 1);
+      for (const [id, val] of Object.entries({
+        inputName: randomDraft.name,
+        government: randomDraft.government,
+        economy: randomDraft.economy,
+        external: randomDraft.external,
+        population: randomDraft.metrics.population,
+        seed: randomDraft.seed,
+      }))
+        $("#" + id).value = val;
+      $("#randomSummary").hidden = false;
+      $("#randomSummary").textContent =
+        `PIB por habitante: M$ ${fmt((randomDraft.metrics.gdp / randomDraft.metrics.population) * 1000, 0)} · Pobreza: ${fmt(randomDraft.metrics.poverty)}% · Dívida: ${fmt(randomDraft.metrics.debt)}% do PIB. As políticas também foram sorteadas.`;
+      $("#nameError").textContent = "";
+      $("#numberError").textContent = "";
+      $("#inputName").removeAttribute("aria-invalid");
+    };
   $("#countryForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = new FormData(e.target),
@@ -814,7 +838,17 @@ function countryForm(isNew = false) {
         ).focus();
         return;
       }
-      state = initialState({ ...config, population, seed });
+      if (randomDraft) {
+        state =
+          randomDraft.seed === seed
+            ? structuredClone(randomDraft)
+            : randomCountry(seed);
+        const perCapita = state.metrics.gdp / state.metrics.population;
+        Object.assign(state, config);
+        state.metrics.population = population;
+        state.metrics.gdp = population * perCapita;
+        state.history = [{ quarter: 0, ...state.metrics }];
+      } else state = initialState({ ...config, population, seed });
       selected = 3;
       selectedCity = null;
       drawMap();
@@ -1144,7 +1178,7 @@ function applyTheme(choice) {
       : themePreference;
   document.documentElement.dataset.theme = resolved;
   document.querySelector("meta[name=theme-color]").content =
-    resolved === "dark" ? "#161618" : "#f5f5f7";
+    resolved === "dark" ? "#070807" : "#f3f5ef";
   $$("[data-theme-choice]").forEach((b) =>
     b.setAttribute("aria-pressed", b.dataset.themeChoice === themePreference),
   );
@@ -1231,3 +1265,20 @@ function positionRegionPanel() {
 }
 narrowViewport.addEventListener("change", positionRegionPanel);
 positionRegionPanel();
+
+function updateCabinetLabels() {
+  const person = cabinetFor(state.government);
+  document
+    .querySelectorAll("[data-cabinet-title]")
+    .forEach((el) => (el.textContent = person.title));
+  document
+    .querySelectorAll("[data-cabinet-office]")
+    .forEach((el) => (el.textContent = person.office));
+  const nav = document.querySelector('.rail [data-view="conselheiro"]');
+  nav.setAttribute("aria-label", person.title);
+  nav.title = person.title;
+  if (view === "conselheiro") {
+    $("#pageTitle").textContent = person.office;
+    document.title = person.office + " · " + state.name + " — Meridiano";
+  }
+}

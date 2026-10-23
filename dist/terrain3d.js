@@ -153,7 +153,7 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
   const sphere = new THREE.SphereGeometry(1, 8, 6),
     cityMaterials = [
       new THREE.MeshBasicMaterial({ color: 0xffffff }),
-      new THREE.MeshBasicMaterial({ color: 0x368bff }),
+      new THREE.MeshBasicMaterial({ color: 0xc7ff3d }),
     ];
   cities.forEach((c, i) => {
     const marker = new THREE.Mesh(sphere, cityMaterials[c.capital ? 1 : 0]);
@@ -210,7 +210,7 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
   }
   function setTheme(value) {
     dark = value === "dark";
-    scene.background = new THREE.Color(dark ? 0x111f2b : 0xdce8ee);
+    scene.background = new THREE.Color(dark ? 0x101d19 : 0xe0e9e1);
     water.material.color.copy(scene.background);
     ambient.intensity = dark ? 1.8 : 2.4;
     sun.intensity = dark ? 1.4 : 2.3;
@@ -241,7 +241,7 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
           clamp(t, 0, 1),
         );
       }
-      if (v.region === selected) c.lerp(new THREE.Color("#8dc4ec"), 0.13);
+      if (v.region === selected) c.lerp(new THREE.Color("#c7ff3d"), 0.13);
       geometry.attributes.color.setXYZ(i, c.r, c.g, c.b);
     });
     geometry.attributes.color.needsUpdate = true;

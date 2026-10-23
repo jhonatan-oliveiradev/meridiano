@@ -1,3 +1,4 @@
+import { initCabinetAvatar } from "./cabinet-avatar.js";
 const $ = (s) => document.querySelector(s);
 const date = (q) => `${2027 + Math.floor(q / 4)} · ${(q % 4) + 1}º trimestre`;
 const fmt = (n) =>
@@ -17,6 +18,7 @@ export function snapshotOf(s) {
   };
 }
 export function initAdvisor({ getState, notify }) {
+  const avatar = initCabinetAvatar();
   let active = null,
     fingerprint = "",
     answerFingerprint = "",
@@ -55,6 +57,7 @@ export function initAdvisor({ getState, notify }) {
     );
   }
   function busy(on) {
+    avatar.setState(on ? "thinking" : "idle");
     $("#analyzeQuarter").disabled = on;
     $("#askAdvisor").disabled = on;
     $("#cancelAdvice").hidden = !on;
@@ -78,6 +81,7 @@ export function initAdvisor({ getState, notify }) {
     summary.className = "advice-summary";
     summary.textContent = answer.summary;
     result.append(header, title, summary);
+    avatar.setState("happy");
     for (const o of answer.observations) {
       const block = document.createElement("section"),
         h = document.createElement("h4"),
@@ -184,6 +188,7 @@ export function initAdvisor({ getState, notify }) {
       if (active === controller) {
         active = null;
         busy(false);
+        avatar.setState(error.textContent ? "error" : "happy");
       }
     }
   }

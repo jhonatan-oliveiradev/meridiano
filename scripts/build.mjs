@@ -8,6 +8,8 @@ for (const f of [
   "premium.css",
   "advisor.js",
   "terrain3d.js",
+  "studio.css",
+  "country.js",
 ])
   await access(new URL("../dist/" + f, import.meta.url));
 await rm(new URL("../build", import.meta.url), {
