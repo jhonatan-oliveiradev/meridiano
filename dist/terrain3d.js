@@ -217,7 +217,10 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     recolor();
   }
   function recolor() {
-    const c = new THREE.Color(),
+    const metrics = defs.map((_, i) => regionalMetrics(currentState, i)),
+      maxDensity = Math.max(1, ...metrics.map((m) => m.density ?? 0)),
+      maxShare = Math.max(...defs.map((r) => r.share)),
+      c = new THREE.Color(),
       low = new THREE.Color(dark ? "#466f64" : "#729b7b"),
       high = new THREE.Color(dark ? "#9aafa4" : "#e7e4cc");
     owners.forEach((v, i) => {
@@ -227,20 +230,12 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
           elevation(v.x, v.y, state.seed, state.territory?.profile),
         );
       else {
-        const m = regionalMetrics(currentState, v.region),
+        const m = metrics[v.region],
           t =
             layer === "populacao"
-              ? defs[v.region].share / Math.max(...defs.map((r) => r.share))
+              ? defs[v.region].share / maxShare
               : layer === "densidade"
-                ? Math.log1p(m.density ?? 0) /
-                  Math.log1p(
-                    Math.max(
-                      1,
-                      ...defs.map(
-                        (_, j) => regionalMetrics(currentState, j).density ?? 0,
-                      ),
-                    ),
-                  )
+                ? Math.log1p(m.density ?? 0) / Math.log1p(maxDensity)
                 : layer === "renda"
                   ? (m.income /
                       ((currentState.metrics.gdp /

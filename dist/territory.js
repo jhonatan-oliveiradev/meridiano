@@ -109,10 +109,13 @@ export function generateTerritory({
     throw new RangeError("Formato inválido");
   const rand = rng(seed + 4701),
     pick = (a) => a[Math.floor(rand() * a.length)];
-  kind ??= pick(Object.keys(landforms));
-  areaKm2 ??=
-    Math.round(Math.exp(Math.log(35000) + rand() * Math.log(70)) / 100) * 100;
-  urbanization ??= 0.42 + rand() * 0.47;
+  const generatedKind = pick(Object.keys(landforms)),
+    generatedArea =
+      Math.round(Math.exp(Math.log(35000) + rand() * Math.log(70)) / 100) * 100,
+    generatedUrbanization = 0.42 + rand() * 0.47;
+  kind ??= generatedKind;
+  areaKm2 ??= generatedArea;
+  urbanization ??= generatedUrbanization;
   if (
     !Number.isFinite(urbanization) ||
     urbanization < 0.2 ||

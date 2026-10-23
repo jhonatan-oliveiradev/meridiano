@@ -909,11 +909,22 @@ function applyLayer() {
     relevo: ["ALTITUDE", "0 m", "2.400 m"],
     densidade: [
       state.territory
-        ? "DENSIDADE MUNICIPAL"
+        ? mapMode === "3d"
+          ? "DENSIDADE ESTADUAL"
+          : "DENSIDADE MUNICIPAL"
         : "DENSIDADE · SEM ÁREA NO LEGADO",
       state.territory ? "0 hab./km²" : "Indisponível",
       state.territory
-        ? fmt(maximumDensity, 0) + " hab./km²"
+        ? fmt(
+            mapMode === "3d"
+              ? Math.max(
+                  ...regions.map(
+                    (_, i) => regionalMetrics(state, i).density ?? 0,
+                  ),
+                )
+              : maximumDensity,
+            0,
+          ) + " hab./km²"
         : "Crie um país novo",
     ],
     populacao: [
@@ -1611,7 +1622,7 @@ async function setMapMode(next) {
   }
 }
 $$("[data-map-mode]").forEach(
-  (b) => (b.onclick = () => setMapMode(b.dataset.mapMode)),
+  (b) => (b.onclick = () => setMapMode(b.dataset.mapMode).then(applyLayer)),
 );
 window.addEventListener("pagehide", () => {
   pausePlayback();

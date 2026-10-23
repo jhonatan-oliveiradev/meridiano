@@ -22,7 +22,7 @@ População cresce pelo motor nacional, mantendo participações locais. Não h�
 
 ## Renderização
 
-SVG é o mapa inicial acessível; Three usa os mesmos polígonos e campo de altitude. Atlas carrega MapLibre, worker e CSS locais somente ao ser solicitado, com camadas GeoJSON, rótulos por zoom, seleção e escala. Não carrega tiles, sprites, ruas reais ou dados externos. Coordenadas do Atlas são uma projeção auxiliar de um plano fictício; não localizam o país no mundo real. Vias são esquemáticas e podem atravessar reentrâncias costeiras: não representam rotas válidas, conectividade econômica ou tempo de viagem.
+SVG é o mapa inicial acessível; Three usa os mesmos polígonos e campo de altitude. Densidade no relevo 3D é agregada por estado; SVG e Atlas mostram polígonos municipais. Atlas carrega MapLibre, worker e CSS locais somente ao ser solicitado, com camadas GeoJSON, rótulos por zoom, seleção e escala. Não carrega tiles, sprites, ruas reais ou dados externos. Coordenadas do Atlas são uma projeção auxiliar de um plano fictício; não localizam o país no mundo real. Vias são esquemáticas e podem atravessar reentrâncias costeiras: não representam rotas válidas, conectividade econômica ou tempo de viagem.
 
 Sem WebGL, Atlas mantém a representação vetorial SVG; 3D retorna a 2D. Instâncias são descartadas ao trocar renderizador, trocar país ou sair da página. Pixel ratio de renderização limitado a 1,5. Movimento reduzido desativa transições da câmera do Atlas. Não há metas de FPS confirmadas em dispositivo físico.
 

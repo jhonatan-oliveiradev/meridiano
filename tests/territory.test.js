@@ -142,3 +142,15 @@ test("v2 incidents reference existing states and survive serialization", async (
   assert.ok(s.territory.regions.some((r) => r.name === event.region));
   assert.deepEqual(decisionFor(JSON.parse(JSON.stringify(s))), event);
 });
+
+test("resolved default settings reproduce the same geography as implicit settings", () => {
+  const a = generateTerritory({ seed: 719, population: 24.8 });
+  const b = generateTerritory({
+    seed: 719,
+    population: 24.8,
+    kind: a.kind,
+    areaKm2: a.areaKm2,
+    urbanization: a.urbanization,
+  });
+  assert.deepEqual(a, b);
+});
