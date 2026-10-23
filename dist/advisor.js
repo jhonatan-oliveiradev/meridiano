@@ -1,5 +1,6 @@
 import { initCabinetAvatar } from "./cabinet-avatar.js";
 import { elapsedTimer } from "./interactions.js";
+import { createTextReveal } from "./text-reveal.js";
 const $ = (s) => document.querySelector(s);
 const date = (q) => `${2027 + Math.floor(q / 4)} · ${(q % 4) + 1}º trimestre`;
 const fmt = (n) =>
@@ -20,6 +21,70 @@ export function snapshotOf(s) {
 }
 export function initAdvisor({ getState, notify }) {
   const avatar = initCabinetAvatar();
+  const largeAvatar = initCabinetAvatar({
+    button: "#largeCabinetAvatar",
+    art: "#largeAvatarArt",
+    message: "#largeAvatarMessage",
+  });
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const reveal = createTextReveal({ reducedMotion: () => reduced.matches });
+  const scroll = $("#advisorScroll");
+  let writing = false,
+    followAnswer = true,
+    lastScrollTop = 0;
+  function avatarState(state) {
+    avatar.setState(state);
+    largeAvatar.setState(state);
+    $("#niloWave").disabled = state === "thinking" || state === "speaking";
+    $("#niloSpin").disabled = state === "thinking" || state === "speaking";
+  }
+  function setWriting(on) {
+    writing = on;
+    $("#revealControls").hidden = !on;
+    result.setAttribute("aria-busy", String(on));
+    if (!on)
+      result
+        .querySelectorAll(".typing-fragment")
+        .forEach((node) => node.classList.remove("typing-fragment"));
+    if (on) {
+      avatarState("speaking");
+      status.textContent = "Nilo está respondendo…";
+    } else if (!active) {
+      avatarState("happy");
+      status.textContent = "Resposta concluída";
+    }
+  }
+  // Follow new text only while the reader stays at the end. Scrolling upward
+  // takes control away from the animation without hiding the composer.
+  scroll.addEventListener(
+    "scroll",
+    () => {
+      if (!writing) return;
+      if (scroll.scrollTop < lastScrollTop - 2) followAnswer = false;
+      else if (
+        scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop <
+        32
+      )
+        followAnswer = true;
+      lastScrollTop = scroll.scrollTop;
+    },
+    { passive: true },
+  );
+  $("#finishReveal").onclick = () => reveal.finish();
+  $("#niloWave").onclick = () => {
+    avatar.greet();
+    largeAvatar.greet();
+  };
+  $("#niloSpin").onclick = () => {
+    avatar.greet();
+    largeAvatar.spin();
+  };
+  reduced.addEventListener("change", () => {
+    if (reduced.matches) reveal.finish();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) reveal.finish();
+  });
   const elapsed = elapsedTimer($("#adviceElapsed"));
   let active = null,
     fingerprint = "",
@@ -32,6 +97,7 @@ export function initAdvisor({ getState, notify }) {
   function stateChanged(s) {
     const next = JSON.stringify(snapshotOf(s));
     if (next !== fingerprint) {
+      reveal.finish();
       active?.abort();
       active = null;
       busy(false);
@@ -97,28 +163,31 @@ export function initAdvisor({ getState, notify }) {
   function busy(on) {
     if (on) elapsed.start();
     else elapsed.stop();
-    avatar.setState(on ? "thinking" : "idle");
+    avatarState(on ? "thinking" : writing ? "speaking" : "idle");
     $("#advisorForm").classList.toggle("is-sending", on);
     $("#advisorEmpty").hidden = on || result.childElementCount > 0;
     $("#analyzeQuarter").disabled = on;
     $("#askAdvisor").disabled = on;
     $("#cancelAdvice").hidden = !on;
     $("#advisorLoading").hidden = !on;
-    result.setAttribute("aria-busy", String(on));
+    result.setAttribute("aria-busy", String(on || writing));
     status.textContent = on
       ? "Analisando cenário…"
       : available === false
         ? "Não conectado"
         : available === true
-          ? "Chave configurada · Gemini"
+          ? writing
+            ? "Nilo está respondendo…"
+            : "Pronto para conversar"
           : "Verificando conexão…";
   }
-  function render(answer, quarter, provider) {
+  function render(answer, quarter) {
+    reveal.cancel();
     $("#advisorEmpty").hidden = true;
     result.replaceChildren();
     const header = document.createElement("div");
     header.className = "advice-meta";
-    header.textContent = `${provider} · ${date(quarter)}`;
+    header.textContent = `Nilo · ${date(quarter)}`;
     const title = document.createElement("h3");
     title.textContent = answer.title;
     const summary = document.createElement("p");
@@ -127,7 +196,6 @@ export function initAdvisor({ getState, notify }) {
     result.append(header, title, summary);
     result.classList.remove("answer-arrived");
     requestAnimationFrame(() => result.classList.add("answer-arrived"));
-    avatar.setState("happy");
     for (const o of answer.observations) {
       const block = document.createElement("section"),
         h = document.createElement("h4"),
@@ -156,6 +224,34 @@ export function initAdvisor({ getState, notify }) {
       section.append(h, list);
       result.append(section);
     }
+    const parts = [...result.querySelectorAll("h3,h4,p,li")].map((node) => ({
+      node,
+      text: node.textContent,
+    }));
+    for (const section of result.querySelectorAll("section"))
+      section.hidden = true;
+    for (const li of result.querySelectorAll("li")) li.hidden = true;
+    scroll.scrollTop = 0;
+    lastScrollTop = 0;
+    followAnswer = true;
+    setWriting(true);
+    reveal.start(parts, {
+      onPart(node) {
+        result
+          .querySelector(".typing-fragment")
+          ?.classList.remove("typing-fragment");
+        node.classList.add("typing-fragment");
+        node.closest("section")?.removeAttribute("hidden");
+        node.hidden = false;
+      },
+      onProgress() {
+        if (followAnswer) scroll.scrollTop = scroll.scrollHeight;
+      },
+      onDone() {
+        setWriting(false);
+        notify("Resposta de Nilo concluída.");
+      },
+    });
   }
   async function ask(mode) {
     const input = $("#advisorQuestion"),
@@ -167,6 +263,7 @@ export function initAdvisor({ getState, notify }) {
       return;
     }
     if (active) return;
+    reveal.finish();
     input.removeAttribute("aria-invalid");
     error.textContent = "";
     const snapshot = snapshotOf(getState()),
@@ -174,7 +271,7 @@ export function initAdvisor({ getState, notify }) {
       key = stamp + mode + question;
     if (cache.has(key)) {
       const data = cache.get(key);
-      render(data.answer, data.quarter, data.provider);
+      render(data.answer, data.quarter);
       answerFingerprint = stamp;
       $("#advisorStale").hidden = true;
       return;
@@ -220,10 +317,9 @@ export function initAdvisor({ getState, notify }) {
       available = true;
       cache.set(key, data);
       if (cache.size > 8) cache.delete(cache.keys().next().value);
-      render(data.answer, data.quarter, data.provider);
+      render(data.answer, data.quarter);
       answerFingerprint = stamp;
       $("#advisorStale").hidden = true;
-      notify("Análise concluída.");
     } catch (e) {
       if (active === controller) {
         if (controller.signal.reason === "timeout")
@@ -236,7 +332,9 @@ export function initAdvisor({ getState, notify }) {
       if (active === controller) {
         active = null;
         busy(false);
-        avatar.setState(error.textContent ? "error" : "happy");
+        avatarState(
+          error.textContent ? "error" : writing ? "speaking" : "happy",
+        );
         if (error.textContent) status.textContent = "Consulta não concluída";
       }
     }
@@ -280,6 +378,8 @@ export function initAdvisor({ getState, notify }) {
     cancel() {
       active?.abort();
       elapsed.stop();
+      reveal.finish();
+      avatarState("idle");
     },
   };
 }

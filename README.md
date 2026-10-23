@@ -97,3 +97,10 @@ Os cargos são papéis fictícios de apoio. Veja [origem dos assets e fontes](TH
 Ilha de eventos por trimestre, compositor com contexto e Ctrl/Cmd+Enter, relógio da consulta, boletim animado, pontos do gráfico exploráveis por teclado e demonstrativo do orçamento. O modo Atlas detalha cidades e vias fictícias. Ícones Reicon locais; referências e adaptações em [THIRD_PARTY.md](THIRD_PARTY.md).
 
 A API usa o Flash-Lite atual por padrão e diferencia falhas de chave, quota, acesso e modelo. Se houver `GEMINI_MODEL` antigo na Vercel, prefira `gemini-3.5-flash-lite` e faça redeploy. Configurar uma chave não garante que o projeto tenha quota ou permissão; veja [diagnóstico](docs/AI.md).
+
+
+### v0.5 · conversa com Nilo
+
+O campo de mensagem fica separado da rolagem da resposta. O texto aparece progressivamente, com opção de mostrar tudo; movimento reduzido mostra a resposta de imediato. A apresentação acontece depois do JSON completo, sem mudança no transporte da API.
+
+No desktop a partir de 1280 px, Nilo também ocupa uma coluna própria com olhar, cumprimento, giro e reações à consulta. A versão pequena continua no gabinete. Abaixo dessa largura, a conversa tem prioridade e o personagem maior fica oculto. As poses compartilham o mesmo carregamento local e recebem IDs SVG distintos por instância.
