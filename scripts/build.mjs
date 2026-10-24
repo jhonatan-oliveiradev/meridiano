@@ -1,6 +1,10 @@
 import { mkdir, cp, access, rm } from "node:fs/promises";
 for (const f of [
   "index.html",
+  "consequences.js",
+  "consequence-ui.js",
+  "consequences.css",
+  ...["neutral", "happy", "thinking"].map((pose) => `assets/davi-${pose}.svg`),
   "favicon.svg",
   "favicon.ico",
   "apple-touch-icon.png",

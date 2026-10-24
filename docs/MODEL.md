@@ -33,3 +33,7 @@ Governo e ideologia são descritivos, sem bônus ou penalidade automáticos. Nã
 ## Programas regionais
 
 Contratos opcionais de saneamento, atenção básica, educação e mobilidade passam por planejamento, construção, entrega e operação. Custo trimestral e manutenção entram no orçamento existente; benefícios nacionais ponderados alteram metas e crescimento, e o estado recebe modificadores locais de acesso, pobreza e bem-estar. Regras, fases, coeficientes e limitações em [INVESTMENTS.md](INVESTMENTS.md).
+
+## Consequências · v0.11
+
+A despesa agora inclui reforços anuais de investigação/policiamento, prevenção e controle policial. Os 11 pontos fixos continuam cobrindo a estrutura básica. Violência, investigação, prevenção instalada, confiança, registros e pressão nos serviços são índices nacionais sintéticos com defasagens e custos. Violência e sobrecarga também alteram atividade/bem-estar. Equações, ordem de atualização, referências, migração e limites em [CONSEQUENCES.md](CONSEQUENCES.md). Não há bônus ideológico nem taxa de homicídios estimada.

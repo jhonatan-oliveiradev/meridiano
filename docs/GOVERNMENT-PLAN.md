@@ -41,3 +41,7 @@ Os cards mostram a distância até o alvo e a variação desde o início. A cor 
 O acompanhamento do gabinete usa dados do motor: Nilo prioriza metas abaixo do ritmo e prazos próximos; Fazenda mostra saldo e compromissos do próximo trimestre; Saúde e Infraestrutura apontam metas da área e programas contratados. Esses resumos não exigem uma consulta de IA.
 
 Consultar uma pessoa, revisar políticas ou abrir uma proposta a partir de uma meta habilita **Voltar à meta**. O retorno recupera o card, os detalhes abertos, a rolagem e o foco. O contexto é descartado ao trocar de país ou retornar ao plano; não é persistido entre recargas.
+
+## Meta de violência
+
+Violência é uma meta nacional de redução do índice sintético /100, atribuída ao Davi (Segurança pública). Usa prazos, amostras e arquivamento existentes. A meta não modifica políticas ou orçamento automaticamente.

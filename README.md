@@ -145,3 +145,7 @@ No desktop a partir de 1280 px, Nilo também ocupa uma coluna própria com olhar
 ### v0.9 · gabinete com ferramentas
 
 Nilo coordena Fazenda, Saúde e Infraestrutura. As áreas investigam estados, consultam orçamento, comparam programas e preparam propostas com dados do motor. Cards permitem abrir o estado no mapa e revisar uma contratação; a confirmação continua com o jogador. Atalhos de dados funcionam sem IA. A conversa usa a chave já configurada. Regras em [CABINET.md](docs/CABINET.md) e integração em [AI.md](docs/AI.md).
+
+### v0.11 · consequências e segurança pública
+
+Prévia antes do avanço manual, explicação dos indicadores e secretaria de Segurança Pública com Davi. Investigação, prevenção e controle têm custos recorrentes e efeitos graduais; violência, confiança, registros e pressão nos serviços passam a integrar a simulação. Metas de violência e acontecimentos da área completam o ciclo. [Regras, referências e limites](docs/CONSEQUENCES.md).

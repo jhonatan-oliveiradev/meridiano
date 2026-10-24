@@ -1,0 +1,86 @@
+.consequence-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+.consequence-preview article {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.consequence-preview strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+}
+.consequence-preview small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.consequence-preview span {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.preview-finance {
+  border-block: 1px solid var(--border);
+  padding: 14px 0;
+  display: grid;
+  gap: 12px;
+}
+.preview-finance > span,
+.driver-list p {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.driver-list {
+  border-block: 1px solid var(--border);
+  margin: 20px 0;
+  padding: 12px 0;
+}
+.driver-list b {
+  white-space: nowrap;
+  color: var(--primary);
+}
+.explain-metric {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.cabinet-team {
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .consequence-preview {
+    grid-template-columns: 1fr;
+  }
+  .consequence-dialog .modal-actions > button {
+    flex: 1 1 100%;
+  }
+  .preview-finance > span {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.consequence-preview article:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.chart-heading {
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.chart-heading label {
+  min-width: 0;
+  max-width: 100%;
+}
+.chart-heading select {
+  max-width: 100%;
+}

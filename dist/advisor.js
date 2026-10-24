@@ -1,3 +1,4 @@
+import { safetyValues } from "./consequences.js";
 import { goalsOf } from "./government-plan.js";
 import { initCabinetPanel } from "./cabinet-panel.js";
 import { roleFor, runCabinetTool } from "./cabinet-tools.js";
@@ -163,6 +164,7 @@ export function initAdvisor({
     dock.reset();
     busy(false);
     cabinet.updateRole();
+    stateChanged(getState());
     try {
       localStorage.setItem("meridiano:cabinet-role", id);
     } catch {}
@@ -184,17 +186,21 @@ export function initAdvisor({
       render(
         {
           title:
-            tool.kind === "budget"
-              ? "Contas do próximo trimestre"
-              : tool.kind === "states"
-                ? "Comparação entre estados"
-                : "Investimentos para comparar",
+            tool.kind === "security"
+              ? "Segurança do país"
+              : tool.kind === "budget"
+                ? "Contas do próximo trimestre"
+                : tool.kind === "states"
+                  ? "Comparação entre estados"
+                  : "Investimentos para comparar",
           summary:
-            tool.kind === "budget"
-              ? `Pagamentos e compromissos de ${s.name}, no trimestre atual.`
-              : tool.kind === "states"
-                ? "Estados ordenados pelo acesso atual a serviços."
-                : "Propostas calculadas para os estados com menor acesso a serviços.",
+            tool.kind === "security"
+              ? "Violência, capacidade e confiança. Os registros também dependem da disposição para denunciar."
+              : tool.kind === "budget"
+                ? `Pagamentos e compromissos de ${s.name}, no trimestre atual.`
+                : tool.kind === "states"
+                  ? "Estados ordenados pelo acesso atual a serviços."
+                  : "Propostas calculadas para os estados com menor acesso a serviços.",
           observations: [],
           tradeoffs: [],
           nextSteps: [],
@@ -203,6 +209,7 @@ export function initAdvisor({
         { local: true },
       );
       cabinet.render([tool], fingerprint, selectedRole);
+      dock.begin();
       answerFingerprint = fingerprint;
       $("#advisorStale").hidden = true;
     },
@@ -233,23 +240,42 @@ export function initAdvisor({
     $("#advisorPeriod").textContent = date(s.quarter);
     $("#composerContext").textContent = `${s.name} · T${(s.quarter % 4) + 1}`;
     $("#advisorBrief").replaceChildren(
-      ...[
-        [
-          "Pobreza",
-          fmt(s.metrics.poverty) + "%",
-          "Como reduzir a pobreza sem ampliar muito o déficit?",
-        ],
-        [
-          "Dívida / PIB",
-          fmt(s.metrics.debt) + "%",
-          "O que pressiona a dívida deste país?",
-        ],
-        [
-          "Bem-estar",
-          fmt(s.metrics.welfare) + "/100",
-          "Quais políticas posso testar para melhorar o bem-estar?",
-        ],
-      ].map(([label, value, question]) => {
+      ...(selectedRole === "security"
+        ? [
+            [
+              "Violência",
+              fmt(safetyValues(s).crime) + "/100",
+              "Consulte o diagnóstico de segurança e explique a violência.",
+            ],
+            [
+              "Confiança na polícia",
+              fmt(safetyValues(s).trust) + "/100",
+              "O que pressiona a confiança na polícia e como posso recuperá-la?",
+            ],
+            [
+              "Investigação",
+              fmt(safetyValues(s).investigation) + "/100",
+              "Como o investimento em investigação leva tempo para produzir efeitos?",
+            ],
+          ]
+        : [
+            [
+              "Pobreza",
+              fmt(s.metrics.poverty) + "%",
+              "Como reduzir a pobreza sem ampliar muito o déficit?",
+            ],
+            [
+              "Dívida / PIB",
+              fmt(s.metrics.debt) + "%",
+              "O que pressiona a dívida deste país?",
+            ],
+            [
+              "Bem-estar",
+              fmt(s.metrics.welfare) + "/100",
+              "Quais políticas posso testar para melhorar o bem-estar?",
+            ],
+          ]
+      ).map(([label, value, question]) => {
         const el = document.createElement("button"),
           n = document.createElement("span"),
           v = document.createElement("strong"),
@@ -268,11 +294,18 @@ export function initAdvisor({
       }),
     );
     $("#advisorFacts").replaceChildren(
-      ...[
-        ["População", fmt(s.metrics.population) + " milhões"],
-        ["Pobreza", fmt(s.metrics.poverty) + "%"],
-        ["Dívida / PIB", fmt(s.metrics.debt) + "%"],
-      ].map(([k, v]) => {
+      ...(selectedRole === "security"
+        ? [
+            ["Violência", fmt(safetyValues(s).crime) + "/100"],
+            ["Confiança", fmt(safetyValues(s).trust) + "/100"],
+            ["Investigação", fmt(safetyValues(s).investigation) + "/100"],
+          ]
+        : [
+            ["População", fmt(s.metrics.population) + " milhões"],
+            ["Pobreza", fmt(s.metrics.poverty) + "%"],
+            ["Dívida / PIB", fmt(s.metrics.debt) + "%"],
+          ]
+      ).map(([k, v]) => {
         const el = document.createElement("div"),
           label = document.createElement("span"),
           value = document.createElement("strong");

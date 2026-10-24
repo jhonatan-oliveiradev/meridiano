@@ -1,8 +1,40 @@
+import { migrateConsequences } from "./consequences.js";
 import { advanceGoals } from "./government-plan.js";
 import { advance, budget, policyDefs, regionsOf } from "./model.js";
 
 // Fictional game rules. All effects last one turn; cost is a one-time % of GDP.
 const incidents = [
+  {
+    key: "security",
+    title: "Comunidades pedem proteção",
+    region: "Vale Central",
+    detail:
+      "A violência e a baixa confiança dificultam a resposta local. Escolha uma ação para o próximo trimestre.",
+    eligible: (s) =>
+      (s.metrics.crime ?? 45) > 50 || (s.metrics.trust ?? 55) < 45,
+    choices: [
+      {
+        id: "investigate",
+        label: "Reforçar perícia e atendimento às vítimas",
+        detail:
+          "Apoio temporário às investigações e à cooperação da população.",
+        effect: { cost: 0.4, crime: -0.3, trust: 0.5 },
+      },
+      {
+        id: "operation",
+        label: "Realizar uma operação emergencial",
+        detail:
+          "Resposta imediata com custo de confiança. Não amplia a capacidade permanente.",
+        effect: { cost: 0.25, crime: -0.5, trust: -1 },
+      },
+      {
+        id: "wait",
+        label: "Manter a estrutura atual",
+        detail: "Sem gasto extraordinário; o trimestre absorve a pressão.",
+        effect: { crime: 0.4, servicesPressure: 0.3 },
+      },
+    ],
+  },
   {
     key: "water",
     title: "Reservatórios em baixa",
@@ -223,15 +255,15 @@ export function forecastPolicies(s) {
     current: changed.metrics,
     baseline: unchanged.metrics,
     delta: Object.fromEntries(
-      ["poverty", "welfare", "debt"].map((k) => [
-        k,
-        changed.metrics[k] - unchanged.metrics[k],
-      ]),
+      ["poverty", "welfare", "debt", "crime", "trust", "servicesPressure"].map(
+        (k) => [k, changed.metrics[k] - unchanged.metrics[k]],
+      ),
     ),
   };
 }
 export function advanceTurn(s) {
   if (s.quarter >= 160 || decisionFor(s)) return s;
+  s = migrateConsequences(s);
   const n = projectQuarter(s);
   const baseline = s.policyBaseline ?? s.policies;
   n.lastReport = {

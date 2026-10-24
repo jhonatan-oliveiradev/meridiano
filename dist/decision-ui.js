@@ -31,6 +31,22 @@ const policyValue = (key, n) => {
     : `${fmt(n, p.step < 1 ? 1 : 0)}${p.unit}`;
 };
 export const policyGuidance = {
+  security: [
+    "Equipes de investigação, perícia e policiamento.",
+    "Gasto adicional no próximo trimestre; capacidade se acumula antes de reduzir a violência.",
+  ],
+  prevention: [
+    "Rede de prevenção, jovens e comunidades.",
+    "Financiamento recorrente; a rede cresce mais devagar que a capacidade policial.",
+  ],
+  oversight: [
+    "Policiais, vítimas e população atendida.",
+    "Gasto recorrente e confiança gradual; reduz o custo de confiança das operações intensas.",
+  ],
+  enforcement: [
+    "Moradores e equipes nos locais das operações.",
+    "Depende da investigação já instalada; intensidade alta pode reduzir confiança. Não representa aumento de penas.",
+  ],
   income: [
     "Toda a população; maior proteção relativa para quem tem menos renda.",
     "Transferência no próximo trimestre; pobreza ajusta gradualmente.",
@@ -62,6 +78,9 @@ function effectText(effect) {
     inflation: ["Inflação", "p.p."],
     poverty: ["Pobreza", "p.p."],
     welfare: ["Bem-estar", "pontos"],
+    crime: ["Violência", "pontos"],
+    trust: ["Confiança na polícia", "pontos"],
+    servicesPressure: ["Pressão nos serviços", "pontos"],
   };
   const lines = Object.entries(names)
     .filter(([k]) => effect[k])
@@ -88,10 +107,13 @@ export function initDecisionUI({
       ["poverty", "Pobreza", "p.p."],
       ["welfare", "Bem-estar", "pontos"],
       ["debt", "Dívida / PIB", "p.p."],
+      ["crime", "Violência", "pontos"],
+      ["trust", "Confiança na polícia", "pontos"],
+      ["servicesPressure", "Pressão nos serviços", "pontos"],
     ]
       .map(
         ([key, label, unit]) =>
-          `<div><span>${label}</span><strong class="${Math.abs(f.delta[key]) < 0.005 ? "" : (key === "welfare" ? f.delta[key] > 0 : f.delta[key] < 0) ? "cycle-positive" : "cycle-negative"}">${signed(f.delta[key])}<small> ${unit}</small></strong><span>${fmt(f.baseline[key], 1)} → ${fmt(f.current[key], 1)}${key === "welfare" ? "/100" : "%"}</span></div>`,
+          `<div><span>${label}</span><strong class="${Math.abs(f.delta[key]) < 0.005 ? "" : (["welfare", "trust"].includes(key) ? f.delta[key] > 0 : f.delta[key] < 0) ? "cycle-positive" : "cycle-negative"}">${signed(f.delta[key])}<small> ${unit}</small></strong><span>${fmt(f.baseline[key], 1)} → ${fmt(f.current[key], 1)}${["welfare", "trust", "crime", "servicesPressure"].includes(key) ? "/100" : "%"}</span></div>`,
       )
       .join(
         "",
@@ -126,10 +148,17 @@ export function initDecisionUI({
       ["poverty", "Pobreza", "p.p."],
       ["welfare", "Bem-estar", "pontos"],
       ["debt", "Dívida / PIB", "p.p."],
+      ["crime", "Violência", "pontos"],
+      ["trust", "Confiança na polícia", "pontos"],
+      ["servicesPressure", "Pressão nos serviços", "pontos"],
     ]
+      .filter(
+        ([key]) =>
+          Number.isFinite(r.after[key]) && Number.isFinite(r.before[key]),
+      )
       .map(([key, label, unit]) => {
         const d = r.after[key] - r.before[key];
-        return `<div><span>${label}</span><strong>${fmt(r.after[key], 1)}${key === "welfare" ? "<small>/100</small>" : "<small>%</small>"}</strong><span class="${Math.abs(d) < 0.005 ? "" : (key === "welfare" ? d > 0 : d < 0) ? "cycle-positive" : "cycle-negative"}">${signed(d)} ${unit} no trimestre</span></div>`;
+        return `<div><span>${label}</span><strong>${fmt(r.after[key], 1)}${["welfare", "trust", "crime", "servicesPressure"].includes(key) ? "<small>/100</small>" : "<small>%</small>"}</strong><span class="${Math.abs(d) < 0.005 ? "" : (["welfare", "trust"].includes(key) ? d > 0 : d < 0) ? "cycle-positive" : "cycle-negative"}">${signed(d)} ${unit} no trimestre</span></div>`;
       })
       .join("")}</div>${
       full
