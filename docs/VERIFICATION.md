@@ -122,3 +122,9 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Browser: meta → Iara preenche a pergunta sem enviar; retorno recupera foco e detalhes abertos. Proposta a partir da meta inclui retorno e não foi contratada. Valores do gabinete conferidos com programas existentes e meta de menor prazo. Sem consulta de API real nesta tarefa.
 - Desktop 1363×936: documento client/scroll 1363×936. Temas claro/escuro e menu de 180px inspecionados. Desktop compacto em iframe 1363×600: documento 1363×600, ações do menu acessíveis até 584px. Mobile em iframe 390×844 e 320×740: larguras client/scroll 380/380 e 310/310; rótulos íntegros e rolagem natural. Não equivale a toque em aparelho físico.
 - Sem novas dependências ou alterações das regras econômicas. WebGL e preferência de movimento reduzido do sistema não foram emulados. Captura: screenshots/product-polish.jpg.
+
+## Favicon e acentuação do gabinete
+
+- Favicon vetorial próprio com globo/meridiano verde-lima em fundo escuro; fallback ICO 16/32/48px e apple-touch-icon 180px. Referências explícitas no HTML, arquivos exigidos pelo build e MIME local correto para ICO/PNG.
+- Prompt pede ortografia, acentuação, cedilhas e Unicode em todos os campos. Não há substituição automática de palavras, que poderia alterar nomes ou sentido. Testes verificam a resposta completa acentuada e a preservação dos termos do relato durante a digitação progressiva. O modelo real ainda precisa ser conferido; a instrução reduz o problema, mas não garante a grafia em toda geração.
+- 69 testes aprovados; 21 testes direcionados de API/apresentação aprovados após ampliar os casos Unicode; syntax check, Prettier, build e diff check aprovados. Ícone inspecionado em PNG. Sem dependência nova ou variável de ambiente.
