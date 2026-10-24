@@ -86,7 +86,7 @@ test("Gemini uses server header, fixed endpoint, structured JSON and computed bu
       return ok();
     },
   });
-  assert.equal(result.answer.title, answer.title);
+  assert.deepEqual(result.answer, answer);
   assert.equal(called.opts.headers["x-goog-api-key"], "test-only");
   assert.ok(!called.url.includes("test-only"));
   const payload = JSON.parse(called.opts.body);

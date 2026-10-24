@@ -11,6 +11,8 @@ const root = resolve("dist"),
     ".json": "application/json; charset=utf-8",
     ".txt": "text/plain; charset=utf-8",
     ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".png": "image/png",
     ".woff2": "font/woff2",
   };
 // Local-only .env support. Production reads Vercel environment variables directly.
