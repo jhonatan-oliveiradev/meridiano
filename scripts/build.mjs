@@ -15,6 +15,7 @@ for (const f of [
   "investments.css",
   "style.css",
   "app.js",
+  "fit-country-name.js",
   "model.js",
   "geography.js",
   "premium.css",
