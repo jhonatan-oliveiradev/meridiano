@@ -1,6 +1,9 @@
 import { mkdir, cp, access, rm } from "node:fs/promises";
 for (const f of [
   "index.html",
+  "favicon.svg",
+  "favicon.ico",
+  "apple-touch-icon.png",
   "cabinet-tools.js",
   "cabinet-panel.js",
   "cabinet.css",

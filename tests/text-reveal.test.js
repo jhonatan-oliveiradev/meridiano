@@ -37,7 +37,10 @@ test("reply reveals in order, keeps Unicode intact and completes once", () => {
     schedule: c.schedule,
     unschedule: c.unschedule,
   });
-  const text = "Olá 🌍. ".repeat(40);
+  const text =
+    "Composição do orçamento: ausência de transferências, políticas, previdência, déficit e serviços. Olá 🌍. ".repeat(
+      12,
+    );
   r.start(
     [
       { node: first, text },
