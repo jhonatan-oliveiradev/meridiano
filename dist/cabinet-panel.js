@@ -34,6 +34,7 @@ export function initCabinetPanel({
   }
   function updateIdentity() {
     const role = roleFor(getRole());
+    $("#analysisActionLabel").textContent = `Pedir análise a ${role.name}`;
     const title = role.title || cabinetFor(getState().government).title;
     document
       .querySelectorAll("[data-cabinet-name]")
@@ -311,7 +312,7 @@ export function initCabinetPanel({
           );
           if (!q.allowed) card.append(node("p", q.reason, "cabinet-card-note"));
           const review = button(
-            "Revisar contratação ↗",
+            "Ver custos e prazo ↗",
             guard(() => onPrepare(q.region, q.type)),
           );
           review.disabled = !q.allowed;
