@@ -1,3 +1,4 @@
+import { goalDef } from "./government-plan.js";
 import {
   forecastPolicies,
   decisionFor,
@@ -96,6 +97,26 @@ export function initDecisionUI({
         "",
       )}</div><div class="forecast-finance"><span>Variação do gasto anual <b>${signed(f.annualCost)}% do PIB</b></span><span>Variação da receita anual <b>${signed(f.annualRevenue)}% do PIB</b></span></div><details class="forecast-details"><summary>Como ler esta comparação</summary><p>As duas trajetórias partem do país atual. Uma mantém as políticas do início do trimestre; a outra usa seus ajustes. Os efeitos se acumulam e dependem da capacidade de execução. Acontecimentos futuros e respostas ainda não escolhidas não entram na projeção. São resultados das regras deste jogo, sem calibração econômica real.</p><p><b>No próximo trimestre:</b> pobreza ${fmt(f.next.poverty)}%, bem-estar ${fmt(f.next.welfare)}/100 e dívida ${fmt(f.next.debt)}% do PIB.</p>${f.changes.map((p) => `<p><b>${p.name}</b>: ${policyValue(p.key, p.before)} → ${policyValue(p.key, p.after)}</p>`).join("")}</details>${s.scheduledDecision ? `<p class="scheduled-note"><b>Próximo trimestre:</b> ${esc(s.scheduledDecision.choice)} · gasto extraordinário de ${fmt(s.scheduledDecision.effect.cost ?? 0, 1)}% do PIB, além do orçamento anual.</p>` : ""}${decisionFor(s) ? '<button class="decision-link" data-cycle-action="decision">Há um acontecimento para resolver antes do avanço ↗</button>' : ""}`;
   }
+  function planReport(s) {
+    const goals = s.lastReport?.goalUpdates;
+    if (!goals?.length) return "";
+    const labels = {
+      tracking: "Em acompanhamento",
+      behind: "Abaixo do ritmo",
+      reached: "Meta alcançada",
+      met: "Cumprida no prazo",
+      missed: "Prazo encerrado",
+      stopped: "Encerrada",
+    };
+    return `<div class="investment-report"><h4>Plano de governo</h4>${goals
+      .map((g) => {
+        const d = goalDef(g.metric);
+        return `<p><b>${esc(g.region === null ? "País" : regionsOf(s)[g.region].name)} · ${d.name}</b>: ${fmt(g.value)}${d.unit} / meta ${fmt(g.target)}${d.unit}. ${labels[g.status]}.</p>`;
+      })
+      .join(
+        "",
+      )}<button class="secondary" data-close data-view="plano">Abrir plano de governo ↗</button></div>`;
+  }
   function reportHTML(s, full = false) {
     const r = s.lastReport,
       event = decisionFor(s);
@@ -123,7 +144,7 @@ export function initDecisionUI({
             )
             .join("")}</tbody></table></div></details>`
         : ""
-    }${event ? `<div class="decision-callout"><div><span class="eyebrow">DECISÃO PENDENTE · ${esc(event.region)}</span><b>${esc(event.title)}</b></div><button class="primary" data-cycle-action="decision">Avaliar opções ↗</button></div>` : `<div class="cycle-next"><span>${s.scheduledDecision ? "Resposta escolhida para o próximo trimestre." : "Pronto para o próximo trimestre."}</span>${full ? '<button class="secondary" data-cycle-action="policies">Revisar políticas ↗</button>' : ""}</div>`}`;
+    }${full ? planReport(s) : ""}${event ? `<div class="decision-callout"><div><span class="eyebrow">DECISÃO PENDENTE · ${esc(event.region)}</span><b>${esc(event.title)}</b></div><button class="primary" data-cycle-action="decision">Avaliar opções ↗</button></div>` : `<div class="cycle-next"><span>${s.scheduledDecision ? "Resposta escolhida para o próximo trimestre." : "Pronto para o próximo trimestre."}</span>${full ? '<button class="secondary" data-cycle-action="policies">Revisar políticas ↗</button>' : ""}</div>`}`;
   }
   function showReport() {
     const s = getState();

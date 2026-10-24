@@ -383,6 +383,42 @@ test("all investment phases validate and a full 48-program portfolio fits the AP
   };
   assert.equal(validateRequest(payload).snapshot.investments.length, 48);
   assert.ok(Buffer.byteLength(JSON.stringify(payload)) < 24000);
+  const { createGoal } = await import("../dist/government-plan.js");
+  const { regionalMetrics } = await import("../dist/model.js");
+  const { advanceTurn, decisionFor, resolveDecision } = await import(
+    "../dist/simulation.js"
+  );
+  let planned = s;
+  for (let i = 0; i < 3; i++)
+    planned = createGoal(planned, {
+      metric: "access",
+      region: i,
+      owner: "infrastructure",
+      horizon: 12,
+      target: Math.min(100, regionalMetrics(planned, i).access + 1),
+    });
+  // Three active histories near their deadline, alongside the largest portfolio.
+  for (let i = 0; i < 11; i++) {
+    const d = decisionFor(planned);
+    if (d) planned = resolveDecision(planned, d.id, d.choices.at(-1).id);
+    planned = advanceTurn(planned);
+  }
+  const sampleGoal = planned.goals[0];
+  for (let i = 0; i < 2; i++)
+    planned.goals.push({
+      ...structuredClone(sampleGoal),
+      id: `${planned.seed}:20:${10 + i}`,
+      closedAt: planned.quarter,
+      closedReason: "stopped",
+    });
+  const withPlan = {
+    mode: "question",
+    role: "nilo",
+    question: "x".repeat(600),
+    snapshot: snapshotOf(planned),
+  };
+  assert.equal(validateRequest(withPlan).snapshot.goals.length, 5);
+  assert.ok(Buffer.byteLength(JSON.stringify(withPlan)) < 24000);
 });
 
 const planned = (requests) =>

@@ -1,3 +1,4 @@
+import { validateGoals, planSummary } from "../dist/government-plan.js";
 import {
   roleFor,
   toolNames,
@@ -269,6 +270,12 @@ export function validateRequest(body) {
     s.investments !== undefined
       ? validateInvestments(s.investments, { quarter: s.quarter, territory })
       : undefined;
+  let goals;
+  try {
+    goals = validateGoals(s.goals, { quarter: s.quarter, territory });
+  } catch {
+    invalid();
+  }
   return {
     mode: body.mode,
     role,
@@ -292,6 +299,7 @@ export function validateRequest(body) {
       previous: s.previous ? metrics(s.previous) : null,
       ...(territory ? { territory } : {}),
       ...(investments ? { investments } : {}),
+      ...(goals.length ? { goals } : {}),
     },
   };
 }
@@ -426,7 +434,7 @@ export async function generateAdvice(
       "A consulta demorou mais que o esperado. Tente novamente.",
     );
   const s = request.snapshot;
-  const { investments: portfolio, ...scenario } = s;
+  const { investments: portfolio, goals: _goals, ...scenario } = s;
   const context = {
     ...request,
     snapshot: scenario,
@@ -438,6 +446,7 @@ export async function generateAdvice(
       briefs: role.id === "nilo" ? cabinetBriefs(s) : [],
     },
     statesIndex: regionsOf(s).map((r, index) => ({ index, name: r.name })),
+    governmentPlan: planSummary(s, role.id),
     toolResults: consultations,
     budget: budget(s),
     regions: regionsOf(s).map((r, i) => ({
@@ -483,7 +492,7 @@ export async function generateAdvice(
               {
                 text:
                   systemInstruction +
-                  ` O Nilo atua como ${cabinetFor(s.government).title} e coordena Fazenda, Saúde e Infraestrutura. Você é ${role.name}, da área ${role.area}, e atua como ${role.title || cabinetFor(s.government).title}. Responsabilidade: ${role.scope} Programas permitidos: ${role.programs.join(", ")}. Ferramentas permitidas: ${role.tools.join(", ")}. Não atribua uma opinião de IA independente a cada ministério; são áreas especializadas do mesmo gabinete. ${phase === "plan" ? "Para investigar estados, comparar programas ou preparar proposta, devolva requests com name e args. Use índices de statesIndex, nunca nomes inventados. Ferramentas: investigate_states(args metric,direction,limit); inspect_budget(args vazio); compare_investments(args regions e programs); prepare_investment(args region e program). Até três consultas, apenas leitura. Se não precisar consultar, preencha title, summary, observations, tradeoffs e nextSteps; requests pode ser vazio ou ausente. Não envie custo ou texto nos argumentos e não afirme que contratou algo." : "Esta é a explicação final. Use toolResults como fonte dos custos e propostas. Não peça outras ferramentas. Cite claramente limitações ou bloqueios. Os botões abrem revisão; o jogador confirma a contratação. Não há alteração de políticas ou avanço de tempo por IA."}`,
+                  ` O Nilo atua como ${cabinetFor(s.government).title} e coordena Fazenda, Saúde e Infraestrutura. O plano de governo contém metas definidas pelo jogador, não medidas já executadas. O progresso e o ritmo vêm do motor; ritmo é referência linear, não previsão. Avalie prazos, custos e deliveryRisks, sem afirmar que a meta será cumprida. Nenhuma meta aplica políticas ou contrata programas. Você é ${role.name}, da área ${role.area}, e atua como ${role.title || cabinetFor(s.government).title}. Responsabilidade: ${role.scope} Programas permitidos: ${role.programs.join(", ")}. Ferramentas permitidas: ${role.tools.join(", ")}. Não atribua uma opinião de IA independente a cada ministério; são áreas especializadas do mesmo gabinete. ${phase === "plan" ? "Para investigar estados, comparar programas ou preparar proposta, devolva requests com name e args. Use índices de statesIndex, nunca nomes inventados. Ferramentas: investigate_states(args metric,direction,limit); inspect_budget(args vazio); compare_investments(args regions e programs); prepare_investment(args region e program). Até três consultas, apenas leitura. Se não precisar consultar, preencha title, summary, observations, tradeoffs e nextSteps; requests pode ser vazio ou ausente. Não envie custo ou texto nos argumentos e não afirme que contratou algo." : "Esta é a explicação final. Use toolResults como fonte dos custos e propostas. Não peça outras ferramentas. Cite claramente limitações ou bloqueios. Os botões abrem revisão; o jogador confirma a contratação. Não há alteração de políticas ou avanço de tempo por IA."}`,
               },
             ],
           },
