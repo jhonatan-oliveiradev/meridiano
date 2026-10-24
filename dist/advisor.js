@@ -1,3 +1,4 @@
+import { goalsOf } from "./government-plan.js";
 import { initCabinetPanel } from "./cabinet-panel.js";
 import { roleFor, runCabinetTool } from "./cabinet-tools.js";
 import { investmentSnapshot } from "./investment-ledger.js";
@@ -20,6 +21,19 @@ export function snapshotOf(s) {
     policies: { ...s.policies },
     metrics: { ...s.metrics },
     capacity: s.capacity,
+    ...(s.goals?.length
+      ? {
+          goals: [
+            ...goalsOf(s).filter((g) => g.closedAt === undefined),
+            ...goalsOf(s)
+              .filter((g) => g.closedAt !== undefined)
+              .sort(
+                (a, b) => a.closedAt - b.closedAt || a.startedAt - b.startedAt,
+              )
+              .slice(-2),
+          ],
+        }
+      : {}),
     ...(s.investments?.length ? { investments: investmentSnapshot(s) } : {}),
     ...(s.territory
       ? {
@@ -133,30 +147,31 @@ export function initAdvisor({
     const saved = localStorage.getItem("meridiano:cabinet-role");
     if (roleFor(saved)) selectedRole = saved;
   } catch {}
+  function selectRole(id) {
+    if (id === selectedRole) return;
+    active?.abort();
+    active = null;
+    reveal.cancel();
+    writing = false;
+    selectedRole = id;
+    answerFingerprint = "";
+    result.replaceChildren();
+    cabinet.clear();
+    error.textContent = "";
+    $("#advisorStale").hidden = true;
+    $("#revealControls").hidden = true;
+    dock.reset();
+    busy(false);
+    cabinet.updateRole();
+    try {
+      localStorage.setItem("meridiano:cabinet-role", id);
+    } catch {}
+  }
   const cabinet = initCabinetPanel({
     getState,
     getRole: () => selectedRole,
     getStamp: () => fingerprint,
-    setRole(id) {
-      if (id === selectedRole) return;
-      active?.abort();
-      active = null;
-      reveal.cancel();
-      writing = false;
-      selectedRole = id;
-      answerFingerprint = "";
-      result.replaceChildren();
-      cabinet.clear();
-      error.textContent = "";
-      $("#advisorStale").hidden = true;
-      $("#revealControls").hidden = true;
-      dock.reset();
-      busy(false);
-      cabinet.updateRole();
-      try {
-        localStorage.setItem("meridiano:cabinet-role", id);
-      } catch {}
-    },
+    setRole: selectRole,
     onQuick(request) {
       active?.abort();
       active = null;
@@ -511,6 +526,13 @@ export function initAdvisor({
   stateChanged(getState());
   return {
     stateChanged,
+    openQuestion(role, question) {
+      if (!roleFor(role)) return;
+      selectRole(role);
+      dock.expand({ focus: true });
+      $("#advisorQuestion").value = question;
+      $("#advisorQuestion").focus();
+    },
     cancel() {
       active?.abort();
       elapsed.stop();

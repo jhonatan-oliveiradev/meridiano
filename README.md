@@ -6,6 +6,12 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ![Gabinete e Nilo — v0.3](docs/screenshots/cabinet-v03.jpg)
 
+## Versão 0.10 · plano de governo
+
+Metas de acesso regional, pobreza, bem-estar e dívida, com prazo de um a três anos. O gabinete acompanha ritmo, compromissos fiscais e operação estimada das obras. Histórico por trimestre, avaliação no prazo e arquivo de metas encerradas. Os programas continuam exigindo revisão e confirmação. Veja [regras do plano](docs/GOVERNMENT-PLAN.md).
+
+Fluxo de entrega: PRs de desenvolvimento para `dev` (pré-produção); promoção de `dev` para `main` (produção) após validação.
+
 ## Versão 0.8 · investimentos regionais
 
 - Compare necessidades dos estados e avalie saneamento, atenção básica, educação e mobilidade pelo mapa ou pela carteira em Políticas.
