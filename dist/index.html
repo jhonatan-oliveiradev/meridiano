@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="territory.css" />
     <link rel="stylesheet" href="investments.css" />
     <link rel="stylesheet" href="cabinet.css" />
+    <link rel="stylesheet" href="government-plan.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -112,6 +113,13 @@
           >
             <svg><use href="assets/reicon.svg#i-chart" /></svg></button
           ><button
+            data-view="plano"
+            class="rail-btn"
+            title="Plano de governo"
+            aria-label="Plano de governo"
+          >
+            <svg><use href="assets/reicon.svg#i-policy" /></svg></button
+          ><button
             data-view="cenarios"
             class="rail-btn"
             title="Cenários salvos"
@@ -151,7 +159,7 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.9</span>
+          <span></span> Cenário fictício <span class="small-label">v0.10</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -504,6 +512,34 @@
           </p>
           <div id="scenarios"></div>
         </div>
+        <section class="view content-view" id="view-plano">
+          <div class="plan-heading">
+            <div>
+              <span class="eyebrow">PRIORIDADES DO PAÍS</span>
+              <h3>Plano de governo</h3>
+              <p>
+                Resultados que você quer alcançar, acompanhados a cada
+                trimestre.
+              </p>
+            </div>
+            <button class="primary" id="addGovernmentGoal">
+              Definir meta ↗
+            </button>
+          </div>
+          <div class="plan-meta">
+            <span id="planCounter"></span
+            ><span>Dados calculados pelo jogo</span>
+          </div>
+          <div id="planGoals" class="plan-goals"></div>
+          <p class="plan-note">
+            O ritmo compara o progresso com uma referência linear até o prazo.
+            Não é uma projeção. Metas são avaliadas no encerramento e podem
+            perder ganhos antes disso.
+          </p>
+          <h4 class="plan-section-label">ACOMPANHAMENTO DO GABINETE</h4>
+          <div id="planBriefs" class="plan-briefs"></div>
+          <div id="planArchive"></div>
+        </section>
         <div class="view content-view advisor-view" id="view-conselheiro">
           <div class="content-heading">
             <span class="eyebrow" data-cabinet-office>Gabinete do Governo</span>
@@ -555,6 +591,10 @@
               >
               <div class="suggested-questions">
                 <h4 id="cabinetActiveOffice">Coordenação do gabinete</h4>
+                <p id="planCabinetSummary"></p>
+                <button class="secondary full" data-view="plano">
+                  Ver plano de governo ↗
+                </button>
                 <div id="cabinetQuickTools"></div>
                 <h4>Perguntas sobre o país</h4>
                 <button

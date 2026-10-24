@@ -4,6 +4,9 @@ for (const f of [
   "cabinet-tools.js",
   "cabinet-panel.js",
   "cabinet.css",
+  "government-plan.js",
+  "government-plan-ui.js",
+  "government-plan.css",
   ...["lia", "caio", "iara"].flatMap((name) =>
     ["neutral", "happy", "thinking"].map(
       (pose) => `assets/${name}-${pose}.svg`,

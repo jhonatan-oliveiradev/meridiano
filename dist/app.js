@@ -1,3 +1,4 @@
+import { initGovernmentPlanUI } from "./government-plan-ui.js";
 import { initCountryNameFit } from "./fit-country-name.js";
 import { initInvestmentUI } from "./investment-ui.js";
 import { generateTerritory, landforms } from "./territory.js";
@@ -65,6 +66,7 @@ let regions = regionsOf(state);
 let eventIsland = null;
 let decisionUI = null;
 let investmentUI = null;
+let governmentPlanUI = null;
 let atlasMap = null;
 let advisorController = null,
   terrain3d = null,
@@ -134,6 +136,7 @@ function setView(next) {
       "politicas",
       "indicadores",
       "cenarios",
+      "plano",
       "conselheiro",
     ].includes(next)
   )
@@ -152,6 +155,7 @@ function setView(next) {
     politicas: "Políticas públicas",
     indicadores: "Indicadores",
     cenarios: "Cenários salvos",
+    plano: "Plano de governo",
     conselheiro: cabinetFor(state.government).office,
   }[view];
   $("#pageTitle").textContent = title;
@@ -159,6 +163,7 @@ function setView(next) {
   history.replaceState(null, "", "#" + view);
   if (view === "indicadores") renderIndicators();
   if (view === "cenarios") renderScenarios();
+  if (view === "plano") governmentPlanUI?.render();
   if (!reducedMotion.matches)
     $("#view-" + view).animate(
       [
@@ -230,6 +235,7 @@ function updateUI() {
   renderBulletin(state);
   decisionUI?.update();
   investmentUI?.update();
+  governmentPlanUI?.render();
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
@@ -1434,6 +1440,27 @@ decisionUI = initDecisionUI({
 eventIsland = initEventIsland({
   onDetails: () =>
     decisionFor(state) ? decisionUI.showDecision() : setView("indicadores"),
+});
+governmentPlanUI = initGovernmentPlanUI({
+  getState: () => state,
+  setState: (next) => {
+    state = next;
+    updateUI();
+    persist();
+  },
+  openModal,
+  closeModal,
+  setView,
+  notify,
+  onPrepare: (index, type) => {
+    setView("territorio");
+    selectRegion(index);
+    investmentUI.showQuote(index, type);
+  },
+  onConsult: (role, question) => {
+    setView("conselheiro");
+    advisorController.openQuestion(role, question);
+  },
 });
 initCountryNameFit($("#countryName"));
 advisorController = initAdvisor({

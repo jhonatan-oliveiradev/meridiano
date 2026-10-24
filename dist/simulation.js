@@ -1,3 +1,4 @@
+import { advanceGoals } from "./government-plan.js";
 import { advance, budget, policyDefs, regionsOf } from "./model.js";
 
 // Fictional game rules. All effects last one turn; cost is a one-time % of GDP.
@@ -262,5 +263,5 @@ export function advanceTurn(s) {
       title: event.title,
       detail: `${event.region}: há uma decisão aguardando sua escolha. O efeito entra no próximo trimestre.`,
     });
-  return n;
+  return advanceGoals(s, n);
 }

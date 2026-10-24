@@ -33,3 +33,8 @@ Lia (Fazenda), Caio (Saúde) e Iara (Infraestrutura) são personagens fictícios
 Cada secretário possui definição portátil e três exports SVG do Photo Mode, guardados em `docs/avatar-source`. `python3 scripts/prepare-avatar.py` recompõe as versões locais com gradiente, olhos animáveis e enquadramento sem corte. A aplicação mantém suas próprias animações de piscar, olhar, cumprimento, giro e estado de consulta. Os clipes completos do runtime do Lab não são incorporados.
 
 Os SVGs de cada personagem são carregados uma vez e compartilhados pelas duas instâncias. Trocas rápidas descartam a apresentação de carregamentos antigos. Cada instância recebe IDs SVG exclusivos. Os identificadores internos finance/health/infrastructure, regras, cache, API key e saves permanecem compatíveis.
+
+
+## Plano de governo
+
+A área Plano de governo reúne metas, histórico trimestral e resumos calculados das quatro responsabilidades. Consultar abre a área e preenche uma pergunta para revisão do jogador. O contexto de IA inclui metas válidas da área; nenhuma secretaria cria metas ou contrata obras sozinha. Regras e limites em [GOVERNMENT-PLAN.md](GOVERNMENT-PLAN.md).

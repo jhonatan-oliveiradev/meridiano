@@ -61,3 +61,10 @@ O modelo pode devolver até três pedidos estruturados de leitura. O servidor va
 As ferramentas investigam estados, consultam o orçamento, comparam programas e preparam propostas. Nenhuma contrata, avança o trimestre ou altera políticas. Os cards são recalculados no navegador com o cenário atual; editar o cenário invalida suas ações. Revisar contratação abre o diálogo existente, onde o jogador confirma.
 
 Atalhos de dados funcionam sem chave e recebem a identificação “Dados do jogo”. A chave e o modelo existentes continuam válidos, sem configuração adicional. Orquestração e interface verificadas com transporte simulado; a compatibilidade com a conta e a quota reais do Google precisa ser conferida após o deploy.
+
+
+## v0.10 · metas no contexto
+
+A consulta inclui até três metas ativas e as duas últimas encerradas, sem strings livres de título ou instruções. O servidor valida o histórico limitado, recompõe progresso e prazos e envia `governmentPlan` com as metas da área selecionada (Nilo/Fazenda: visão geral). O snapshot bruto de metas não é duplicado no prompt. A impressão digital do cliente inclui as metas para invalidar respostas antigas.
+
+Metas, indicadores e resumos do gabinete funcionam sem IA. O botão Consultar apenas preenche a pergunta e seleciona a área; não faz uma chamada sem envio do jogador. Não há ferramentas de escrita para o plano. A integração usa a chave existente. Testes com transporte simulado cobrem escopo, validação e tamanho: carteira máxima de 48 programas, três metas ativas com históricos, duas encerradas e pergunta de 600 caracteres ficam abaixo de 24 KB.
