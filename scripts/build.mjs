@@ -7,6 +7,9 @@ for (const f of [
   "government-plan.js",
   "government-plan-ui.js",
   "government-plan.css",
+  "navigation.js",
+  "plan-presentation.js",
+  "product-polish.css",
   ...["lia", "caio", "iara"].flatMap((name) =>
     ["neutral", "happy", "thinking"].map(
       (pose) => `assets/${name}-${pose}.svg`,

@@ -1,0 +1,298 @@
+/* Named navigation and contextual routes, using the existing design tokens. */
+.nav-label,
+.nav-mobile-label,
+.nav-tooltip {
+  display: none;
+}
+.nav-toggle {
+  margin-top: auto;
+}
+.goal-back {
+  font-size: 11px;
+  color: var(--primary);
+  padding: 3px 0;
+  text-align: left;
+}
+.goal-back:hover {
+  text-decoration: underline;
+}
+[hidden] {
+  display: none !important;
+}
+.content-heading > h3,
+.plan-heading h3 {
+  display: none;
+}
+.advisor-view .content-heading > .eyebrow {
+  display: none;
+}
+.content-heading {
+  margin-bottom: 20px;
+}
+.plan-heading {
+  min-height: 80px;
+  align-items: flex-end;
+}
+.plan-heading .eyebrow {
+  display: block;
+  margin-bottom: 10px;
+}
+.plan-heading p {
+  margin: 0;
+  max-width: 460px;
+}
+.plan-heading {
+  padding-top: 26px;
+}
+.plan-meta {
+  margin-top: 22px;
+}
+.plan-method {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 16px 0 24px;
+  max-width: 680px;
+}
+.plan-method summary {
+  cursor: pointer;
+  width: max-content;
+  max-width: 100%;
+}
+.plan-method p {
+  margin: 10px 0;
+}
+.goal-card header {
+  gap: 12px;
+}
+.goal-gap {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 16px 0 0;
+  color: var(--ink);
+  font-weight: 500;
+}
+.goal-card progress {
+  margin-top: 12px;
+}
+.goal-baseline {
+  flex-wrap: wrap;
+  gap: 6px;
+  line-height: 1.5;
+}
+.goal-change[data-tone="positive"] {
+  color: var(--primary);
+}
+.goal-change[data-tone="negative"] {
+  color: light-dark(#9a401f, #ffae8e);
+}
+.goal-card:focus,
+.plan-archive article:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.plan-brief p {
+  font-size: 12px;
+}
+.plan-brief button {
+  font-size: 11px;
+}
+@media (min-width: 761px) {
+  .app {
+    --navigation-width: 66px;
+    --country-sidebar-width: 274px;
+    grid-template-columns:
+      var(--navigation-width) var(--country-sidebar-width)
+      minmax(0, 1fr);
+  }
+  .app.nav-expanded {
+    --navigation-width: 180px;
+  }
+  .app > .rail {
+    overflow: visible;
+  }
+  .rail-links {
+    width: 100%;
+    align-items: center;
+    gap: 10px;
+    margin-top: 32px;
+  }
+  .rail-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .rail .brand-mark {
+    flex-shrink: 0;
+  }
+  .rail .bottom {
+    margin-top: 8px;
+  }
+  .nav-expanded .rail {
+    align-items: stretch;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .nav-expanded .rail-links {
+    align-items: stretch;
+  }
+  .nav-expanded .rail-btn {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 12px;
+  }
+  .nav-expanded .nav-label {
+    display: inline;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .nav-expanded .version {
+    text-align: center;
+  }
+  .app:not(.nav-expanded) .rail-btn:hover .nav-tooltip,
+  .app:not(.nav-expanded) .rail-btn:focus-visible .nav-tooltip {
+    display: block;
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    padding: 8px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 5px 22px #0002;
+    pointer-events: none;
+  }
+}
+@media (min-width: 1600px) {
+  .app {
+    --navigation-width: 70px;
+    --country-sidebar-width: 294px;
+  }
+}
+@media (min-width: 761px) and (max-width: 1200px) {
+  .app {
+    --navigation-width: 58px;
+    --country-sidebar-width: 241px;
+  }
+}
+@media (min-width: 761px) and (max-width: 1000px) {
+  .app {
+    --navigation-width: 54px;
+    --country-sidebar-width: 218px;
+  }
+}
+@media (min-width: 761px) and (max-height: 740px) {
+  .rail {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .rail-links {
+    margin-top: 20px;
+    gap: 6px;
+  }
+  .rail-btn {
+    height: 38px;
+  }
+  .rail .version {
+    display: none;
+  }
+  .plan-heading {
+    padding-top: 12px;
+  }
+}
+@media (max-width: 760px) {
+  .app,
+  .app.nav-expanded {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app > .sidebar {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .app > main {
+    grid-column: 1;
+    grid-row: auto;
+    min-width: 0;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  .app > .rail {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 1fr);
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: calc(68px + env(safe-area-inset-bottom));
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border: 0;
+    border-top: 1px solid var(--border);
+    z-index: 45;
+  }
+  .rail > .brand-mark,
+  .rail > .version,
+  .rail .nav-toggle {
+    display: none;
+  }
+  .rail-links {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin: 0;
+    gap: 0;
+    min-width: 0;
+    width: 100%;
+  }
+  .rail .rail-btn,
+  .rail .bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    height: 58px;
+    margin: 0;
+    padding: 4px 1px;
+    border-radius: 10px;
+    min-width: 0;
+  }
+  .rail-btn svg {
+    width: 19px;
+    height: 19px;
+  }
+  .nav-mobile-label {
+    display: block;
+    font-size: 9px;
+    line-height: 1.2;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+  }
+  .plan-heading {
+    padding-top: 0;
+    align-items: flex-start;
+  }
+  .goal-owner > span:last-child {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+  .plan-briefs {
+    margin-bottom: 24px;
+  }
+  #toast {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 360px) {
+  .nav-mobile-label {
+    font-size: 8.5px;
+  }
+}
