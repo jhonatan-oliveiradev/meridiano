@@ -1,3 +1,5 @@
+import { initNavigation } from "./navigation.js";
+import { goalsOf, goalDef } from "./government-plan.js";
 import { initGovernmentPlanUI } from "./government-plan-ui.js";
 import { initCountryNameFit } from "./fit-country-name.js";
 import { initInvestmentUI } from "./investment-ui.js";
@@ -67,6 +69,7 @@ let eventIsland = null;
 let decisionUI = null;
 let investmentUI = null;
 let governmentPlanUI = null;
+let pendingGoalReturn = null;
 let atlasMap = null;
 let advisorController = null,
   terrain3d = null,
@@ -130,6 +133,8 @@ function persist() {
   }
 }
 function setView(next) {
+  if (view === "plano" && next !== "plano") governmentPlanUI?.remember();
+  if (next === "plano") pendingGoalReturn = null;
   if (
     ![
       "territorio",
@@ -156,14 +161,15 @@ function setView(next) {
     indicadores: "Indicadores",
     cenarios: "Cenários salvos",
     plano: "Plano de governo",
-    conselheiro: cabinetFor(state.government).office,
+    conselheiro: "Gabinete",
   }[view];
   $("#pageTitle").textContent = title;
   document.title = `${title} · ${state.name} — Meridiano`;
   history.replaceState(null, "", "#" + view);
   if (view === "indicadores") renderIndicators();
   if (view === "cenarios") renderScenarios();
-  if (view === "plano") governmentPlanUI?.render();
+  if (view === "plano") governmentPlanUI?.render(false);
+  updateGoalReturn();
   if (!reducedMotion.matches)
     $("#view-" + view).animate(
       [
@@ -236,6 +242,7 @@ function updateUI() {
   decisionUI?.update();
   investmentUI?.update();
   governmentPlanUI?.render();
+  updateGoalReturn();
   if (state.quarter >= 160) pausePlayback();
 }
 function renderRegion() {
@@ -993,6 +1000,16 @@ function openModal(html) {
   if (!$("#modal").open) modalTrigger = document.activeElement;
   $("#modalBody").innerHTML = html;
   if (!$("#modal").open) $("#modal").showModal();
+  if (pendingGoalReturn && view !== "plano" && validReturnGoal()) {
+    const actions = $("#modalBody .modal-actions");
+    if (actions) {
+      const back = document.createElement("button");
+      back.className = "secondary";
+      back.textContent = "Voltar à meta";
+      back.onclick = returnToGoal;
+      actions.append(back);
+    }
+  }
   if ($("#modalBody .cycle-dialog")) {
     $("#modalTitle").tabIndex = -1;
     $("#modalTitle").focus();
@@ -1452,16 +1469,23 @@ governmentPlanUI = initGovernmentPlanUI({
   closeModal,
   setView,
   notify,
-  onPrepare: (index, type) => {
+  onPrepare: (index, type, goalId) => {
+    beginGoalReturn(goalId);
     setView("territorio");
     selectRegion(index);
     investmentUI.showQuote(index, type);
   },
-  onConsult: (role, question) => {
+  onPolicies: (goalId) => {
+    beginGoalReturn(goalId);
+    setView("politicas");
+  },
+  onConsult: (role, question, goalId) => {
+    beginGoalReturn(goalId);
     setView("conselheiro");
     advisorController.openQuestion(role, question);
   },
 });
+initNavigation();
 initCountryNameFit($("#countryName"));
 advisorController = initAdvisor({
   getState: () => state,
@@ -1713,10 +1737,34 @@ function updateCabinetLabels() {
     .querySelectorAll("[data-cabinet-office]")
     .forEach((el) => (el.textContent = person.office));
   const nav = document.querySelector('.rail [data-view="conselheiro"]');
-  nav.setAttribute("aria-label", person.title);
-  nav.title = person.title;
+  nav.setAttribute("aria-label", "Gabinete");
+  nav.title = "Gabinete";
   if (view === "conselheiro") {
-    $("#pageTitle").textContent = person.office;
-    document.title = person.office + " · " + state.name + " — Meridiano";
+    $("#pageTitle").textContent = "Gabinete";
+    document.title = "Gabinete · " + state.name + " — Meridiano";
   }
 }
+
+function validReturnGoal() {
+  return pendingGoalReturn?.seed === state.seed
+    ? goalsOf(state).find((g) => g.id === pendingGoalReturn.id)
+    : null;
+}
+function updateGoalReturn() {
+  const g = validReturnGoal();
+  if (pendingGoalReturn && !g) pendingGoalReturn = null;
+  $("#returnToGoal").hidden = !g || view === "plano";
+  $("#countryBreadcrumb").hidden = !!g && view !== "plano";
+  if (g)
+    $("#returnToGoal").title = `Voltar à meta de ${goalDef(g.metric).name}`;
+}
+function beginGoalReturn(id) {
+  pendingGoalReturn = id ? { id, seed: state.seed } : null;
+}
+function returnToGoal() {
+  const g = validReturnGoal();
+  if ($("#modal").open) closeModal();
+  setView("plano");
+  if (g) governmentPlanUI.restore(g.id);
+}
+$("#returnToGoal").onclick = returnToGoal;

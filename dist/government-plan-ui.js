@@ -1,3 +1,4 @@
+import { goalPresentation, planHighlights } from "./plan-presentation.js";
 import {
   goalDefs,
   goalDef,
@@ -41,9 +42,43 @@ export function initGovernmentPlanUI({
   closeModal,
   setView,
   onPrepare,
+  onPolicies,
   onConsult,
   notify,
 }) {
+  let rememberedPageScroll = 0;
+  let rememberedScroll = 0,
+    rememberedKey = "",
+    expanded = new Set(),
+    archiveOpen = false;
+  const root = () => $("#view-plano");
+  function remember() {
+    if (!root().classList.contains("active")) return;
+    rememberedScroll = root().scrollTop;
+    rememberedPageScroll = window.scrollY;
+    expanded = new Set(
+      [...root().querySelectorAll("[data-plan-detail][open]")].map(
+        (el) => el.dataset.planDetail,
+      ),
+    );
+    archiveOpen = !!root().querySelector("#planArchive > details[open]");
+  }
+  function restore(id) {
+    const target = [...root().querySelectorAll("[data-goal-id]")].find(
+      (el) => el.dataset.goalId === id,
+    );
+    if (!target) return;
+    if (target.closest("#planArchive")) target.closest("details").open = true;
+    target.focus({ preventScroll: true });
+    const a = target.getBoundingClientRect(),
+      b = root().getBoundingClientRect();
+    const bottom = Math.min(
+      b.bottom,
+      window.innerHeight - (matchMedia("(max-width: 760px)").matches ? 76 : 0),
+    );
+    if (a.bottom < Math.max(0, b.top) || a.top > bottom)
+      target.scrollIntoView({ block: "center", behavior: "instant" });
+  }
   function createDialog() {
     const s = getState(),
       active = goalsOf(s).filter((g) => g.closedAt === undefined);
@@ -120,7 +155,7 @@ export function initGovernmentPlanUI({
     if (!g) return;
     const v = goalReading(s, g);
     openModal(
-      `<div class="cycle-dialog"><span class="eyebrow">${esc(v.regionName)}</span><h3 id="modalTitle">Histórico · ${v.label}</h3><p>Registros no fechamento de cada trimestre. A leitura atual pode mudar com os ajustes de políticas; eles só entram no histórico ao avançar.</p><div class="comparison"><table><thead><tr><th>Trimestre</th><th>Realizado</th><th>Meta final</th></tr></thead><tbody>${g.samples.map((p) => `<tr><th scope="row">${date(p.quarter)}</th><td>${fmt(p.value)}${v.unit}</td><td>${fmt(g.target)}${v.unit}</td></tr>`).join("")}</tbody></table></div><p>Prazo: ${date(g.dueAt)} · ${statuses[v.status]}.</p><div class="modal-actions">${g.closedAt === undefined ? `<button class="secondary" data-plan-stop="${g.id}">Encerrar acompanhamento</button>` : ""}<button class="primary" data-close>Voltar ao plano</button></div></div>`,
+      `<div class="cycle-dialog"><span class="eyebrow">${esc(v.regionName)}</span><h3 id="modalTitle">Histórico · ${v.label}</h3><p>Registros no fechamento de cada trimestre. A leitura atual pode mudar com os ajustes de políticas; eles só entram no histórico ao avançar.</p><div class="comparison"><table><thead><tr><th>Trimestre</th><th>Realizado</th><th>Meta final</th></tr></thead><tbody>${g.samples.map((p) => `<tr><th scope="row">${date(p.quarter)}</th><td>${fmt(p.value)}${v.unit}</td><td>${fmt(g.target)}${v.unit}</td></tr>`).join("")}</tbody></table></div><p>Prazo: ${date(g.dueAt)} · ${statuses[v.status]}.</p><div class="modal-actions">${g.closedAt === undefined ? `<button class="secondary" data-plan-stop="${g.id}">Encerrar meta</button>` : ""}<button class="primary" data-close>Voltar ao plano</button></div></div>`,
     );
   }
   function stopDialog(id) {
@@ -135,11 +170,23 @@ export function initGovernmentPlanUI({
       notify("Acompanhamento encerrado. Histórico preservado.");
     };
   }
-  function render() {
+  function render(capture = true) {
+    if (capture) remember();
     const s = getState(),
       goals = goalsOf(s),
       active = goals.filter((g) => g.closedAt === undefined),
       summary = planSummary(s);
+    const key = `${s.seed}:${s.name}:${goals.map((g) => g.id).join(",")}`;
+    if (
+      s.seed !== rememberedKey.split(":")[0] * 1 ||
+      (goals.length === 0 && rememberedKey)
+    ) {
+      rememberedScroll = 0;
+      rememberedPageScroll = 0;
+      expanded.clear();
+      archiveOpen = false;
+    }
+    rememberedKey = key;
     $("#planCounter").textContent =
       `${active.length}/3 metas ativas · ${date(s.quarter)}`;
     $("#addGovernmentGoal").disabled =
@@ -147,28 +194,11 @@ export function initGovernmentPlanUI({
     $("#planCabinetSummary").textContent = active.length
       ? `${active.length} ${active.length === 1 ? "meta em acompanhamento" : "metas em acompanhamento"}`
       : "Nenhuma meta definida";
-    const notes = [
-      {
-        id: "nilo",
-        text: active.length
-          ? `${count(active.length, "meta ativa", "metas ativas")}. ${summary.goals.filter((g) => g.status === "behind").length} abaixo da referência de ritmo.`
-          : "Defina uma meta para organizar as próximas decisões.",
-      },
-      {
-        id: "finance",
-        text: `Saldo anualizado: ${fmt(summary.finance.balance)}% do PIB. Próximo trimestre: ${money(summary.finance.constructionQuarter)} em obras e ${money(summary.finance.upkeepQuarter)} em manutenção.`,
-      },
-      ...["health", "infrastructure"].map((id) => ({
-        id,
-        text: active.filter((g) => g.owner === id).length
-          ? `${count(active.filter((g) => g.owner === id).length, "meta sob acompanhamento", "metas sob acompanhamento")}. ${count(summary.deliveryRisks.filter((r) => active.some((g) => g.id === r.goalId && g.owner === id)).length, "obra com operação estimada após o prazo", "obras com operação estimada após o prazo")}.`
-          : "Sem metas atribuídas a esta secretaria.",
-      })),
-    ];
+    const notes = planHighlights(s);
     $("#planBriefs").innerHTML = notes
       .map((n) => {
         const r = roleFor(n.id);
-        return `<article class="plan-brief"><img src="assets/${r.avatar}-neutral.svg" width="36" height="36" alt=""><div><h4>${r.name} <small>${r.area}</small></h4><p>${n.text}</p><button class="text-button" data-plan-consult="${r.id}">Consultar ${r.name} ↗</button></div></article>`;
+        return `<article class="plan-brief"><img src="assets/${r.avatar}-neutral.svg" width="36" height="36" alt=""><div><h4>${r.name} <small>${r.area}</small></h4><p>${esc(n.text)}</p><button class="text-button" data-plan-consult="${r.id}">Consultar ${r.name} ↗</button></div></article>`;
       })
       .join("");
     $("#planGoals").innerHTML = active.length
@@ -180,10 +210,20 @@ export function initGovernmentPlanUI({
           .reverse()
           .map((g) => {
             const v = goalReading(s, g);
-            return `<article><div><strong>${esc(v.regionName)} · ${v.label}</strong><p>${statuses[v.status]} · ${date(g.closedAt)} · ${fmt(v.current)}${v.unit} / meta ${fmt(g.target)}${v.unit}</p></div><button class="secondary" data-plan-history="${g.id}">Ver histórico</button></article>`;
+            return `<article data-goal-id="${g.id}" tabindex="-1"><div><strong>${esc(v.regionName)} · ${v.label}</strong><p>${statuses[v.status]} · ${date(g.closedAt)} · ${fmt(v.current)}${v.unit} / meta ${fmt(g.target)}${v.unit}</p></div><button class="secondary" data-plan-history="${g.id}">Ver histórico</button></article>`;
           })
           .join("")}</div></details>`
       : "";
+    root()
+      .querySelectorAll("[data-plan-detail]")
+      .forEach((el) => (el.open = expanded.has(el.dataset.planDetail)));
+    const archive = root().querySelector("#planArchive > details");
+    if (archive) archive.open = archiveOpen;
+    if (root().classList.contains("active")) {
+      root().scrollTop = rememberedScroll;
+      if (matchMedia("(max-width: 760px)").matches)
+        document.scrollingElement.scrollTop = rememberedPageScroll;
+    }
   }
   function card(g, s, summary) {
     const v = goalReading(s, g),
@@ -194,8 +234,8 @@ export function initGovernmentPlanUI({
         ? []
         : owner.programs.map((type) => quoteInvestment(s, g.region, type));
     const risk = summary.deliveryRisks.filter((r) => r.goalId === g.id);
-    const delta = v.current - g.baseline;
-    return `<article class="goal-card" data-status="${v.status}"><header><div><span class="eyebrow">${esc(v.regionName)}</span><h4>${v.label}</h4></div><span class="goal-status">${statuses[v.status]}</span></header><div class="goal-values"><strong>${fmt(v.current)}<small>${v.unit}</small></strong><span>${d.direction > 0 ? "alcançar" : "reduzir a"} <b>${fmt(g.target)}${v.unit}</b></span></div><progress max="1" value="${v.progress}" aria-label="Progresso de ${esc(v.regionName)}: ${v.label}"></progress><div class="goal-baseline"><span>Início ${fmt(g.baseline)}${v.unit}</span><span>${delta > 0 ? "+" : ""}${fmt(delta)} ${v.unit === "%" ? "p.p." : "pontos"}</span></div><div class="goal-owner"><img src="assets/${owner.avatar}-neutral.svg" width="30" height="30" alt=""><span>${owner.name} · ${owner.area}</span><span>${v.remaining} trimestres · ${date(g.dueAt)}</span></div>${risk.length ? `<p class="plan-warning">${count(risk.length, "programa com operação estimada", "programas com operação estimada")} depois do prazo. A estimativa usa a capacidade atual; não é garantia de entrega.</p>` : ""}<details class="goal-options"><summary>Próximas decisões</summary>${programs.length ? programs.map((q) => `<div><span>${projectFor(q.type).name}${q.reason ? `<small>${esc(q.reason)}</small>` : `<small>${money(q.cost)} · operação em ${q.operationTurns} trimestres</small>`}</span><button class="secondary" data-plan-program="${q.type}" data-plan-region="${g.region}" ${q.allowed ? "" : "disabled"}>Revisar proposta</button></div>`).join("") : `<p>Consulte a comparação de políticas antes de decidir. Definir uma meta não altera os controles.</p><button class="secondary" data-view="politicas">Revisar políticas ↗</button>`}<p class="plan-note">Programas podem contribuir para o indicador; não garantem atingir esta meta.</p></details><footer><button class="text-button" data-plan-history="${g.id}">Histórico ↗</button><button class="text-button" data-plan-ask="${g.id}">Consultar ${owner.name} ↗</button></footer></article>`;
+    const presentation = goalPresentation(s, g);
+    return `<article class="goal-card" data-goal-id="${g.id}" tabindex="-1" data-status="${v.status}"><header><div><span class="eyebrow">${esc(v.regionName)}</span><h4>${v.label}</h4></div><span class="goal-status">${statuses[v.status]}</span></header><div class="goal-values"><strong>${fmt(v.current)}<small>${v.unit}</small></strong><span>${d.direction > 0 ? "alcançar" : "reduzir a"} <b>${fmt(g.target)}${v.unit}</b></span></div><p class="goal-gap">${presentation.gap}</p><progress max="1" value="${v.progress}" aria-label="Progresso de ${esc(v.regionName)}: ${v.label}"></progress><div class="goal-baseline"><span>Início ${fmt(g.baseline)}${v.unit}</span><span class="goal-change" data-tone="${presentation.tone}">${presentation.tone === "neutral" ? "" : presentation.delta > 0 ? "↗ " : "↘ "}${presentation.change}</span></div><div class="goal-owner"><img src="assets/${owner.avatar}-neutral.svg" width="30" height="30" alt=""><span>${owner.name} · ${owner.area}</span><span>${count(v.remaining, "trimestre restante", "trimestres restantes")} · ${date(g.dueAt)}</span></div>${risk.length ? `<p class="plan-warning">${count(risk.length, "programa com operação estimada", "programas com operação estimada")} depois do prazo. A estimativa usa a capacidade atual; não é garantia de entrega.</p>` : ""}<details class="goal-options" data-plan-detail="${g.id}"><summary>${g.region === null ? "Políticas para revisar" : "Programas para esta meta"}</summary>${programs.length ? programs.map((q) => `<div><span>${projectFor(q.type).name}${q.reason ? `<small>${esc(q.reason)}</small>` : `<small>${money(q.cost)} · operação em ${q.operationTurns} trimestres</small>`}</span><button class="secondary" data-plan-program="${q.type}" data-plan-region="${g.region}" ${q.allowed ? "" : "disabled"}>Ver custos e prazo</button></div>`).join("") : `<p>Consulte a comparação de políticas antes de decidir. Definir uma meta não altera os controles.</p><button class="secondary" data-plan-policy="${g.id}">Revisar políticas ↗</button>`}<p class="plan-note">Programas podem contribuir para o indicador; não garantem atingir esta meta.</p></details><footer><button class="text-button" data-plan-history="${g.id}">Histórico ↗</button><button class="text-button" data-plan-ask="${g.id}">Consultar ${owner.name} ↗</button></footer></article>`;
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button");
@@ -210,17 +250,29 @@ export function initGovernmentPlanUI({
         "Como está o plano de governo na sua área? Confira metas, progresso e limites antes de sugerir mudanças.",
       );
     if (b.dataset.planAsk) {
+      remember();
       const g = goalsOf(getState()).find((g) => g.id === b.dataset.planAsk);
       if (g) {
         const v = goalReading(getState(), g);
         onConsult(
           g.owner,
           `Acompanhe a meta de ${v.label} em ${v.regionName}: ${fmt(g.target)}${v.unit} até ${date(g.dueAt)}. O que mudou e quais decisões devo avaliar?`,
+          g.id,
         );
       }
     }
-    if (b.dataset.planProgram)
-      onPrepare(Number(b.dataset.planRegion), b.dataset.planProgram);
+    if (b.dataset.planPolicy) {
+      remember();
+      onPolicies?.(b.dataset.planPolicy);
+    }
+    if (b.dataset.planProgram) {
+      remember();
+      onPrepare(
+        Number(b.dataset.planRegion),
+        b.dataset.planProgram,
+        b.closest("[data-goal-id]")?.dataset.goalId,
+      );
+    }
   });
-  return { render };
+  return { render, remember, restore };
 }

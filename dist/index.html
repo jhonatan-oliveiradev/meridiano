@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="investments.css" />
     <link rel="stylesheet" href="cabinet.css" />
     <link rel="stylesheet" href="government-plan.css" />
+    <link rel="stylesheet" href="product-polish.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -90,58 +91,102 @@
         <a class="brand-mark" href="#territorio" aria-label="Meridiano, início"
           ><svg><use href="assets/reicon.svg#i-globe" /></svg
         ></a>
-        <div class="rail-links">
+        <div class="rail-links" id="navigationLinks">
           <button
             data-view="territorio"
             class="rail-btn active"
             title="Território"
             aria-label="Território"
           >
-            <svg><use href="assets/reicon.svg#i-map" /></svg></button
+            <svg><use href="assets/reicon.svg#i-map" /></svg
+            ><span class="nav-label" aria-hidden="true">Território</span
+            ><span class="nav-mobile-label" aria-hidden="true">Território</span
+            ><span class="nav-tooltip" aria-hidden="true"
+              >Território</span
+            ></button
           ><button
             data-view="politicas"
             class="rail-btn"
             title="Políticas públicas"
             aria-label="Políticas públicas"
           >
-            <svg><use href="assets/reicon.svg#i-policy" /></svg></button
+            <svg><use href="assets/reicon.svg#i-policy" /></svg
+            ><span class="nav-label" aria-hidden="true">Políticas públicas</span
+            ><span class="nav-mobile-label" aria-hidden="true">Políticas</span
+            ><span class="nav-tooltip" aria-hidden="true"
+              >Políticas públicas</span
+            ></button
           ><button
             data-view="indicadores"
             class="rail-btn"
             title="Indicadores"
             aria-label="Indicadores"
           >
-            <svg><use href="assets/reicon.svg#i-chart" /></svg></button
+            <svg><use href="assets/reicon.svg#i-chart" /></svg
+            ><span class="nav-label" aria-hidden="true">Indicadores</span
+            ><span class="nav-mobile-label" aria-hidden="true">Indicadores</span
+            ><span class="nav-tooltip" aria-hidden="true"
+              >Indicadores</span
+            ></button
           ><button
             data-view="plano"
             class="rail-btn"
             title="Plano de governo"
             aria-label="Plano de governo"
           >
-            <svg><use href="assets/reicon.svg#i-policy" /></svg></button
+            <svg><use href="assets/reicon.svg#i-document" /></svg
+            ><span class="nav-label" aria-hidden="true">Plano de governo</span
+            ><span class="nav-mobile-label" aria-hidden="true">Plano</span
+            ><span class="nav-tooltip" aria-hidden="true"
+              >Plano de governo</span
+            ></button
           ><button
             data-view="cenarios"
             class="rail-btn"
             title="Cenários salvos"
             aria-label="Cenários salvos"
           >
-            <svg><use href="assets/reicon.svg#i-layers" /></svg></button
+            <svg><use href="assets/reicon.svg#i-layers" /></svg
+            ><span class="nav-label" aria-hidden="true">Cenários salvos</span
+            ><span class="nav-mobile-label" aria-hidden="true">Cenários</span
+            ><span class="nav-tooltip" aria-hidden="true"
+              >Cenários salvos</span
+            ></button
           ><button
             data-view="conselheiro"
             class="rail-btn"
-            title="Conselheiro"
-            aria-label="Conselheiro"
+            title="Gabinete"
+            aria-label="Gabinete"
           >
             <svg><use href="assets/reicon.svg#i-advisor" /></svg>
+            <span class="nav-label" aria-hidden="true">Gabinete</span
+            ><span class="nav-mobile-label" aria-hidden="true">Gabinete</span
+            ><span class="nav-tooltip" aria-hidden="true">Gabinete</span>
           </button>
         </div>
+        <button
+          class="rail-btn nav-toggle"
+          id="toggleNavigation"
+          type="button"
+          aria-controls="navigationLinks"
+          aria-expanded="false"
+          aria-label="Expandir navegação"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M4 5h16v14H4ZM9 5v14m4-10 3 3-3 3" /></svg
+          ><span class="nav-label" aria-hidden="true">Expandir menu</span
+          ><span class="nav-tooltip" aria-hidden="true">Expandir menu</span>
+        </button>
         <button
           class="rail-btn bottom"
           id="methods"
           title="Como funciona"
           aria-label="Como funciona"
         >
-          <svg><use href="#i-info" /></svg>
+          <svg><use href="#i-info" /></svg
+          ><span class="nav-label" aria-hidden="true">Como funciona</span
+          ><span class="nav-mobile-label" aria-hidden="true">Ajuda</span
+          ><span class="nav-tooltip" aria-hidden="true">Como funciona</span>
         </button>
         <div class="version">M / 01</div>
       </nav>
@@ -149,7 +194,7 @@
         <div class="wordmark">meridiano<span>SIMULADOR GEOPOLÍTICO</span></div>
         <div class="country-heading">
           <span class="eyebrow">SEU CENÁRIO</span
-          ><button class="text-button" id="configure">Configurar ↗</button>
+          ><button class="text-button" id="configure">Editar país ↗</button>
         </div>
         <div class="country-title">
           <span class="flag"><i></i></span>
@@ -159,7 +204,8 @@
           República democrática · Economia mista
         </div>
         <div class="scenario-status">
-          <span></span> Cenário fictício <span class="small-label">v0.10</span>
+          <span></span> Cenário fictício
+          <span class="small-label">v0.10.1</span>
         </div>
         <div class="sidebar-section">
           <div class="section-heading">
@@ -196,7 +242,12 @@
         <header class="topbar">
           <div>
             <div class="breadcrumb">
-              Simulação <span>/</span> <span id="breadCountry">Aurora</span>
+              <span id="countryBreadcrumb"
+                >Simulação <span>/</span>
+                <span id="breadCountry">Aurora</span></span
+              ><button class="goal-back" id="returnToGoal" hidden>
+                ← Voltar à meta
+              </button>
             </div>
             <h2 id="pageTitle">Território</h2>
           </div>
@@ -224,7 +275,7 @@
             </div>
             <button class="secondary advisor-shortcut" data-view="conselheiro">
               <svg><use href="assets/reicon.svg#i-advisor" /></svg>
-              <span data-cabinet-title>Chefe de Gabinete</span></button
+              <span>Gabinete</span></button
             ><span class="local-status" id="localStatus">Sessão local</span
             ><button class="secondary" id="save">
               <svg><use href="#i-save" /></svg> Salvar cenário</button
@@ -531,11 +582,14 @@
             ><span>Dados calculados pelo jogo</span>
           </div>
           <div id="planGoals" class="plan-goals"></div>
-          <p class="plan-note">
-            O ritmo compara o progresso com uma referência linear até o prazo.
-            Não é uma projeção. Metas são avaliadas no encerramento e podem
-            perder ganhos antes disso.
-          </p>
+          <details class="plan-method">
+            <summary>Como o progresso é avaliado</summary>
+            <p>
+              O ritmo compara o progresso com uma referência linear até o prazo.
+              Não é uma projeção. A avaliação final acontece no prazo; ganhos
+              podem ser perdidos antes disso.
+            </p>
+          </details>
           <h4 class="plan-section-label">ACOMPANHAMENTO DO GABINETE</h4>
           <div id="planBriefs" class="plan-briefs"></div>
           <div id="planArchive"></div>
@@ -584,8 +638,10 @@
               </div>
               <div id="advisorFacts" class="advisor-facts"></div>
               <button class="primary full" id="analyzeQuarter">
-                <svg><use href="assets/reicon.svg#i-chart" /></svg> Analisar
-                trimestre</button
+                <svg><use href="assets/reicon.svg#i-chart" /></svg
+                ><span id="analysisActionLabel"
+                  >Pedir análise a Nilo</span
+                ></button
               ><span class="advisor-status" id="advisorStatus" role="status"
                 >Pronto para consultar</span
               >

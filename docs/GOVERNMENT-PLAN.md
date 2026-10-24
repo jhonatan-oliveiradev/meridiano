@@ -33,3 +33,11 @@ Consultar o responsável abre o gabinete com área e pergunta preenchidas. O jog
 `goals` é opcional no snapshot v1. Saves antigos continuam sem metas; os novos incluem amostras e arquivo no mesmo fluxo de salvamento, retomada e exportação. Novo país começa sem metas. O consumidor de UI ignora um conjunto inválido; a API rejeita dados malformados e descarta campos não permitidos. Não há nova configuração, dependência ou banco.
 
 Os dados são sintéticos. Acesso regional ainda depende do índice base, de políticas nacionais e dos programas; esta versão não cria economia regional autônoma ou indicadores de saúde específicos. Prazo de obra considera a capacidade atual, que pode mudar. A avaliação não atribui causalidade exclusiva a uma obra.
+
+## Leitura e retorno ao contexto
+
+Os cards mostram a distância até o alvo e a variação desde o início. A cor considera a direção desejada de cada indicador: reduzir pobreza/dívida ou elevar bem-estar/acesso. Valores positivos menores que 0,1 não aparecem como alvo atingido.
+
+O acompanhamento do gabinete usa dados do motor: Nilo prioriza metas abaixo do ritmo e prazos próximos; Fazenda mostra saldo e compromissos do próximo trimestre; Saúde e Infraestrutura apontam metas da área e programas contratados. Esses resumos não exigem uma consulta de IA.
+
+Consultar uma pessoa, revisar políticas ou abrir uma proposta a partir de uma meta habilita **Voltar à meta**. O retorno recupera o card, os detalhes abertos, a rolagem e o foco. O contexto é descartado ao trocar de país ou retornar ao plano; não é persistido entre recargas.
