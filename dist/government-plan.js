@@ -2,6 +2,14 @@ import { regionalMetrics, regionsOf, budget } from "./model.js";
 import { remainingTurns, investmentFinance } from "./investment-ledger.js";
 export const goalDefs = [
   {
+    key: "crime",
+    name: "Violência",
+    unit: "/100",
+    direction: -1,
+    min: 0,
+    max: 100,
+  },
+  {
     key: "access",
     name: "Acesso a serviços",
     unit: "/100",
@@ -69,7 +77,12 @@ export function validateGoals(raw, s) {
           !regionsOf(s)[g.region] ||
           !["health", "infrastructure"].includes(g.owner)
         : g.region !== null ||
-          g.owner !== (g.metric === "debt" ? "finance" : "nilo")) ||
+          g.owner !==
+            (g.metric === "debt"
+              ? "finance"
+              : g.metric === "crime"
+                ? "security"
+                : "nilo")) ||
       !Array.isArray(g.samples) ||
       !g.samples.length ||
       g.samples.length > 13
@@ -158,7 +171,13 @@ export function createGoal(
       metric,
       region,
       owner:
-        metric === "access" ? owner : metric === "debt" ? "finance" : "nilo",
+        metric === "access"
+          ? owner
+          : metric === "debt"
+            ? "finance"
+            : metric === "crime"
+              ? "security"
+              : "nilo",
       baseline,
       target,
       startedAt: s.quarter,

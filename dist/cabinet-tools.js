@@ -1,3 +1,4 @@
+import { consequenceStep, safetyValues, safetyCost } from "./consequences.js";
 import { regionsOf, regionalMetrics, budget } from "./model.js";
 import { quoteInvestment } from "./investments.js";
 import { projectFor, remainingTurns } from "./investment-ledger.js";
@@ -11,6 +12,7 @@ export const cabinetRoles = [
     scope: "Prioridades do país e trabalho entre as áreas.",
     programs: ["water", "health", "education", "transport"],
     tools: [
+      "inspect_security",
       "investigate_states",
       "inspect_budget",
       "compare_investments",
@@ -55,9 +57,22 @@ export const cabinetRoles = [
     programs: ["water", "transport"],
     tools: ["investigate_states", "compare_investments", "prepare_investment"],
   },
+  {
+    id: "security",
+    name: "Davi",
+    area: "Segurança pública",
+    avatar: "davi",
+    title: "Secretário de Segurança Pública",
+    office: "Secretaria de Segurança Pública",
+    scope:
+      "Violência, investigação, prevenção e confiança na polícia. Diagnóstico nacional; não executa operações por conta própria.",
+    programs: [],
+    tools: ["inspect_security", "inspect_budget"],
+  },
 ];
 export const roleFor = (id) => cabinetRoles.find((r) => r.id === id);
 export const toolNames = [
+  "inspect_security",
   "investigate_states",
   "inspect_budget",
   "compare_investments",
@@ -97,6 +112,25 @@ export function runCabinetTool(s, roleId, request) {
         : program === "water" || program === "transport"
           ? "infrastructure"
           : "nilo";
+  if (request.name === "inspect_security") {
+    if (!fields(args, []))
+      return denied(
+        "O diagnóstico de segurança é nacional e não aceita parâmetros.",
+      );
+    return result(
+      "security",
+      {
+        current: safetyValues(s),
+        outlook: {
+          ...consequenceStep(s),
+          assumption:
+            "Políticas atuais, sem acontecimentos ou respostas extraordinárias.",
+        },
+        annualShare: safetyCost(s),
+      },
+      {},
+    );
+  }
   if (request.name === "inspect_budget") {
     if (!fields(args, []))
       return denied("A consulta às contas não aceita parâmetros adicionais.");

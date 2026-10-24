@@ -114,7 +114,7 @@ export function initGovernmentPlanUI({
       const v = goalValue(getState(), metric, region),
         input = $("#goalTarget");
       $("#goalBaseline").textContent =
-        `Agora: ${fmt(v)}${d.unit}. ${regional ? "O índice reúne o acesso a serviços; não mede hospitais ou saneamento separadamente." : `Responsável: ${roleFor(metric === "debt" ? "finance" : "nilo").name}.`}`;
+        `Agora: ${fmt(v)}${d.unit}. ${regional ? "O índice reúne o acesso a serviços; não mede hospitais ou saneamento separadamente." : `Responsável: ${roleFor(metric === "debt" ? "finance" : metric === "crime" ? "security" : "nilo").name}.`}`;
       $("#goalTargetLabel").textContent =
         `${d.direction > 0 ? "Elevar para" : "Reduzir para"} (${d.unit})`;
       input.min = d.min;
