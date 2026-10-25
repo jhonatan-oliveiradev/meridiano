@@ -1,4 +1,11 @@
 import {
+  safetyPolicies,
+  consequenceDefaults,
+  safetyCost,
+  consequenceStep,
+  migrateConsequences,
+} from "./consequences.js";
+import {
   investmentFinance,
   advanceInvestments,
   investmentEffects,
@@ -6,6 +13,7 @@ import {
 // Experimental, deterministic model. Coefficients are illustrative, not estimates.
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const policyDefs = [
+  ...safetyPolicies,
   {
     key: "income",
     name: "Renda básica",
@@ -168,6 +176,7 @@ export const regionDefs = [
 export function initialState(config = {}) {
   const population = config.population ?? 24.8;
   const m = {
+    ...consequenceDefaults,
     population,
     gdp: population * 18.4,
     poverty: 24.6,
@@ -207,10 +216,17 @@ export function budget(s) {
   const projects =
     ((investment.constructionQuarter + investment.upkeepQuarter) * 400) / m.gdp;
   const spending =
-    11 + p.services + p.infrastructure + ubi + pension + projects;
+    11 +
+    p.services +
+    p.infrastructure +
+    ubi +
+    pension +
+    projects +
+    safetyCost(s);
   const interest = m.debt * 0.055;
   return {
     ubi,
+    security: safetyCost(s),
     pension,
     projects,
     investment,
@@ -222,11 +238,12 @@ export function budget(s) {
 }
 export function advance(s, effect = {}) {
   if (s.quarter >= 160) return s;
-  const n = structuredClone(s),
+  const n = structuredClone(migrateConsequences(s)),
     p = n.policies,
     m = n.metrics,
     b = budget(n),
     prev = { ...m };
+  const consequences = consequenceStep(n, effect);
   const projectEvents = advanceInvestments(n) ?? [];
   const projectEffect = investmentEffects(n);
   n.capacity = clamp(
@@ -240,7 +257,8 @@ export function advance(s, effect = {}) {
   const cycle = Math.sin((n.quarter + (n.seed % 17)) * 0.7) * 0.22;
   const annualGrowth = clamp(
     2 +
-      (effect.growth ?? 0) +
+      (effect.growth ?? 0) -
+      Math.max(0, prev.crime - 45) * 0.01 +
       projectEffect.growth +
       0.12 * (p.infrastructure - 3) * n.capacity +
       0.12 * (p.services - 8) * n.capacity -
@@ -302,7 +320,9 @@ export function advance(s, effect = {}) {
   const access = regionsOf(n).reduce((a, r) => a + r.share * r.access, 0);
   const welfareTarget = clamp(
     58 +
-      projectEffect.welfare +
+      projectEffect.welfare -
+      Math.max(0, prev.crime - 45) * 0.08 -
+      Math.max(0, prev.servicesPressure - 35) * 0.06 +
       0.8 * (p.services - 8) * n.capacity +
       0.15 * (p.labor - 50) +
       0.065 * (p.pension - 65) +
@@ -326,6 +346,8 @@ export function advance(s, effect = {}) {
     5,
     95,
   );
+  Object.assign(m, consequences.next);
+  n.consequenceReport = { quarter: n.quarter + 1, ...consequences };
   n.quarter++;
   n.history.push({ quarter: n.quarter, ...m });
   n.investmentReport = {
@@ -353,6 +375,12 @@ export function advance(s, effect = {}) {
       detail: `Saldo anual projetado: ${b.balance.toFixed(1).replace(".", ",")}% do PIB, incluindo juros. A dívida absorve o saldo trimestral.`,
     },
   ];
+  if (Math.abs(m.crime - prev.crime) >= 0.05)
+    n.events.push({
+      title: `Violência ${m.crime < prev.crime ? "em queda" : "em alta"}`,
+      detail:
+        "Confira a decomposição em Indicadores. O índice é sintético, de 0 a 100; ocorrências registradas também dependem da confiança para denunciar.",
+    });
   for (const event of projectEvents)
     n.events.push({
       title:

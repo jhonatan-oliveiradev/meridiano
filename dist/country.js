@@ -95,8 +95,17 @@ export function randomCountry(seed) {
     debt: between(18, 105),
     welfare: between(38, 81),
     approval: between(32, 74),
+    crime: between(25, 65),
+    trust: between(35, 75),
+    investigation: between(25, 60),
+    preventionCapacity: between(20, 50),
+    servicesPressure: between(20, 60),
   });
   const domains = {
+    security: [0, 0.5, 1, 1.5],
+    prevention: [0, 0.25, 0.5, 1],
+    oversight: [0, 0.2, 0.4, 0.6],
+    enforcement: [30, 40, 50, 60, 70],
     income: [0, 0, 50, 100, 150, 200],
     pension: [35, 50, 65, 75, 90],
     labor: [25, 40, 55, 70, 85],
@@ -106,6 +115,7 @@ export function randomCountry(seed) {
   };
   for (const p of policyDefs) s.policies[p.key] = pick(domains[p.key]);
   s.capacity = between(0.4, 0.85, 2);
+  s.metrics.reportedCrime = s.metrics.crime * (0.35 + s.metrics.trust * 0.005);
   s.history = [{ quarter: 0, ...s.metrics }];
   s.generated = { seed, version: 1 };
   s.events = [

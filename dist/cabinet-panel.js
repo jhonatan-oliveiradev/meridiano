@@ -1,3 +1,4 @@
+import { consequenceMetrics } from "./consequences.js";
 import { cabinetFor } from "./country.js";
 import { cabinetRoles, roleFor, runCabinetTool } from "./cabinet-tools.js";
 const $ = (s) => document.querySelector(s);
@@ -83,6 +84,20 @@ export function initCabinetPanel({
     );
     $(".composer-hint").textContent = `Escrever para ${role.name}`;
     const questions = {
+      security: [
+        [
+          "Por que a violência mudou?",
+          "Consulte o diagnóstico de segurança e explique os fatores que pressionam a violência.",
+        ],
+        [
+          "Como recuperar a confiança?",
+          "Compare investigação, prevenção, controle e intensidade das operações, com custos e defasagens.",
+        ],
+        [
+          "Mais registros significam mais crimes?",
+          "Explique a diferença entre violência e ocorrências registradas no cenário atual.",
+        ],
+      ],
       nilo: [
         [
           "Qual estado precisa de atenção?",
@@ -159,22 +174,26 @@ export function initCabinetPanel({
         onQuick(typeof request === "function" ? request() : request);
       quick.append(b);
     };
-    make("Investigar estados", {
-      name: "investigate_states",
-      args: { metric: "access", direction: "asc", limit: 3 },
-    });
+    if (role.tools.includes("inspect_security"))
+      make("Diagnóstico de segurança", { name: "inspect_security", args: {} });
+    if (role.tools.includes("investigate_states"))
+      make("Investigar estados", {
+        name: "investigate_states",
+        args: { metric: "access", direction: "asc", limit: 3 },
+      });
     if (role.tools.includes("inspect_budget"))
       make("Consultar orçamento", { name: "inspect_budget", args: {} });
-    make("Comparar investimentos", () => ({
-      name: "compare_investments",
-      args: {
-        regions: runCabinetTool(getState(), role.id, {
-          name: "investigate_states",
-          args: { limit: 2 },
-        }).data.rows.map((r) => r.index),
-        programs: role.programs.slice(0, 2),
-      },
-    }));
+    if (role.tools.includes("compare_investments"))
+      make("Comparar investimentos", () => ({
+        name: "compare_investments",
+        args: {
+          regions: runCabinetTool(getState(), role.id, {
+            name: "investigate_states",
+            args: { limit: 2 },
+          }).data.rows.map((r) => r.index),
+          programs: role.programs.slice(0, 2),
+        },
+      }));
   }
   function invalidate() {
     root.classList.add("cabinet-results-stale");
@@ -226,6 +245,24 @@ export function initCabinetPanel({
         group.append(node("p", item.message));
         root.append(group);
         continue;
+      }
+      if (item.kind === "security") {
+        const card = node("article", undefined, "cabinet-data-card");
+        card.append(
+          node("h4", "Segurança do país"),
+          facts(
+            consequenceMetrics.map(([k, label]) => [
+              label,
+              `${fmt(item.data.current[k])}/100`,
+            ]),
+          ),
+          node(
+            "p",
+            `Reforço anual: ${fmt(item.data.annualShare)}% do PIB. Capacidade e prevenção levam tempo; operações intensas sem controle podem reduzir a confiança. Registros também dependem da disposição para denunciar.`,
+            "cabinet-card-note",
+          ),
+        );
+        group.append(card);
       }
       if (item.kind === "budget") {
         const b = item.data,

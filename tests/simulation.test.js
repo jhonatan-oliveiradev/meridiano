@@ -29,7 +29,9 @@ test("forecast compares edited policies with baseline without mutating or advanc
 test("legacy states forecast without invented edits; projections stop at the horizon", () => {
   const s = initialState();
   assert.equal(forecastPolicies(s).changes.length, 0);
-  assert.deepEqual(Object.values(forecastPolicies(s).delta), [0, 0, 0]);
+  assert.ok(
+    Object.values(forecastPolicies(s).delta).every((value) => value === 0),
+  );
   s.quarter = 159;
   assert.equal(forecastPolicies(s).horizon, 1);
   s.quarter = 160;
