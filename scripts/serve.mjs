@@ -2,6 +2,7 @@ import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
 import handler from "../api/advisor.js";
+import { audioRange } from "../server/audio-range.js";
 const root = resolve("dist"),
   types = {
     ".html": "text/html; charset=utf-8",
@@ -16,6 +17,7 @@ const root = resolve("dist"),
     ".jpg": "image/jpeg",
     ".xml": "application/xml; charset=utf-8",
     ".woff2": "font/woff2",
+    ".mp3": "audio/mpeg",
   };
 // Local-only .env support. Production reads Vercel environment variables directly.
 try {
@@ -67,6 +69,37 @@ http
         return;
       }
       const data = await readFile(path);
+      if (extname(path) === ".mp3") {
+        const headers = {
+          "Content-Type": "audio/mpeg",
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "no-store",
+        };
+        if (req.headers.range) {
+          const range = audioRange(req.headers.range, data.length);
+          if (!range) {
+            res
+              .writeHead(416, {
+                ...headers,
+                "Content-Range": `bytes */${data.length}`,
+              })
+              .end();
+            return;
+          }
+          const { start, end } = range;
+          res
+            .writeHead(206, {
+              ...headers,
+              "Content-Range": `bytes ${start}-${end}/${data.length}`,
+              "Content-Length": end - start + 1,
+            })
+            .end(data.subarray(start, end + 1));
+        } else
+          res
+            .writeHead(200, { ...headers, "Content-Length": data.length })
+            .end(data);
+        return;
+      }
       res
         .writeHead(200, {
           "Content-Type": types[extname(path)] || "application/octet-stream",
