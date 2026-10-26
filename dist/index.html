@@ -83,6 +83,7 @@
     <link rel="stylesheet" href="government-plan.css" />
     <link rel="stylesheet" href="product-polish.css" />
     <link rel="stylesheet" href="consequences.css" />
+    <link rel="stylesheet" href="music-player.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -960,6 +961,12 @@
           </div>
           <div class="timeline-track" id="timelineTrack"></div>
           <div class="timeline-end">
+            <div
+              id="musicPlayer"
+              class="music-player"
+              data-open="false"
+              data-playing="false"
+            ></div>
             <button id="turnReview" class="turn-review" hidden></button>
             <span id="elapsed">Ponto de partida</span
             ><span class="experiment">MODELO EXPERIMENTAL</span>
@@ -978,5 +985,6 @@
     </dialog>
     <div id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="app.js"></script>
+    <script type="module" src="music-player.js"></script>
   </body>
 </html>

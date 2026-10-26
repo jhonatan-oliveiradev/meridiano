@@ -1,7 +1,13 @@
 import { basename } from "node:path";
 import { mkdir, cp, access, rm } from "node:fs/promises";
+import { musicTracks } from "../dist/music-tracks.js";
 for (const f of [
   "index.html",
+  "music-player.js",
+  "music-player.css",
+  "music-controller.js",
+  "music-tracks.js",
+  ...musicTracks.map((track) => track.src),
   "og-image.jpg",
   "robots.txt",
   "sitemap.xml",
