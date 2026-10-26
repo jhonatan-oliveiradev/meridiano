@@ -137,3 +137,10 @@ Pendente: chamada Gemini com a chave real e deploy Vercel com a função Node; i
 - Desktop 1363×936 e iframe 1363×600: dimensões client/scroll iguais, sem rolagem externa; dois temas inspecionados. Mobile em iframe 390×844: largura client/scroll 380/380, equipe em duas colunas; diálogo da prévia 334/334 com rolagem vertical interna. Não houve teste de toque em dispositivo físico; screenshot mobile indisponível no browser, conferência por DOM.
 - Syntax check, Prettier, build e diff check aprovados. Sem novas dependências, segredos ou configuração. Testes de transporte são simulados; não houve consulta com chave real. WebGL e preferência de movimento reduzido do sistema não foram emulados. Captura: screenshots/security-public.jpg. Arquivo temporário de QA removido antes do build final.
 - Regras, equações, referências e limites em CONSEQUENCES.md. A segurança é nacional e usa índices sintéticos; não há taxa criminal calibrada ou dado estadual.
+
+## OG image e metadados · 2026-10-26
+
+- Imagem nativa de 1200×630, JPEG de 60.277 bytes: globo, fontes e território procedural do app. Composição conferida no browser com fontes carregadas e no JPEG final. Fonte editável em scripts/render-og.mjs, sem dependências novas.
+- HTML inicial contém título/descrição consistentes, application-name, canonical de produção, Open Graph completo e Twitter summary_large_image com alt. Tags verificadas quanto a duplicidade, igualdade de textos/URLs e dimensões reais. Favicon/Apple icon existentes preservados.
+- robots.txt e sitemap.xml com a raiz canônica; XML validado. Servidor local: /, /og-image.jpg, /robots.txt e /sitemap.xml retornaram 200 com MIME correto. Arte de autoria excluída do build, que exige a imagem e os arquivos de descoberta. Syntax check, Prettier, build e diff check aprovados. Sem alteração do motor ou consulta a IA.
+- Domínio confirmado pelo conector Vercel. Configuração entra em dev via PR; não foi publicada em produção nesta tarefa nem validada nos debuggers externos de redes sociais. Regras de manutenção em SEO.md.

@@ -13,6 +13,8 @@ const root = resolve("dist"),
     ".svg": "image/svg+xml",
     ".ico": "image/x-icon",
     ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".xml": "application/xml; charset=utf-8",
     ".woff2": "font/woff2",
   };
 // Local-only .env support. Production reads Vercel environment variables directly.
