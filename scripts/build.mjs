@@ -1,6 +1,14 @@
+import { basename } from "node:path";
 import { mkdir, cp, access, rm } from "node:fs/promises";
 for (const f of [
   "index.html",
+  "og-image.jpg",
+  "robots.txt",
+  "sitemap.xml",
+  "consequences.js",
+  "consequence-ui.js",
+  "consequences.css",
+  ...["neutral", "happy", "thinking"].map((pose) => `assets/davi-${pose}.svg`),
   "favicon.svg",
   "favicon.ico",
   "apple-touch-icon.png",
@@ -60,6 +68,9 @@ await mkdir(new URL("../build", import.meta.url), { recursive: true });
 await cp(
   new URL("../dist", import.meta.url),
   new URL("../build", import.meta.url),
-  { recursive: true },
+  {
+    recursive: true,
+    filter: (source) => basename(source) !== "og-preview.html",
+  },
 );
 console.log("Static application validated and copied to build/");

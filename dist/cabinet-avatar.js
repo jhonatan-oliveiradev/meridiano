@@ -169,7 +169,10 @@ export function initCabinetAvatar({
   return {
     setState,
     setCharacter(next) {
-      if (!["nilo", "lia", "caio", "iara"].includes(next) || next === character)
+      if (
+        !["nilo", "lia", "caio", "iara", "davi"].includes(next) ||
+        next === character
+      )
         return;
       character = next;
       identityVersion++;

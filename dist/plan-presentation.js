@@ -1,3 +1,4 @@
+import { safetyValues } from "./consequences.js";
 import { goalDef, goalReading, planSummary } from "./government-plan.js";
 import { regionsOf } from "./model.js";
 import { projectFor, remainingTurns } from "./investment-ledger.js";
@@ -71,6 +72,10 @@ export function planHighlights(s) {
   return [
     { id: "nilo", text: nilotext },
     { id: "finance", text: finance },
+    {
+      id: "security",
+      text: `Violência: ${fmt(safetyValues(s).crime)}/100. Investigação: ${fmt(safetyValues(s).investigation)}/100; confiança: ${fmt(safetyValues(s).trust)}/100. Consulte Davi para avaliar custos e defasagens.`,
+    },
     ...["health", "infrastructure"].map((id) => {
       const assigned = active
         .filter((g) => g.owner === id)

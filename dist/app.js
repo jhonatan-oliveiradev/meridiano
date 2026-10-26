@@ -1,3 +1,5 @@
+import { migrateConsequences, consequenceMetrics } from "./consequences.js";
+import { initConsequenceUI } from "./consequence-ui.js";
 import { initNavigation } from "./navigation.js";
 import { goalsOf, goalDef } from "./government-plan.js";
 import { initGovernmentPlanUI } from "./government-plan-ui.js";
@@ -69,6 +71,7 @@ let eventIsland = null;
 let decisionUI = null;
 let investmentUI = null;
 let governmentPlanUI = null;
+let consequenceUI = null;
 let pendingGoalReturn = null;
 let atlasMap = null;
 let advisorController = null,
@@ -111,7 +114,7 @@ function readStorage() {
       active.metrics &&
       Number.isFinite(active.seed)
     )
-      state = active;
+      state = migrateConsequences(active);
     else state = createCountry();
   } catch {
     saved = [];
@@ -180,6 +183,7 @@ function setView(next) {
     );
 }
 function updateUI() {
+  state = migrateConsequences(state);
   const m = state.metrics;
   $("#countryName").textContent = state.name;
   $("#countrySystem").textContent = state.government + " · " + state.economy;
@@ -331,6 +335,7 @@ function renderBudget() {
     ["Previdência", b.pension],
     ["Saúde e educação", state.policies.services],
     ["Infraestrutura", state.policies.infrastructure],
+    ["Segurança, prevenção e controle (reforço)", b.security],
     ["Outros gastos", 11],
     ["Programas regionais (anualizado)", b.projects],
     ["Juros", b.interest],
@@ -349,9 +354,11 @@ function renderBudget() {
             ? `Custo anual: ${fmt(b.pension)}% do PIB`
             : def.key === "tax"
               ? "Arrecadação simplificada, sem faixas por renda."
-              : def.key === "labor"
-                ? "Efeitos graduais sobre proteção e contratação."
-                : `Dotação anual: ${fmt(state.policies[def.key])}% do PIB`;
+              : def.key === "enforcement"
+                ? "Depende de investigação; intensidade alta pode custar confiança."
+                : def.key === "labor"
+                  ? "Efeitos graduais sobre proteção e contratação."
+                  : `Dotação anual: ${fmt(state.policies[def.key])}% do PIB`;
   }
 }
 function policyValue(def, v) {
@@ -362,11 +369,12 @@ function policyValue(def, v) {
       : fmt(v, def.step < 1 ? 1 : 0) + "%";
 }
 function renderPolicies() {
+  state = migrateConsequences(state);
   state.policyBaseline ??= { ...state.policies };
   $("#policies").innerHTML = policyDefs
     .map(
       (p) =>
-        `<article class="policy"><div class="policy-head"><span class="policy-icon" aria-hidden="true"><svg><use href="assets/reicon.svg#i-${{ income: "coin", pension: "people", labor: "shield", tax: "bank", services: "health", infrastructure: "buildings" }[p.key]}" /></svg></span><span class="eyebrow">POLÍTICA NACIONAL</span></div><h4>${p.name}</h4><p>${p.description}</p><label for="policy-${p.key}">${p.label}<output id="output-${p.key}" for="policy-${p.key}">${policyValue(p, state.policies[p.key])}</output></label><input id="policy-${p.key}" data-policy="${p.key}" type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${state.policies[p.key]}"><div class="policy-range"><span>${policyValue(p, p.min)}</span><span>${policyValue(p, p.max)}</span></div><div class="policy-cost" id="cost-${p.key}"></div></article>`,
+        `<article class="policy"><div class="policy-head"><span class="policy-icon" aria-hidden="true"><svg><use href="assets/reicon.svg#i-${{ income: "coin", pension: "people", labor: "shield", tax: "bank", services: "health", infrastructure: "buildings", security: "shield", prevention: "people", oversight: "document", enforcement: "shield" }[p.key]}" /></svg></span><span class="eyebrow">POLÍTICA NACIONAL</span></div><h4>${p.name}</h4><p>${p.description}</p><label for="policy-${p.key}">${p.label}<output id="output-${p.key}" for="policy-${p.key}">${policyValue(p, state.policies[p.key])}</output></label><input id="policy-${p.key}" data-policy="${p.key}" type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${state.policies[p.key]}"><div class="policy-range"><span>${policyValue(p, p.min)}</span><span>${policyValue(p, p.max)}</span></div><div class="policy-cost" id="cost-${p.key}"></div></article>`,
     )
     .join("");
   renderBudget();
@@ -385,6 +393,7 @@ function renderPolicies() {
   }
 }
 const metricDefs = [
+  ...consequenceMetrics.map(([key, name, unit]) => [key, name, unit]),
   ["welfare", "Bem-estar", "/100"],
   ["poverty", "Pobreza", "%"],
   ["unemployment", "Desemprego", "%"],
@@ -393,12 +402,12 @@ const metricDefs = [
   ["debt", "Dívida / PIB", "%"],
 ];
 function renderIndicators() {
-  const first = state.history[0],
-    m = state.metrics;
+  const m = state.metrics;
   $("#indicatorCards").innerHTML = metricDefs
     .map(([k, n, u]) => {
-      const delta = m[k] - first[k];
-      return `<button type="button" class="indicator-card" data-chart-key="${k}" aria-pressed="${$("#chartMetric").value === k}"><span>${n}<span class="metric-arrow" aria-hidden="true">↗</span></span><strong>${fmt(m[k])}<span style="font-size:13px">${u}</span></strong><small>${delta >= 0 ? "+" : ""}${fmt(delta)} ${u === "%" ? "p.p." : u === "/100" ? "pontos" : u.trim()} desde o início</small></button>`;
+      const earliest = state.history.find((h) => Number.isFinite(h[k])) ?? m;
+      const delta = m[k] - earliest[k];
+      return `<button type="button" class="indicator-card" data-chart-key="${k}" aria-pressed="${$("#chartMetric").value === k}"><span>${n}<span class="metric-arrow" aria-hidden="true">↗</span></span><strong>${fmt(m[k])}<span style="font-size:13px">${u}</span></strong><small>${delta >= 0 ? "+" : ""}${fmt(delta)} ${u === "%" ? "p.p." : u === "/100" ? "pontos" : u.trim()} desde ${earliest.quarter ? date(earliest.quarter) : "o início"}</small></button>`;
     })
     .join("");
   renderBulletin(state);
@@ -419,7 +428,7 @@ $("#indicatorCards").addEventListener("click", (e) => {
 });
 function renderChart() {
   const key = $("#chartMetric").value,
-    h = state.history,
+    h = state.history.filter((m) => Number.isFinite(m[key])),
     values = h.map((m) => m[key]),
     min = Math.max(0, Math.min(...values) * 0.9 - 1),
     max = Math.max(...values) * 1.1 + 1;
@@ -1211,7 +1220,7 @@ function renderScenarios() {
 }
 function compareScenario(s) {
   openModal(
-    `<h3 id="modalTitle">Comparar cenários</h3><p>${s.state.seed === state.seed ? "Mesma semente territorial." : "Territórios diferentes: considere as condições iniciais."} Comparação descritiva, sem atribuição causal automática.</p><div class="comparison"><table><thead><tr><th>Indicador</th><th>Atual<br>${date(state.quarter)}</th><th>${esc(s.name)}<br>${date(s.state.quarter)}</th></tr></thead><tbody>${metricDefs.map(([k, n, u]) => `<tr><td>${n}</td><td>${fmt(state.metrics[k])}${u}</td><td>${fmt(s.state.metrics[k])}${u}</td></tr>`).join("")}</tbody></table></div><p>Atual: ${esc(state.name)} · ${esc(state.external)}<br>Salvo: ${esc(s.state.name)} · ${esc(s.state.external)}</p><div class="modal-actions"><button class="primary" data-close>Fechar comparação</button></div>`,
+    `<h3 id="modalTitle">Comparar cenários</h3><p>${s.state.seed === state.seed ? "Mesma semente territorial." : "Territórios diferentes: considere as condições iniciais."} Comparação descritiva, sem atribuição causal automática.</p><div class="comparison"><table><thead><tr><th>Indicador</th><th>Atual<br>${date(state.quarter)}</th><th>${esc(s.name)}<br>${date(s.state.quarter)}</th></tr></thead><tbody>${metricDefs.map(([k, n, u]) => `<tr><td>${n}</td><td>${fmt(state.metrics[k])}${u}</td><td>${Number.isFinite(s.state.metrics[k]) ? fmt(s.state.metrics[k]) + u : "Sem registro"}</td></tr>`).join("")}</tbody></table></div><p>Atual: ${esc(state.name)} · ${esc(state.external)}<br>Salvo: ${esc(s.state.name)} · ${esc(s.state.external)}</p><div class="modal-actions"><button class="primary" data-close>Fechar comparação</button></div>`,
   );
 }
 // Shared event delegation keeps generated controls consistent.
@@ -1278,7 +1287,11 @@ $("#policies").addEventListener("input", (e) => {
   advisorController?.stateChanged(state);
   persist();
 });
-$("#advance").onclick = () => stepForward(true);
+$("#advance").onclick = () => {
+  pausePlayback();
+  if (decisionFor(state)) decisionUI.showDecision();
+  else consequenceUI.showPreview();
+};
 $("#save").onclick = saveScenario;
 $("#save2").onclick = saveScenario;
 $("#configure").onclick = () => countryForm();
@@ -1425,6 +1438,7 @@ window.addEventListener("pointercancel", () => {
   $("#mapViewport").classList.remove("dragging");
 });
 readStorage();
+state = migrateConsequences(state);
 drawMap();
 renderPolicies();
 investmentUI = initInvestmentUI({
@@ -1457,6 +1471,13 @@ decisionUI = initDecisionUI({
 eventIsland = initEventIsland({
   onDetails: () =>
     decisionFor(state) ? decisionUI.showDecision() : setView("indicadores"),
+});
+consequenceUI = initConsequenceUI({
+  getState: () => state,
+  openModal,
+  closeModal,
+  onAdvance: () => stepForward(true),
+  onPolicies: () => setView("politicas"),
 });
 governmentPlanUI = initGovernmentPlanUI({
   getState: () => state,

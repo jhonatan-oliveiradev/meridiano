@@ -50,7 +50,7 @@ test("Nilo prioritizes a shorter deadline among equally tracked goals without ch
   assert.match(notes[0].text, /Pobreza/);
   assert.match(notes[0].text, /4 trimestres/);
   assert.deepEqual(s, before);
-  assert.equal(notes.length, 4);
+  assert.equal(notes.length, 5);
 });
 test("secretariat highlights use contracted programs and deadline risks; finance compares actual and next payments", () => {
   let s = startInvestment(initialState(), 0, "water");

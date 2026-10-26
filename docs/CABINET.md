@@ -38,3 +38,7 @@ Os SVGs de cada personagem são carregados uma vez e compartilhados pelas duas i
 ## Plano de governo
 
 A área Plano de governo reúne metas, histórico trimestral e resumos calculados das quatro responsabilidades. Consultar abre a área e preenche uma pergunta para revisão do jogador. O contexto de IA inclui metas válidas da área; nenhuma secretaria cria metas ou contrata obras sozinha. Regras e limites em [GOVERNMENT-PLAN.md](GOVERNMENT-PLAN.md).
+
+## Segurança pública · v0.11
+
+Davi usa avatar procedural próprio (SVG, três expressões) e acompanha metas nacionais de violência. Ferramentas: `inspect_security` e `inspect_budget`. O primeiro retorna índices, custo adicional e fatores da próxima variação calculados pelo motor. Nilo também pode consultar o diagnóstico. Davi não prepara investimentos das outras áreas ou executa ações. Dados de crime regionais não estão disponíveis. Regras em [CONSEQUENCES.md](CONSEQUENCES.md).
