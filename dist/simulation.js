@@ -1,8 +1,16 @@
 import { migrateConsequences } from "./consequences.js";
 import { advanceGoals } from "./government-plan.js";
 import { advance, budget, policyDefs, regionsOf } from "./model.js";
+import {
+  followupFor,
+  crisisEffect,
+  combineEffects,
+  advanceCrisisTracks,
+} from "./crisis-followup.js";
+import { quarterDrivers, driverMetrics } from "./governance.js";
 
-// Fictional game rules. All effects last one turn; cost is a one-time % of GDP.
+// Fictional game rules. Immediate effects last one turn; optional follow-ups are bounded.
+// Emergency cost is charged once as a percentage of GDP.
 const incidents = [
   {
     key: "security",
@@ -176,6 +184,10 @@ export function decisionFor(s) {
   const { eligible, ...event } = template;
   return {
     ...structuredClone(event),
+    choices: event.choices.map((c) => ({
+      ...structuredClone(c),
+      followup: followupFor(s, event.key, c.id),
+    })),
     ...(s.territory ? { region: incidentRegion(s, event.key) } : {}),
     id: pending.id,
     quarter: pending.quarter,
@@ -207,6 +219,7 @@ export function resolveDecision(s, eventId, choiceId) {
     region: event.region,
     choice: choice.label,
     effect: choice.effect,
+    followup: followupFor(s, event.key, choice.id),
     chosenAt: s.quarter,
   };
   n.decisionLog = [...(s.decisionLog ?? []), n.scheduledDecision].slice(-160);
@@ -221,7 +234,13 @@ export function resolveDecision(s, eventId, choiceId) {
   return n;
 }
 export function projectQuarter(s) {
-  return advance(s, s.scheduledDecision?.effect ?? {});
+  if (s.quarter >= 160) return s;
+  const n = advance(
+    s,
+    combineEffects(s.scheduledDecision?.effect, crisisEffect(s)),
+  );
+  advanceCrisisTracks(s, n);
+  return n;
 }
 function trajectory(s, horizon) {
   let n = structuredClone(s);
@@ -255,9 +274,7 @@ export function forecastPolicies(s) {
     current: changed.metrics,
     baseline: unchanged.metrics,
     delta: Object.fromEntries(
-      ["poverty", "welfare", "debt", "crime", "trust", "servicesPressure"].map(
-        (k) => [k, changed.metrics[k] - unchanged.metrics[k]],
-      ),
+      driverMetrics.map((k) => [k, changed.metrics[k] - unchanged.metrics[k]]),
     ),
   };
 }
@@ -280,6 +297,8 @@ export function advanceTurn(s) {
         after: s.policies[p.key],
       })),
     decision: s.scheduledDecision ?? null,
+    drivers: quarterDrivers(s, n),
+    policiesBefore: { ...baseline },
   };
   n.policyBaseline = { ...n.policies };
   n.scheduledDecision = null;
@@ -287,6 +306,19 @@ export function advanceTurn(s) {
     n.events.push({
       title: `Executado: ${s.scheduledDecision.choice}`,
       detail: `${s.scheduledDecision.title}. Custo extraordinário: ${(s.scheduledDecision.effect.cost ?? 0).toFixed(1).replace(".", ",")}% do PIB, financiado por dívida uma única vez.`,
+    });
+  for (const c of n.crisisReport ?? [])
+    n.events.push({
+      title: `${c.remaining ? "Em acompanhamento" : "Acompanhamento concluído"}: ${c.title}`,
+      detail: c.remaining
+        ? `${c.remaining} trimestre de efeitos posteriores ainda previsto. Não há nova cobrança emergencial.`
+        : "Os efeitos extraordinários deste acompanhamento terminaram.",
+    });
+  if (n.quarter % 16 === 0)
+    n.events.unshift({
+      title: `Ciclo de governo ${n.quarter / 16} encerrado`,
+      detail:
+        "Consulte o balanço no Plano de governo. O país continua com o mesmo histórico.",
     });
   n.pendingDecision = nextDecision(n);
   const event = decisionFor(n);

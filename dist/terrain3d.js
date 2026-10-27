@@ -8,6 +8,7 @@ import {
   regionIndexAt,
 } from "./geography.js";
 import { regionDefs, regionsOf, regionalMetrics, clamp } from "./model.js";
+import { publicWorks } from "./public-works.js";
 
 export function buildTerrainGeometry(seed, territory = null) {
   const land = territory?.land ?? landPoints(seed);
@@ -110,6 +111,60 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
   });
   const terrain = new THREE.Mesh(geometry, material);
   scene.add(terrain);
+  const worksGroup = new THREE.Group();
+  scene.add(worksGroup);
+  let worksSignature = "";
+  function syncWorks() {
+    const items = publicWorks(currentState, cities),
+      signature = JSON.stringify(items.map((p) => [p.id, p.phase]));
+    if (signature === worksSignature) return;
+    worksSignature = signature;
+    for (const o of [...worksGroup.children]) {
+      o.geometry?.dispose();
+      o.material?.dispose();
+      worksGroup.remove(o);
+    }
+    const height = (x, y) =>
+      4 +
+      elevation(x, y, currentState.seed, currentState.territory?.profile) * 88;
+    for (const p of items) {
+      const color = p.phase === "operating" ? 0xc7ff3d : 0xe3ae63;
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(7, 9, 7),
+        new THREE.MeshStandardMaterial({
+          color,
+          roughness: 0.9,
+          wireframe: p.phase === "planning" || p.phase === "building",
+        }),
+      );
+      mesh.position.set(p.x - 460, height(p.x, p.y) + 6, p.y - 370);
+      mesh.userData.region = p.region;
+      worksGroup.add(mesh);
+      if (p.path.length > 1) {
+        const points = [];
+        for (let i = 1; i < p.path.length; i++) {
+          const a = p.path[i - 1],
+            b = p.path[i],
+            steps = Math.max(
+              1,
+              Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 4),
+            );
+          for (let j = 0; j <= steps; j++) {
+            const x = a[0] + ((b[0] - a[0]) * j) / steps,
+              y = a[1] + ((b[1] - a[1]) * j) / steps;
+            points.push(new THREE.Vector3(x - 460, height(x, y) + 2, y - 370));
+          }
+        }
+        const line = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(points),
+          new THREE.LineBasicMaterial({ color }),
+        );
+        line.userData.region = p.region;
+        worksGroup.add(line);
+      }
+    }
+  }
+  syncWorks();
   const borders = new THREE.Group();
   scene.add(borders);
   function lineFrom(points, color, opacity) {
@@ -185,6 +240,11 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
       (-(e.clientY - r.top) / r.height) * 2 + 1,
     );
     raycaster.setFromCamera(pointer, camera);
+    const workHit = raycaster.intersectObjects(worksGroup.children)[0];
+    if (workHit) {
+      onSelect(workHit.object.userData.region, null);
+      return;
+    }
     const cityHit = raycaster.intersectObjects(cityGroup.children)[0];
     if (cityHit) {
       const city = cities[cityHit.object.userData.city];
@@ -298,6 +358,7 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     setTheme,
     update(s, options = {}) {
       currentState = s;
+      syncWorks();
       selected = options.selected ?? selected;
       layer = options.layer ?? layer;
       recolor();
