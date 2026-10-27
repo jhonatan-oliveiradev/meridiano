@@ -226,7 +226,11 @@ test("security incident blocks time, applies its response once and survives save
     real = advanceTurn(restored);
   assert.deepEqual(real.metrics, expected.metrics);
   assert.equal(real.scheduledDecision, null);
-  assert.equal(real.lastReport.decision.effect.cost, 0.4);
+  assert.equal(
+    real.lastReport.decision.effect.cost,
+    event.choices.find((c) => c.id === "investigate").effect.cost,
+  );
+  assert.ok(real.lastReport.decision.effect.cost < 0.4);
   assert.equal(
     real.consequenceReport.drivers.trust.find(
       (p) => p.label === "Resposta ao acontecimento",

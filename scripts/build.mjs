@@ -7,6 +7,7 @@ for (const f of [
   "governance-ui.js",
   "governance.css",
   "crisis-followup.js",
+  "prevention.js",
   "public-works.js",
   "layout-polish.css",
   "music-player.js",
