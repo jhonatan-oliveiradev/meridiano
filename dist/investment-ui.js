@@ -1,3 +1,4 @@
+import { renderProjectCard } from "./project-card.js";
 import { regionsOf, regionalMetrics, budget } from "./model.js";
 import {
   quoteInvestment,
@@ -10,8 +11,6 @@ import {
   projectFor,
   activeInvestments,
   investmentFinance,
-  projectProgress,
-  remainingTurns,
 } from "./investment-ledger.js";
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -29,12 +28,6 @@ const money = (v) =>
 const people = (v) =>
   v >= 1 ? `${fmt(v, 2)} milhões` : `${fmt(v * 1000, 0)} mil`;
 const quarter = (q) => `${2027 + Math.floor(q / 4)} · T${(q % 4) + 1}`;
-const phases = {
-  planning: "Planejamento",
-  building: "Em construção",
-  ready: "Entrega concluída",
-  operating: "Em operação",
-};
 export function initInvestmentUI({
   getState,
   setState,
@@ -101,17 +94,10 @@ export function initInvestmentUI({
     );
     focusTitle();
   }
-  function projectCard(s, p) {
-    const def = projectFor(p.type),
-      r = regionsOf(s)[p.region],
-      f = investmentFinance({ ...s, investments: [p] }),
-      percent = projectProgress(p) * 100;
-    return `<article class="project-card" data-project-phase="${p.phase}"><div class="project-card-top"><span class="project-phase">${phases[p.phase]}</span><span>${esc(r.name)}</span></div><h4>${def.name}</h4><div class="project-progress"><progress max="100" value="${percent}" aria-label="Execução de ${def.name} em ${esc(r.name)}"></progress><span>${fmt(percent, 0)}%</span></div><p>${p.phase === "operating" ? `Em operação desde ${quarter(p.operatingAt)}. Benefícios e manutenção em vigor.` : p.phase === "ready" ? "Obra entregue. A operação começa no próximo trimestre." : `Operação estimada em ${remainingTurns(s, p)} trimestre${remainingTurns(s, p) > 1 ? "s" : ""}, à capacidade atual.`}</p><dl><div><dt>Pago / contratado</dt><dd>${money(p.paid)} / ${money(p.cost)}</dd></div><div><dt>Próximo trimestre</dt><dd>${money(f.constructionQuarter + f.upkeepQuarter)}</dd></div><div><dt>Manutenção anual</dt><dd>${money(p.upkeepAnnual)}</dd></div><div><dt>Alcance inicial estimado</dt><dd>${people(p.people)}</dd></div></dl><div class="project-actions">${action("locate", p.region, "Ver estado ↗")}${p.phase === "planning" ? `<button class="secondary" data-invest-action="cancel" data-invest-id="${esc(p.id)}">Cancelar contratação</button>` : ""}</div></article>`;
-  }
   function portfolioHTML(s, modal = false) {
     const list = s.investments ?? [],
       f = investmentFinance(s);
-    return `<div class="investment-heading"><div><span class="eyebrow">INVESTIMENTO PÚBLICO</span><h${modal ? '3 id="modalTitle"' : "4"}>Carteira de projetos</h${modal ? "3" : "4"}></div>${action("compare", getSelected(), "Comparar estados ↗")}</div><p>${activeInvestments(s).length} de 3 vagas de implantação ocupadas · ${list.filter((p) => p.phase === "operating").length} ${list.filter((p) => p.phase === "operating").length === 1 ? "programa" : "programas"} em operação.</p>${list.length ? `<div class="investment-totals"><span>Próximo trimestre <b>${money(f.constructionQuarter + f.upkeepQuarter)}</b></span><span>A pagar em obras <b>${money(f.remainingCapital)}</b></span><span>Manutenção anual contratada <b>${money(f.upkeepAnnualCommitted)}</b></span></div><p class="investment-footnote">A manutenção contratada inclui programas ainda em implantação; só será cobrada após a entrega. Públicos dos programas podem se sobrepor.</p><div class="project-grid">${list.map((p) => projectCard(s, p)).join("")}</div>` : `<div class="investment-empty"><span aria-hidden="true">↗</span><div><b>Seu primeiro investimento</b><p>Compare os estados e avalie custo, prazo e moradores atendidos antes de contratar.</p></div>${action("offers", getSelected(), "Avaliar programas")}</div>`}`;
+    return `<div class="investment-heading"><div><span class="eyebrow">INVESTIMENTO PÚBLICO</span><h${modal ? '3 id="modalTitle"' : "4"}>Carteira de projetos</h${modal ? "3" : "4"}></div>${action("compare", getSelected(), "Comparar estados ↗")}</div><p>${activeInvestments(s).length} de 3 vagas de implantação ocupadas · ${list.filter((p) => p.phase === "operating").length} ${list.filter((p) => p.phase === "operating").length === 1 ? "programa" : "programas"} em operação.</p>${list.length ? `<div class="investment-totals"><span>Obras no próximo trimestre <b>${money(f.constructionQuarter)}</b></span><span>Manutenção no próximo trimestre <b>${money(f.upkeepQuarter)}</b></span><span>A pagar em obras <b>${money(f.remainingCapital)}</b></span><span>Manutenção anual contratada <b>${money(f.upkeepAnnualCommitted)}</b></span></div><p class="investment-footnote">A manutenção contratada inclui programas ainda em implantação; só será cobrada após a entrega. Públicos dos programas podem se sobrepor.</p><div class="project-grid">${list.map((p) => renderProjectCard(s, p)).join("")}</div>` : `<div class="investment-empty"><span aria-hidden="true">↗</span><div><b>Seu primeiro investimento</b><p>Compare os estados e avalie custo, prazo e moradores atendidos antes de contratar.</p></div>${action("offers", getSelected(), "Avaliar programas")}</div>`}`;
   }
   function showPortfolio() {
     openModal(
