@@ -3,6 +3,7 @@ import { mkdir, cp, access, rm } from "node:fs/promises";
 import { musicTracks } from "../dist/music-tracks.js";
 for (const f of [
   "index.html",
+  "layout-polish.css",
   "music-player.js",
   "music-player.css",
   "music-controller.js",
