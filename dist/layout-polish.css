@@ -1,0 +1,130 @@
+/* Keep the cabinet's scroll content in one flow; no floating avatar over metrics. */
+.advisor-layout > .advisor-context {
+  position: relative;
+  isolation: isolate;
+  padding: 20px;
+  scrollbar-gutter: stable;
+  scroll-padding-block: 20px;
+}
+.advisor-context .cabinet-person {
+  position: static;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+}
+.advisor-context .advisor-facts {
+  gap: 14px;
+  padding-block: 18px;
+  margin-block: 20px;
+}
+.advisor-context .suggested-questions {
+  margin-top: 24px;
+}
+.advisor-context .suggested-questions h4 {
+  margin: 20px 0 12px;
+  line-height: 1.5;
+}
+.advisor-context #planCabinetSummary {
+  margin: 0 0 12px;
+  line-height: 1.6;
+}
+.advisor-context .suggested-questions > .secondary {
+  padding: 12px 14px;
+  min-height: 44px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.advisor-context .suggested-questions button:not(.secondary) {
+  min-height: 44px;
+  padding: 13px 2px;
+  line-height: 1.6;
+}
+.app
+  :is(
+    .state-select,
+    .municipality-picker select,
+    .field select,
+    .chart-heading select,
+    .advisor-context select
+  ) {
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 10px 32px 10px 12px;
+  line-height: 1.4;
+  max-width: 100%;
+}
+.app .municipality-picker select {
+  width: 100%;
+}
+/* Atlas owns zoom and compass; don't duplicate the SVG map's controls. */
+.map-shell .map-zoom {
+  left: 20px;
+  right: auto;
+  bottom: 84px;
+  z-index: 7;
+}
+.map-shell.atlas-active :is(.map-zoom, .compass) {
+  display: none;
+}
+#atlasInteractive .maplibregl-ctrl-bottom-left {
+  left: 18px;
+  bottom: 80px;
+}
+#atlasInteractive .maplibregl-ctrl-bottom-right {
+  right: 18px;
+  bottom: 34px;
+}
+#atlasInteractive .maplibregl-ctrl-bottom-left .maplibregl-ctrl,
+#atlasInteractive .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+  margin: 0;
+}
+.map-shell.atlas-active .map-bottom {
+  z-index: 6;
+}
+@media (min-width: 761px) {
+  .app > main > #view-territorio.active .below-map {
+    height: 64px;
+    flex-shrink: 0;
+    padding: 8px 292px 8px 2px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    line-height: 1.5;
+  }
+  .below-map #mapMethods {
+    flex-shrink: 0;
+  }
+  .app:has(#view-territorio.active) #eventIsland {
+    top: auto;
+    bottom: 86px;
+    right: 24px;
+    width: 270px;
+    max-width: calc(100% - 48px);
+  }
+  .app:has(#view-territorio.active) #eventIsland[data-expanded="true"] {
+    width: 440px;
+  }
+}
+@media (min-width: 761px) and (max-width: 1150px) {
+  #view-territorio .below-map #mapInteractionHint {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .map-shell .map-zoom {
+    left: auto;
+    right: 14px;
+    bottom: 94px;
+  }
+  .advisor-layout > .advisor-context {
+    padding: 18px;
+  }
+  .app .state-select {
+    max-width: 140px;
+  }
+  #atlasInteractive .maplibregl-ctrl-bottom-left {
+    left: 14px;
+    bottom: 94px;
+  }
+}
