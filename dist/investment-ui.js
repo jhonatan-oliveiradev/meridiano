@@ -1,4 +1,4 @@
-import { renderProjectCard } from "./project-card.js";
+import { renderProjectCard, regionalProjectSummary } from "./project-card.js";
 import { regionsOf, regionalMetrics, budget } from "./model.js";
 import {
   quoteInvestment,
@@ -110,7 +110,7 @@ export function initInvestmentUI({
       index = getSelected(),
       projects = (s.investments ?? []).filter((p) => p.region === index);
     $("#regionalInvestment").innerHTML =
-      `<div class="regional-invest-actions"><button class="primary" data-invest-action="offers" data-invest-region="${index}">Investir no estado ↗</button>${action("compare", index, "Comparar")}</div>${projects.length ? `<button class="regional-project-summary" data-invest-action="portfolio">${projects.length} programa${projects.length > 1 ? "s" : ""} · ${projects.filter((p) => p.phase === "operating").length} em operação ↗</button>` : '<small class="investment-footnote">Custo e prazo antes de contratar.</small>'}`;
+      `<div class="regional-invest-actions"><button class="primary" data-invest-action="offers" data-invest-region="${index}">Investir no estado ↗</button>${action("compare", index, "Comparar")}</div>${projects.length ? `<button class="regional-project-summary" data-project-status="${projects.every((p) => p.phase === "operating") ? "active" : "pending"}" data-invest-action="portfolio">${regionalProjectSummary(projects)} ↗</button>` : '<small class="investment-footnote">Custo e prazo antes de contratar.</small>'}`;
   }
   function renderMarkers() {
     const s = getState(),

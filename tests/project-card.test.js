@@ -2,7 +2,38 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { initialState, advance, regionsOf } from "../dist/model.js";
 import { startInvestment } from "../dist/investments.js";
-import { renderProjectCard } from "../dist/project-card.js";
+import {
+  renderProjectCard,
+  regionalProjectSummary,
+} from "../dist/project-card.js";
+
+test("regional summary distinguishes active programs, delivered works and implantation", () => {
+  assert.equal(
+    regionalProjectSummary([{ phase: "operating" }]),
+    "1 programa ativo · obra concluída",
+  );
+  assert.equal(
+    regionalProjectSummary([{ phase: "operating" }, { phase: "operating" }]),
+    "2 programas ativos · obras concluídas",
+  );
+  assert.equal(
+    regionalProjectSummary([
+      { phase: "operating" },
+      { phase: "building" },
+      { phase: "ready" },
+    ]),
+    "1 programa ativo · 1 em implantação · 1 aguardando operação",
+  );
+  assert.equal(
+    regionalProjectSummary([{ phase: "ready" }]),
+    "1 obra entregue · operação no próximo trimestre",
+  );
+  assert.equal(
+    regionalProjectSummary([{ phase: "planning" }]),
+    "1 em implantação",
+  );
+  assert.equal(regionalProjectSummary([]), "");
+});
 
 function phases() {
   let s = startInvestment(initialState(), 5, "transport");

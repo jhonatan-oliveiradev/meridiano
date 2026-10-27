@@ -28,6 +28,24 @@ const phases = {
   operating: "Em operação",
 };
 
+export function regionalProjectSummary(projects) {
+  const active = projects.filter((p) => p.phase === "operating").length;
+  const ready = projects.filter((p) => p.phase === "ready").length;
+  const building = projects.length - active - ready;
+  const label = `${active} programa${active === 1 ? " ativo" : "s ativos"}`;
+  if (active && active === projects.length)
+    return `${label} · ${active === 1 ? "obra concluída" : "obras concluídas"}`;
+  if (ready && ready === projects.length)
+    return `${ready} obra${ready === 1 ? " entregue" : "s entregues"} · operação no próximo trimestre`;
+  return [
+    active ? label : "",
+    building ? `${building} em implantação` : "",
+    ready ? `${ready} aguardando operação` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export function renderProjectCard(s, p) {
   const def = projectFor(p.type),
     r = regionsOf(s)[p.region];
