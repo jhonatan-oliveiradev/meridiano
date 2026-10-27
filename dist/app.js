@@ -1,4 +1,5 @@
 import { migrateConsequences, consequenceMetrics } from "./consequences.js";
+import { initGovernanceUI } from "./governance-ui.js";
 import { initConsequenceUI } from "./consequence-ui.js";
 import { initNavigation } from "./navigation.js";
 import { goalsOf, goalDef } from "./government-plan.js";
@@ -70,6 +71,7 @@ let regions = regionsOf(state);
 let eventIsland = null;
 let decisionUI = null;
 let investmentUI = null;
+let governanceUI = null;
 let governmentPlanUI = null;
 let consequenceUI = null;
 let pendingGoalReturn = null;
@@ -245,6 +247,7 @@ function updateUI() {
   renderBulletin(state);
   decisionUI?.update();
   investmentUI?.update();
+  governanceUI?.update();
   governmentPlanUI?.render();
   updateGoalReturn();
   if (state.quarter >= 160) pausePlayback();
@@ -1030,7 +1033,7 @@ function closeModal() {
 }
 function showMethods() {
   openModal(
-    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Programas regionais (% PIB anualizado) = (obra + manutenção no próximo trimestre) × 4 ÷ PIB × 100<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência + programas regionais) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Países novos têm área, relevo e divisões reproduzíveis pela semente. Extensão e população inicial influenciam o número de estados e municípios. Costa, rios e relevo influenciam a ocupação; cada município tem população urbana e rural, área e densidade próprias. A população cresce sem migração e as divisas permanecem estáveis. Renda, pobreza e bem-estar municipais ainda seguem o estado. Cenários antigos conservam seus seis estados e a distribuição original, sem área inventada. Estradas são esquemáticas, sem cálculo de rotas.</p></div><div class="method-block"><h4>Investimentos regionais</h4><p>Programas estaduais passam por planejamento, construção, entrega e operação. O planejamento custa 10%; o restante é pago por avanço físico. Capacidade e relevo alteram o prazo. Manutenção e benefícios começam no avanço seguinte à entrega. São despesas adicionais às políticas nacionais. Até três implantações simultâneas; cancelamento sem custo apenas antes do primeiro avanço.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; seus modificadores duram um trimestre e o custo extraordinário é financiado por dívida uma única vez. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
+    `<h3 id="modalTitle">Como este mundo funciona</h3><p>Meridiano é um laboratório de hipóteses. Território, indicadores e coeficientes são sintéticos. Os resultados não são previsões nem evidências a favor de uma ideologia.</p><div class="method-block"><h4>Tempo e contexto</h4><p>Cada turno representa um trimestre. O contexto externo modifica a atividade econômica. A semente reproduz o território e o ciclo; não há sorteios ocultos a cada clique.</p></div><div class="method-block"><h4>Financiamento explícito</h4><p>A moeda fictícia é M$. Os fluxos são anuais. O modelo considera gasto administrativo de 11% do PIB e juros anuais equivalentes a 5,5% do estoque da dívida.</p><div class="method-code">Renda básica (% PIB) = valor mensal × 12 × população (milhões) ÷ [PIB (bilhões) × 1.000] × 100<br>Previdência (% PIB) = cobertura (%) × 0,075<br>Programas regionais (% PIB anualizado) = (obra + manutenção no próximo trimestre) × 4 ÷ PIB × 100<br>Saldo = tributação − (11 + saúde/educação + infraestrutura + renda básica + previdência + programas regionais) − dívida/PIB × 0,055<br>Dívida seguinte = (dívida − saldo/4 + gasto extraordinário) ÷ (1 + crescimento anual/400)</div></div><div class="method-block"><h4>Efeitos graduais e capacidade</h4><p>Pobreza se aproxima 13% por trimestre de uma meta sintética baseada em transferências, previdência, proteção trabalhista, serviços e desemprego. Bem-estar ajusta 10% da distância para sua meta; inflação, 16%. Saúde/educação e infraestrutura alteram a capacidade de execução ao longo do tempo.</p></div><div class="method-block"><h4>Geografia e diferenças regionais</h4><p>Países novos têm área, relevo e divisões reproduzíveis pela semente. Extensão e população inicial influenciam o número de estados e municípios. Costa, rios e relevo influenciam a ocupação; cada município tem população urbana e rural, área e densidade próprias. A população cresce sem migração e as divisas permanecem estáveis. Renda, pobreza e bem-estar municipais ainda seguem o estado. Cenários antigos conservam seus seis estados e a distribuição original, sem área inventada. Estradas são esquemáticas, sem cálculo de rotas.</p></div><div class="method-block"><h4>Investimentos regionais</h4><p>Programas estaduais passam por planejamento, construção, entrega e operação. O planejamento custa 10%; o restante é pago por avanço físico. Capacidade e relevo alteram o prazo. Manutenção e benefícios começam no avanço seguinte à entrega. São despesas adicionais às políticas nacionais. Até três implantações simultâneas; cancelamento sem custo apenas antes do primeiro avanço.</p></div><div class="method-block"><h4>Acontecimentos e projeções</h4><p>A previsão compara os ajustes com as políticas no início do trimestre, por até quatro trimestres. Inclui respostas já escolhidas e exclui acontecimentos ainda desconhecidos. A partir do primeiro avanço e depois a cada três trimestres, um acontecimento elegível pode exigir uma escolha. O tempo pausa até a resposta; o gasto extraordinário é cobrado uma única vez. Respostas novas podem continuar produzindo modificadores por até dois trimestres adicionais; a preparação do país ajusta esse acompanhamento. Os números são regras fictícias, consultáveis nas opções.</p></div><div class="method-block"><h4>Limites do modelo</h4><p>Governo e orientação econômica descrevem o cenário; as políticas efetivas determinam os efeitos. Ainda não há eleições, agentes políticos, migração, comércio bilateral ou demografia por idade. Não há calibração empírica nem intervalos probabilísticos. Os coeficientes completos estão em model.js no repositório.</p></div><div class="modal-actions"><button class="primary" data-close>Entendi</button></div>`,
   );
 }
 function countryForm(isNew = false) {
@@ -1521,6 +1524,21 @@ advisorController = initAdvisor({
     selectRegion(index);
     investmentUI.showQuote(index, type);
   },
+});
+governanceUI = initGovernanceUI({
+  getState: () => state,
+  getCities: () => cities,
+  setState: (next) => {
+    state = next;
+    renderPolicies();
+    updateUI();
+    persist();
+  },
+  openModal,
+  closeModal,
+  notify,
+  selectRegion,
+  setView,
 });
 updateUI();
 setView(location.hash.slice(1) || "territorio");

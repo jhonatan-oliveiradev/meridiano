@@ -1,0 +1,236 @@
+.governance-board {
+  margin: 22px 0;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  min-width: 0;
+}
+.governance-board h4,
+.quarter-explanation h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 20px;
+  margin: 10px 0 12px;
+  letter-spacing: -0.4px;
+}
+.governance-board p,
+.quarter-explanation p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.governance-board details,
+.quarter-explanation details {
+  border-top: 1px solid var(--border);
+  padding: 13px 0;
+}
+.governance-board summary,
+.quarter-explanation summary {
+  display: list-item;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 3px 5px;
+}
+.governance-board summary > span {
+  color: var(--muted);
+  margin-left: 12px;
+  font-size: 10px;
+}
+.quarter-explanation summary strong {
+  float: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--primary);
+}
+.governance-table {
+  overflow-x: auto;
+  margin: 14px 0;
+}
+.governance-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.governance-table caption {
+  text-align: left;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.governance-table th,
+.governance-table td {
+  padding: 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.governance-table th:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+.governance-table tfoot {
+  color: var(--primary);
+}
+.governance-board .governance-note,
+.quarter-explanation .governance-note {
+  font-size: 10px;
+  line-height: 1.7;
+}
+.society-section,
+.crisis-tracker {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.society-grid,
+.council-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.society-grid article,
+.council-grid article {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+}
+.society-grid h5,
+.council-grid h5 {
+  font-size: 13px;
+  margin: 0 0 12px;
+  line-height: 1.6;
+}
+.society-grid strong {
+  display: block;
+  font:
+    500 28px "Space Grotesk",
+    sans-serif;
+  margin-bottom: 10px;
+}
+.society-grid strong small {
+  color: var(--muted);
+  font:
+    11px Manrope,
+    sans-serif;
+}
+.society-grid meter {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--primary);
+}
+.society-grid span,
+.council-grid span {
+  font-size: 10px;
+  color: var(--primary);
+}
+.council-grid span {
+  display: block;
+  margin-bottom: 9px;
+}
+.council-grid small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+.council-grid button {
+  margin-top: 14px;
+  padding: 10px 14px;
+  min-height: 40px;
+  font-size: 11px;
+}
+.council-board {
+  margin-top: 18px;
+  padding: 14px 18px;
+}
+.council-board > details {
+  border: 0;
+  padding: 0;
+}
+.crisis-tracker article {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.crisis-tracker b,
+.crisis-tracker span,
+.crisis-tracker small {
+  display: block;
+  line-height: 1.7;
+  font-size: 11px;
+}
+.crisis-tracker small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.proposal-tradeoff {
+  padding: 15px;
+  margin: 16px 0;
+  background: var(--subtle);
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.public-work {
+  cursor: pointer;
+}
+.public-work rect {
+  fill: var(--surface);
+  stroke: #e3ae63;
+  stroke-width: 2;
+}
+.public-work.is-operating rect {
+  fill: #c7ff3d;
+  stroke: #15261c;
+}
+.public-work text {
+  fill: var(--ink);
+  font:
+    700 9px Manrope,
+    sans-serif;
+  pointer-events: none;
+}
+.public-work.is-operating text {
+  fill: #15261c;
+}
+.public-link {
+  fill: none;
+  stroke: #e3ae63;
+  stroke-width: 4;
+  stroke-dasharray: 5 4;
+  opacity: 0.85;
+}
+.public-work.is-operating .public-link {
+  stroke: #c7ff3d;
+  stroke-dasharray: none;
+}
+.public-work:focus-visible rect {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+@media (min-width: 1051px) {
+  .advisor-view .content-heading #cabinetCouncil {
+    max-height: 180px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+@media (max-width: 760px) {
+  .governance-board {
+    padding: 18px;
+  }
+  .society-grid,
+  .council-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .quarter-explanation summary strong {
+    float: none;
+    display: block;
+    margin-left: 16px;
+  }
+  .governance-board summary > span {
+    display: block;
+    margin-left: 16px;
+  }
+}

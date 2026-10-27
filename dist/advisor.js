@@ -1,4 +1,5 @@
 import { safetyValues } from "./consequences.js";
+import { crisisTracks } from "./crisis-followup.js";
 import { goalsOf } from "./government-plan.js";
 import { initCabinetPanel } from "./cabinet-panel.js";
 import { roleFor, runCabinetTool } from "./cabinet-tools.js";
@@ -22,6 +23,20 @@ export function snapshotOf(s) {
     policies: { ...s.policies },
     metrics: { ...s.metrics },
     capacity: s.capacity,
+    ...(crisisTracks(s).length
+      ? {
+          crisisTracks: crisisTracks(s).map(
+            ({ id, key, choiceId, strength, startedAt, remaining }) => ({
+              id,
+              key,
+              choiceId,
+              strength,
+              startedAt,
+              remaining,
+            }),
+          ),
+        }
+      : {}),
     ...(s.goals?.length
       ? {
           goals: [
