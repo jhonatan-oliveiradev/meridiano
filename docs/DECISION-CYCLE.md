@@ -2,7 +2,7 @@
 
 ## Antes de avançar
 
-Em Políticas, a comparação parte do cenário atual e calcula até quatro trimestres (ou o tempo restante até 160) por dois caminhos: políticas do início do trimestre e políticas editadas. Capacidade, contexto externo e ciclo são iguais nos dois caminhos. A resposta já escolhida entra uma vez em ambos. Acontecimentos futuros e respostas ainda não escolhidas ficam fora da projeção. Desfazer restaura apenas as políticas deste trimestre.
+Em Políticas, a comparação parte do cenário atual e calcula até quatro trimestres (ou o tempo restante até 160) por dois caminhos: políticas do início do trimestre e políticas editadas. Capacidade, contexto externo e ciclo são iguais nos dois caminhos. A resposta já escolhida entra uma vez em ambos; acompanhamentos conhecidos seguem sua duração restante. Acontecimentos futuros e respostas ainda não escolhidas ficam fora da projeção. Desfazer restaura apenas as políticas deste trimestre.
 
 O gasto e a receita apresentados são variações de fluxos anuais em % do PIB atual; diferenças de pobreza e dívida são pontos percentuais, e bem-estar usa pontos. Os detalhes de cada política identificam os grupos afetados e o tempo de ajuste conforme o modelo existente.
 
@@ -25,12 +25,12 @@ Catálogo em `dist/simulation.js`:
 
 Cada acontecimento oferece três respostas, incluindo uma sem gasto extraordinário. Fechar ou adiar não escolhe automaticamente e não avança o tempo. A reprodução pausa. Resolver exige IDs do evento e da opção válidos; tentativas repetidas não aplicam novamente.
 
-A opção escolhida fica agendada para o próximo avanço. `cost` soma ao numerador da dívida em % do PIB uma vez; `growth` altera o crescimento anualizado daquele trimestre; `inflation` e `poverty` somam p.p.; `welfare` soma pontos, respeitando os limites existentes. Modificadores duram um turno, mas mudanças nos estoques seguem influenciando a trajetória. Todos os valores são fictícios e visíveis antes da escolha.
+A opção escolhida fica agendada para o próximo avanço. `cost` soma ao numerador da dívida em % do PIB uma vez; `growth` altera o crescimento anualizado daquele trimestre; `inflation` e `poverty` somam p.p.; `welfare` soma pontos, respeitando os limites existentes. Os modificadores imediatos duram um turno; respostas novas também podem ter até dois trimestres de acompanhamento, sem repetir o custo extraordinário. Preparação e programas pertinentes amortecem impactos adversos e podem encurtar esse período; benefícios por trimestre são preservados. Mudanças nos estoques seguem influenciando a trajetória. Todos os valores são fictícios e visíveis antes da escolha.
 
 ## Persistência e compatibilidade
 
-Campos opcionais no cenário v1: `policyBaseline`, `pendingDecision`, `scheduledDecision`, `decisionLog`, `lastReport`. Estados antigos ganham a linha de base na abertura da tela de políticas, sem inventar mudanças passadas. Salvar, retomar e recarregar preservam decisões e efeitos agendados. Sem dependências, segredos ou migrações de backend novos.
+Campos opcionais no cenário v1: `policyBaseline`, `pendingDecision`, `scheduledDecision`, `decisionLog`, `lastReport`, `crisisTracks`, `crisisReport`. Estados antigos ganham a linha de base na abertura da tela de políticas, sem inventar mudanças passadas. Salvar, retomar e recarregar preservam decisões e efeitos agendados. Sem dependências, segredos ou migrações de backend novos.
 
 ## Próximas etapas
 
-Aprofundar economia regional, forças políticas e histórico do Nilo permanece fora desta entrega. O conselheiro recebe os indicadores existentes; não há memória narrativa dos acontecimentos nesta versão.
+Aprofundar economia regional, forças políticas e histórico do Nilo permanece fora desta entrega. O conselheiro recebe indicadores e acompanhamentos conhecidos validados. Perspectivas sintéticas e propostas locais estão documentadas em GAMEPLAY-EVOLUTION.md; não há memória narrativa livre nem execução automática.

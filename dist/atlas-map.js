@@ -160,6 +160,8 @@ export function createAtlasMap(
     for (const key of [
       "country",
       "projects",
+      "publicWorks",
+      "publicLinks",
       "states",
       "municipalities",
       "cities",
@@ -273,6 +275,37 @@ export function createAtlasMap(
       },
     });
     map.addLayer({
+      id: "publicLinks",
+      type: "line",
+      source: "publicLinks",
+      paint: {
+        "line-color": [
+          "case",
+          ["==", ["get", "phase"], "operating"],
+          "#c7ff3d",
+          "#e3ae63",
+        ],
+        "line-width": 4,
+        "line-opacity": 0.85,
+      },
+    });
+    map.addLayer({
+      id: "publicWorks",
+      type: "circle",
+      source: "publicWorks",
+      paint: {
+        "circle-radius": 7,
+        "circle-color": [
+          "case",
+          ["==", ["get", "phase"], "operating"],
+          "#c7ff3d",
+          "#e3ae63",
+        ],
+        "circle-stroke-color": "#15261c",
+        "circle-stroke-width": 2,
+      },
+    });
+    map.addLayer({
       id: "projects",
       type: "circle",
       source: "projects",
@@ -317,7 +350,14 @@ export function createAtlasMap(
     }
     map.on("click", (e) => {
       const features = map.queryRenderedFeatures(e.point, {
-        layers: ["projects", "cities", "municipal-fill", "state-fill"],
+        layers: [
+          "publicWorks",
+          "publicLinks",
+          "projects",
+          "cities",
+          "municipal-fill",
+          "state-fill",
+        ],
       });
       const f = features[0];
       if (!f) return;
@@ -357,7 +397,14 @@ export function createAtlasMap(
         const changed = cachedState !== current;
         const d = data();
         if (changed)
-          for (const key of ["states", "municipalities", "cities", "projects"])
+          for (const key of [
+            "states",
+            "municipalities",
+            "cities",
+            "projects",
+            "publicWorks",
+            "publicLinks",
+          ])
             map.getSource(key).setData(d[key]);
         recolor();
       }

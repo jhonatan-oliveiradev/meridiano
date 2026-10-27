@@ -4,6 +4,8 @@ import {
   consequenceStep,
 } from "../dist/consequences.js";
 import { validateGoals, planSummary } from "../dist/government-plan.js";
+import { crisisTracks, crisisEffect } from "../dist/crisis-followup.js";
+import { societyGroups, cabinetProposals } from "../dist/governance.js";
 import {
   roleFor,
   toolNames,
@@ -291,6 +293,18 @@ export function validateRequest(body) {
       ? validateInvestments(s.investments, { quarter: s.quarter, territory })
       : undefined;
   let goals;
+  const continuing = crisisTracks({
+    seed: s.seed,
+    quarter: s.quarter,
+    crisisTracks: s.crisisTracks,
+  });
+  if (
+    s.crisisTracks !== undefined &&
+    (!Array.isArray(s.crisisTracks) ||
+      s.crisisTracks.length > 8 ||
+      continuing.length !== s.crisisTracks.length)
+  )
+    invalid();
   try {
     goals = validateGoals(s.goals, { quarter: s.quarter, territory });
   } catch {
@@ -320,6 +334,20 @@ export function validateRequest(body) {
       ...(territory ? { territory } : {}),
       ...(investments ? { investments } : {}),
       ...(goals.length ? { goals } : {}),
+      ...(continuing.length
+        ? {
+            crisisTracks: continuing.map(
+              ({ id, key, choiceId, strength, startedAt, remaining }) => ({
+                id,
+                key,
+                choiceId,
+                strength,
+                startedAt,
+                remaining,
+              }),
+            ),
+          }
+        : {}),
     },
   };
 }
@@ -458,6 +486,11 @@ export async function generateAdvice(
   const context = {
     ...request,
     snapshot: scenario,
+    perspectives: societyGroups(s),
+    knownContinuingEffects: crisisEffect(s),
+    cabinetPolicyOptions: cabinetProposals(s),
+    perspectiveLimits:
+      "Perspectivas sintéticas do jogo, não pesquisa eleitoral ou grupos demográficos medidos. Opções de política não são decisões executadas; crises conhecidas têm efeitos posteriores sem repetir o custo inicial.",
     cabinet: {
       selected: role.id,
       scope: role.scope,

@@ -1,6 +1,7 @@
 import { clipping } from "./vendor/geography-engine.js";
 import { landFor, voronoiCell } from "./geography.js";
 import { regionsOf, regionalMetrics, municipalMetrics } from "./model.js";
+import { publicWorks } from "./public-works.js";
 const fc = (features) => ({ type: "FeatureCollection", features });
 export function atlasData(state, cities) {
   const regions = regionsOf(state),
@@ -60,7 +61,26 @@ export function atlasData(state, cities) {
   );
   const line = (path) =>
     feature({ type: "LineString", coordinates: path.map(project) }, {});
+  const works = publicWorks(state, cities);
   return {
+    publicWorks: fc(
+      works.map((p) =>
+        feature(
+          { type: "Point", coordinates: project([p.x, p.y]) },
+          { index: p.region, name: p.name, phase: p.phase, type: p.type },
+        ),
+      ),
+    ),
+    publicLinks: fc(
+      works
+        .filter((p) => p.path.length > 1)
+        .map((p) =>
+          feature(
+            { type: "LineString", coordinates: p.path.map(project) },
+            { index: p.region, phase: p.phase },
+          ),
+        ),
+    ),
     country: fc([polygon(country, { name: state.name })]),
     states: fc(states),
     municipalities: fc(municipalities),

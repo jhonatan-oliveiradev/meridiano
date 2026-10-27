@@ -6,6 +6,8 @@ import {
 } from "./simulation.js";
 import { projectFor } from "./investment-ledger.js";
 import { regionsOf, policyDefs } from "./model.js";
+import { renderQuarterExplanation } from "./governance-ui.js";
+import { trackEffect } from "./crisis-followup.js";
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
   String(s).replace(
@@ -72,7 +74,7 @@ export const policyGuidance = {
     "Gasto no próximo trimestre; execução melhora com investimento continuado.",
   ],
 };
-function effectText(effect) {
+function effectText(effect, showCost = true) {
   const names = {
     growth: ["Crescimento anualizado", "p.p."],
     inflation: ["Inflação", "p.p."],
@@ -89,7 +91,7 @@ function effectText(effect) {
         `<span>${name}<b>${signed(effect[k])} ${unit}</b></span>`,
     )
     .join("");
-  return `<div class="choice-effects"><span>Gasto extraordinário<b>${fmt(effect.cost ?? 0, 1)}% do PIB</b></span>${lines || "<span>Sem efeito extraordinário nos indicadores.</span>"}</div>`;
+  return `<div class="choice-effects">${showCost ? `<span>Gasto extraordinário<b>${fmt(effect.cost ?? 0, 1)}% do PIB</b></span>` : ""}${lines || "<span>Sem efeito extraordinário nos indicadores.</span>"}</div>`;
 }
 export function initDecisionUI({
   getState,
@@ -173,7 +175,7 @@ export function initDecisionUI({
             )
             .join("")}</tbody></table></div></details>`
         : ""
-    }${full ? planReport(s) : ""}${event ? `<div class="decision-callout"><div><span class="eyebrow">DECISÃO PENDENTE · ${esc(event.region)}</span><b>${esc(event.title)}</b></div><button class="primary" data-cycle-action="decision">Avaliar opções ↗</button></div>` : `<div class="cycle-next"><span>${s.scheduledDecision ? "Resposta escolhida para o próximo trimestre." : "Pronto para o próximo trimestre."}</span>${full ? '<button class="secondary" data-cycle-action="policies">Revisar políticas ↗</button>' : ""}</div>`}`;
+    }${full ? renderQuarterExplanation(s) + planReport(s) : ""}${event ? `<div class="decision-callout"><div><span class="eyebrow">DECISÃO PENDENTE · ${esc(event.region)}</span><b>${esc(event.title)}</b></div><button class="primary" data-cycle-action="decision">Avaliar opções ↗</button></div>` : `<div class="cycle-next"><span>${s.scheduledDecision ? "Resposta escolhida para o próximo trimestre." : "Pronto para o próximo trimestre."}</span>${full ? '<button class="secondary" data-cycle-action="policies">Revisar políticas ↗</button>' : ""}</div>`}`;
   }
   function showReport() {
     const s = getState();
@@ -187,7 +189,7 @@ export function initDecisionUI({
       e = decisionFor(s);
     if (!e) return;
     openModal(
-      `<div class="cycle-dialog"><span class="eyebrow">ACONTECIMENTO · ${esc(e.region)}</span><h3 id="modalTitle">${esc(e.title)}</h3><p>${esc(e.detail)}</p><p class="decision-deadline">Escolha uma resposta para avançar. Os efeitos abaixo entram no próximo trimestre e se somam às políticas do país. Nesta etapa, os modificadores atuam nos indicadores nacionais.</p><div class="decision-options">${e.choices.map((c) => `<article><h4>${esc(c.label)}</h4><p>${esc(c.detail)}</p>${effectText(c.effect)}<button class="secondary" data-cycle-action="choose" data-event="${esc(e.id)}" data-choice="${c.id}">Escolher: ${esc(c.label)}</button></article>`).join("")}</div><p class="cycle-footnote">O gasto extraordinário é financiado por dívida uma única vez. Variações em p.p. são modificadores do trimestre; os resultados finais também incluem as políticas e o contexto do país.</p><div class="modal-actions"><button class="secondary" data-close>Decidir depois</button></div></div>`,
+      `<div class="cycle-dialog"><span class="eyebrow">ACONTECIMENTO · ${esc(e.region)}</span><h3 id="modalTitle">${esc(e.title)}</h3><p>${esc(e.detail)}</p><p class="decision-deadline">Escolha uma resposta para avançar. Os efeitos abaixo entram no próximo trimestre e se somam às políticas do país. Nesta etapa, os modificadores atuam nos indicadores nacionais.</p><div class="decision-options">${e.choices.map((c) => `<article><h4>${esc(c.label)}</h4><p>${esc(c.detail)}</p>${effectText(c.effect)}${c.followup ? `<details><summary>Acompanhamento por ${c.followup.turns} trimestre${c.followup.turns === 1 ? "" : "s"} após a resposta</summary><p>Modificadores por trimestre de acompanhamento, sem repetir o gasto extraordinário:</p>${effectText(trackEffect(c.followup), false)}<p>A preparação do país ajusta a intensidade e a duração. Estes efeitos posteriores são adicionais aos do primeiro trimestre.</p></details>` : ""}<button class="secondary" data-cycle-action="choose" data-event="${esc(e.id)}" data-choice="${c.id}">Escolher: ${esc(c.label)}</button></article>`).join("")}</div><p class="cycle-footnote">O gasto extraordinário é financiado por dívida uma única vez. Variações em p.p. são modificadores do trimestre; os resultados finais também incluem as políticas e o contexto do país.</p><div class="modal-actions"><button class="secondary" data-close>Decidir depois</button></div></div>`,
     );
   }
   document.addEventListener("click", (e) => {
