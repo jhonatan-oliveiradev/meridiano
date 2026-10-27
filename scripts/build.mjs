@@ -36,6 +36,7 @@ for (const f of [
   "investment-ledger.js",
   "investments.js",
   "investment-ui.js",
+  "project-card.js",
   "investments.css",
   "style.css",
   "app.js",
