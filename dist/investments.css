@@ -18,6 +18,9 @@
   margin: 7px 0 0;
   text-align: left;
 }
+.regional-project-summary[data-project-status="active"] {
+  color: var(--primary);
+}
 .investment-footnote {
   font-size: 11px !important;
   color: var(--muted);
