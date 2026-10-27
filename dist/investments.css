@@ -419,6 +419,49 @@
   min-width: 90px;
   background: var(--surface);
 }
+.investment-totals {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.project-completion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 12px;
+  margin-top: 14px;
+  border-radius: 10px;
+  background: var(--selection);
+  color: var(--primary);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.project-benefits {
+  padding: 14px 0;
+  margin: 16px 0;
+  border-block: 1px solid var(--border);
+}
+.project-benefits h5,
+.project-cost-heading {
+  font-size: 11px;
+  font-weight: 650;
+  margin: 0 0 12px;
+}
+.project-benefits dl {
+  margin: 0;
+}
+.project-benefits p {
+  margin: 12px 0 0;
+  font-size: 10px;
+}
+.project-card dl > div {
+  line-height: 1.6;
+  align-items: baseline;
+}
+.project-card dd {
+  flex-shrink: 0;
+}
+[data-project-phase="operating"] .project-phase {
+  color: var(--primary);
+}
 [data-theme="light"] .project-progress progress::-webkit-progress-value {
   background: #55762b;
 }
@@ -435,4 +478,11 @@
   .investment-offers {
     grid-template-columns: 1fr;
   }
+}
+
+.project-card[data-project-phase="operating"] .project-card-top .project-phase {
+  color: var(--primary);
+}
+.project-grid:has(> .project-card:only-child) {
+  grid-template-columns: minmax(0, 1fr);
 }
