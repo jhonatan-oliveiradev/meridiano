@@ -240,7 +240,7 @@
   }
   .rail > .brand-mark,
   .rail > .version,
-  .rail .nav-toggle {
+  .rail > .rail-btn.nav-toggle {
     display: none;
   }
   .rail-links {
