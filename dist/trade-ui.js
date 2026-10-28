@@ -199,7 +199,7 @@ export function initTradeUI({
           p = s.trade.policy[f.key],
           scale = Math.max(0.001, f.opening + f.production + f.imports);
         return `<article class="trade-sector" style="--sector:${d.color}"><header><div class="trade-sector-icon">${sectorIcon(f.key)}</div><div><span>SETOR PRODUTIVO</span><h4>${d.name}</h4></div><button class="trade-map-link" data-trade-action="sector-map" data-sector="${f.key}" aria-label="Ver ${d.name.toLowerCase()} no mapa">↗</button></header><div class="trade-flow-bar" aria-hidden="true"><i style="width:${Math.min(100, (f.domestic / scale) * 100)}%"></i><i style="width:${Math.min(100, (f.exports / scale) * 100)}%"></i></div><dl>${[
-          ["Capacidade instalada", f.capacity],
+          ["Capacidade disponível", f.capacity],
           ["Produção", f.production],
           ["Consumo interno", f.domestic],
           ["Insumos para indústria", f.inputs],
@@ -256,7 +256,7 @@ export function initTradeUI({
               report.regional.find((x) => x.region === j)?.output[
                 dominant.key
               ] ?? 0;
-          return `<g class="economic-site ${j === i ? "is-selected" : ""}" transform="translate(${v.x - 18},${v.y - 24})" data-economic-region="${j}" role="button" tabindex="0" aria-label="${esc(v.name)}: potencial de ${dominant.name.toLowerCase()} ${fmt(v[dominant.key] * 100, 0)} de 100"><title>${esc(v.name)} · ${dominant.name} · ${fmt(amount)} UP no trimestre</title><rect x="-13" y="-13" width="26" height="26" rx="7" fill="${dominant.color}"/><g transform="translate(-9,-9) scale(.75)" class="economic-symbol">${sectorIcon(
+          return `<g class="economic-site ${j === i ? "is-selected" : ""}" transform="translate(${v.x - 18},${v.y - 50})" data-economic-region="${j}" role="button" tabindex="0" aria-label="${esc(v.name)}: potencial de ${dominant.name.toLowerCase()} ${fmt(v[dominant.key] * 100, 0)} de 100"><title>${esc(v.name)} · ${dominant.name} · ${fmt(amount)} UP no trimestre</title><rect x="-13" y="-13" width="26" height="26" rx="7" fill="${dominant.color}"/><g transform="translate(-9,-9) scale(.75)" class="economic-symbol">${sectorIcon(
             dominant.key,
           )
             .replace(/^<svg[^>]*>/, "")

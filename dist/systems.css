@@ -1,0 +1,177 @@
+.systems-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+.systems-heading h3 {
+  font:
+    500 clamp(26px, 3vw, 40px) / 1.1 "Space Grotesk",
+    sans-serif;
+  letter-spacing: -1px;
+  margin: 12px 0;
+}
+.systems-heading p,
+.systems-note,
+.systems-empty p,
+.systems-method p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.systems-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+  padding: 18px 0;
+  border-block: 1px solid var(--border);
+}
+.systems-toolbar label {
+  font-size: 11px;
+  display: grid;
+  gap: 8px;
+  min-width: 180px;
+}
+.systems-toolbar select {
+  padding: 12px 36px 12px 14px;
+  min-height: 44px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 100%;
+}
+.systems-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.system-card {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  min-width: 0;
+}
+.system-card > strong {
+  display: block;
+  font:
+    500 36px/1.2 "Space Grotesk",
+    sans-serif;
+  letter-spacing: -1px;
+  margin: 18px 0 14px;
+}
+.system-card > strong small {
+  font:
+    500 11px Manrope,
+    sans-serif;
+  letter-spacing: 0;
+  color: var(--muted);
+  margin-left: 7px;
+}
+.system-card > p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  min-height: 44px;
+}
+.system-card dl {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.system-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 7px 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.system-card dt {
+  color: var(--muted);
+}
+.system-card dd {
+  text-align: right;
+  margin: 0;
+  max-width: 60%;
+}
+.systems-watch,
+.systems-history,
+.systems-method {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+}
+.systems-watch h4,
+.systems-history h4 {
+  font-size: 15px;
+  margin: 0 0 20px;
+}
+.systems-watch article,
+.systems-history article {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.systems-watch article > span,
+.systems-history article > span {
+  font-size: 10px;
+  color: var(--primary);
+}
+.systems-watch p,
+.systems-history p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 8px 0;
+}
+.systems-history small {
+  font-size: 11px;
+  line-height: 1.7;
+}
+.systems-method summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.systems-open {
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--primary);
+  border: 0;
+  background: transparent;
+  padding: 8px;
+}
+.network-response {
+  font-size: 11px;
+  line-height: 1.8;
+  padding: 12px;
+  background: var(--subtle);
+  border-radius: 10px;
+  margin: 14px 0;
+}
+@media (max-width: 760px) {
+  .systems-grid {
+    grid-template-columns: 1fr;
+  }
+  .systems-heading {
+    display: block;
+  }
+  .systems-heading > .secondary {
+    margin-top: 12px;
+  }
+  .systems-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .system-card {
+    padding: 20px;
+  }
+  .systems-open {
+    min-height: 40px;
+  }
+  .systems-note {
+    font-size: 11px;
+  }
+}

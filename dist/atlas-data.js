@@ -1,3 +1,4 @@
+import { stateSituation } from "./map-situation.js";
 import { resourceAt, sectors, validTrade } from "./trade.js";
 import { clipping } from "./vendor/geography-engine.js";
 import { landFor, voronoiCell } from "./geography.js";
@@ -35,6 +36,7 @@ export function atlasData(state, cities) {
         index: i,
         name: r.name,
         ...regionalMetrics(state, i),
+        situation: stateSituation(state, i).level,
         ...Object.fromEntries(
           sectors.map((d) => [d.key, resourceAt(state, i)?.[d.key] ?? 0]),
         ),

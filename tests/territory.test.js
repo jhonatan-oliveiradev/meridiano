@@ -136,7 +136,8 @@ test("Atlas data uses the same clipped boundaries, populations and finite fictio
 test("v2 incidents reference existing states and survive serialization", async () => {
   const { createCountry } = await import("../dist/country.js");
   const { decisionFor, advanceTurn } = await import("../dist/simulation.js");
-  const s = advanceTurn(createCountry({ seed: 40315, population: 67 }));
+  let s = createCountry({ seed: 40315, population: 67 });
+  for (let i = 0; i < 16 && !decisionFor(s); i++) s = advanceTurn(s);
   const event = decisionFor(s);
   assert.ok(event);
   assert.ok(s.territory.regions.some((r) => r.name === event.region));

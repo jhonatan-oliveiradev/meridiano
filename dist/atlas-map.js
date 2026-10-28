@@ -1,3 +1,4 @@
+import { situationColors } from "./map-situation.js";
 import { sectors } from "./trade.js";
 import * as maplibre from "./vendor/maplibre-gl.mjs";
 import { atlasData } from "./atlas-data.js";
@@ -151,6 +152,18 @@ export function createAtlasMap(
         "#254d42",
         1,
         resource.color,
+      ];
+    if (layer === "situacao")
+      fill = [
+        "match",
+        ["get", "situation"],
+        0,
+        situationColors[0],
+        1,
+        situationColors[1],
+        2,
+        situationColors[2],
+        situationColors[3],
       ];
     map.setPaintProperty("state-fill", "fill-color", fill);
     for (const id of ["economicSites", "economicRoutes"])

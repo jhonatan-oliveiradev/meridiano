@@ -93,6 +93,41 @@ function effectText(effect, showCost = true) {
     .join("");
   return `<div class="choice-effects">${showCost ? `<span>Gasto extraordinário<b>${fmt(effect.cost ?? 0, 1)}% do PIB</b></span>` : ""}${lines || "<span>Sem efeito extraordinário nos indicadores.</span>"}</div>`;
 }
+function networkResponse(c) {
+  const lines = [];
+  const x = c.systems;
+  if (x?.water)
+    lines.push(
+      `Apoio de ${fmt(x.water)} unidades de água no próximo trimestre; não amplia o reservatório.`,
+    );
+  if (x?.ration)
+    lines.push("Demanda de água reduzida em 20% durante um trimestre.");
+  if (x?.energyRation)
+    lines.push(
+      "Demanda elétrica reduzida em 18% por um trimestre, com produção industrial racionada.",
+    );
+  if (x?.grid)
+    lines.push(`Condição da rede: +${fmt(x.grid)} pontos, limitada a 100.`);
+  if (x?.transport)
+    lines.push(
+      `Capacidade logística: +${fmt(x.transport * 100, 0)}% durante um trimestre; a fila restante continua.`,
+    );
+  if (x?.industry)
+    lines.push(
+      `Capacidade privada: +${fmt(x.industry * 100, 0)}% em manufaturas após dois trimestres completos de implantação, limitada a 35% acumulados.`,
+    );
+  if (x?.food)
+    lines.push(
+      "Importações emergenciais de alimentos autorizadas por um trimestre, com limite de oferta 50% maior. Não garante abastecimento integral.",
+    );
+  for (const p of c.policyUpdates ?? [])
+    lines.push(
+      `${esc(p.name)}: ${fmt(p.before)} → ${fmt(p.after)}. Alteração recorrente, dentro dos limites da política.`,
+    );
+  return lines.length
+    ? `<div class="network-response">${lines.map((l) => `<p>${l}</p>`).join("")}</div>`
+    : "";
+}
 export function initDecisionUI({
   getState,
   setState,
@@ -189,7 +224,7 @@ export function initDecisionUI({
       e = decisionFor(s);
     if (!e) return;
     openModal(
-      `<div class="cycle-dialog"><span class="eyebrow">ACONTECIMENTO · ${esc(e.region)}</span><h3 id="modalTitle">${esc(e.title)}</h3><p>${esc(e.detail)}</p><p class="decision-deadline">Escolha uma resposta para avançar. Os efeitos abaixo entram no próximo trimestre e se somam às políticas do país. Nesta etapa, os modificadores atuam nos indicadores nacionais.</p>${e.prevention ? `<div class="proposal-tradeoff"><h4>Preparação de ${esc(e.region)}</h4><p>Proteção ${fmt(e.prevention.protection * 100, 0)}/100 · pressão deste acontecimento ${fmt(e.prevention.intensity * 100, 0)}/100. Os impactos adversos e gastos abaixo já consideram a proteção existente.</p>${e.prevention.program ? `<button class="secondary" data-invest-action="offers" data-invest-region="${e.prevention.region}">Avaliar prevenção duradoura ↗</button><p>Programas em operação reduzem a recorrência e os impactos. Contratar uma obra não resolve esta emergência: escolha uma resposta após revisar o investimento.</p>` : `<button class="secondary" data-cycle-action="policies">Revisar prevenção e investigação ↗</button>`}</div>` : ""}<div class="decision-options">${e.choices.map((c) => `<article><h4>${esc(c.label)}</h4><p>${esc(c.detail)}</p>${effectText(c.effect)}${c.followup ? `<details><summary>Acompanhamento por ${c.followup.turns} trimestre${c.followup.turns === 1 ? "" : "s"} após a resposta</summary><p>Modificadores por trimestre de acompanhamento, sem repetir o gasto extraordinário:</p>${effectText(trackEffect(c.followup), false)}<p>A preparação do país ajusta a intensidade e a duração. Estes efeitos posteriores são adicionais aos do primeiro trimestre.</p></details>` : ""}<button class="secondary" data-cycle-action="choose" data-event="${esc(e.id)}" data-choice="${c.id}">Escolher: ${esc(c.label)}</button></article>`).join("")}</div><p class="cycle-footnote">O gasto extraordinário é financiado por dívida uma única vez. Variações em p.p. são modificadores do trimestre; os resultados finais também incluem as políticas e o contexto do país.</p><div class="modal-actions"><button class="secondary" data-close>Decidir depois</button></div></div>`,
+      `<div class="cycle-dialog"><span class="eyebrow">ACONTECIMENTO · ${esc(e.region)}</span><h3 id="modalTitle">${esc(e.title)}</h3><p>${esc(e.detail)}</p>${e.cause ? `<div class="proposal-tradeoff"><h4>Por que isso aconteceu</h4><p>${esc(e.cause)}</p><button class="secondary" data-view="redes" data-close>Consultar redes e histórico ↗</button></div>` : ""}<p class="decision-deadline">Escolha uma resposta para avançar. Os efeitos abaixo entram no próximo trimestre e se somam às políticas do país. ${e.engine === 2 ? "As redes afetam a produção e as vendas; ajustes de políticas são recorrentes. Consulte os efeitos de cada opção." : "Nesta etapa, os modificadores atuam nos indicadores nacionais."}</p>${e.prevention ? `<div class="proposal-tradeoff"><h4>Preparação de ${esc(e.region)}</h4><p>Proteção ${fmt(e.prevention.protection * 100, 0)}/100 · pressão deste acontecimento ${fmt(e.prevention.intensity * 100, 0)}/100. Os impactos adversos e gastos abaixo já consideram a proteção existente.</p>${e.prevention.program ? `<button class="secondary" data-invest-action="offers" data-invest-region="${e.prevention.region}">Avaliar prevenção duradoura ↗</button><p>Programas em operação reduzem a recorrência e os impactos. Contratar uma obra não resolve esta emergência: escolha uma resposta após revisar o investimento.</p>` : `<button class="secondary" data-cycle-action="policies">Revisar prevenção e investigação ↗</button>`}</div>` : ""}<div class="decision-options">${e.choices.map((c) => `<article><h4>${esc(c.label)}</h4><p>${esc(c.detail)}</p>${effectText(c.effect).replace("Sem efeito extraordinário nos indicadores.", Object.keys(c.systems ?? {}).some((k) => k !== "region") ? "Os efeitos na rede estão descritos abaixo." : c.policyUpdates ? "Os efeitos seguem a alteração recorrente de política abaixo." : "Sem efeito extraordinário nos indicadores.")}${networkResponse(c)}${c.followup ? `<details><summary>Acompanhamento por ${c.followup.turns} trimestre${c.followup.turns === 1 ? "" : "s"} após a resposta</summary><p>Modificadores por trimestre de acompanhamento, sem repetir o gasto extraordinário:</p>${effectText(trackEffect(c.followup), false)}<p>A preparação do país ajusta a intensidade e a duração. Estes efeitos posteriores são adicionais aos do primeiro trimestre.</p></details>` : ""}<button class="secondary" data-cycle-action="choose" data-event="${esc(e.id)}" data-choice="${c.id}">Escolher: ${esc(c.label)}</button></article>`).join("")}</div><p class="cycle-footnote">O gasto extraordinário é financiado por dívida uma única vez. Variações em p.p. são modificadores do trimestre; os resultados finais também incluem as políticas e o contexto do país.</p><div class="modal-actions"><button class="secondary" data-close>Decidir depois</button></div></div>`,
     );
   }
   document.addEventListener("click", (e) => {

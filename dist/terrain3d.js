@@ -1,3 +1,4 @@
+import { stateSituation, situationColors } from "./map-situation.js";
 import { validTrade, sectors } from "./trade.js";
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
@@ -278,6 +279,9 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     recolor();
   }
   function recolor() {
+    const situations = defs.map(
+      (_, i) => stateSituation(currentState, i).level,
+    );
     const economicResources = validTrade(currentState.trade)
       ? currentState.trade.resources
       : [];
@@ -293,6 +297,8 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
           high,
           elevation(v.x, v.y, state.seed, state.territory?.profile),
         );
+      else if (layer === "situacao")
+        c.set(situationColors[situations[v.region]]);
       else {
         const m = metrics[v.region],
           t = sectors.some((d) => d.key === layer)

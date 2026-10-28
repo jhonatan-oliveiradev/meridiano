@@ -13,10 +13,15 @@ import {
   advanceCrisisTracks,
 } from "./crisis-followup.js";
 import { quarterDrivers, driverMetrics } from "./governance.js";
+import { validSystems, chooseSystemEvent } from "./systems.js";
+import { causalIncidents, networkChoices } from "./causal-events.js";
+import { decisionReview, withoutResponse } from "./decision-review.js";
+import { assessChallenge } from "./challenges.js";
 
 // Fictional game rules. Immediate effects last one turn; optional follow-ups are bounded.
 // Emergency cost is charged once as a percentage of GDP.
 const incidents = [
+  ...causalIncidents,
   {
     key: "security",
     title: "Comunidades pedem proteção",
@@ -187,22 +192,87 @@ export function decisionFor(s) {
   const template = incidents.find((e) => e.key === pending.key);
   if (!template) return null;
   const { eligible, ...event } = template;
-  const prevention = reviewedPrevention(s, event.key, pending.prevention);
+  const modern = pending.engine === 2;
+  const prevention = modern
+    ? null
+    : reviewedPrevention(s, event.key, pending.prevention);
   const factor = prevention ? Math.max(0.15, 1 - prevention.protection) : 1;
   return {
     ...structuredClone(event),
-    choices: event.choices.map((c) => ({
+    choices: (modern
+      ? networkChoices(event.key, event.choices)
+      : event.choices
+    ).map((c) => ({
       ...structuredClone(c),
       effect: reduceAdverse(c.effect, factor),
-      followup: followupFor(s, event.key, c.id, prevention?.region),
+      followup:
+        modern &&
+        [
+          "water",
+          "freight",
+          "investment",
+          "energy",
+          "food",
+          "employment",
+          "prices",
+          "fiscal",
+        ].includes(event.key)
+          ? null
+          : followupFor(s, event.key, c.id, prevention?.region),
+      ...(modern && c.systems
+        ? { systems: { ...c.systems, region: pending.regionIndex } }
+        : {}),
+      ...(modern && c.policyChange
+        ? {
+            policyUpdates: Object.entries(c.policyChange).map(
+              ([key, delta]) => {
+                const d = policyDefs.find((d) => d.key === key);
+                return {
+                  key,
+                  name: d.name,
+                  before: s.policies[key],
+                  after: Math.max(
+                    d.min,
+                    Math.min(d.max, s.policies[key] + delta),
+                  ),
+                };
+              },
+            ),
+          }
+        : {}),
     })),
     ...(s.territory ? { region: incidentRegion(s, event.key) } : {}),
     ...(prevention ? { prevention, region: prevention.regionName } : {}),
+    ...(modern
+      ? {
+          ...(event.key === "freight"
+            ? { title: "Cargas acumuladas na rede logística" }
+            : {}),
+          engine: 2,
+          cause: pending.cause,
+          region: pending.regionName,
+          regionIndex: pending.regionIndex,
+        }
+      : {}),
     id: pending.id,
     quarter: pending.quarter,
   };
 }
 function nextDecision(s) {
+  if (validSystems(s.systems)) {
+    const e = chooseSystemEvent(s);
+    return e
+      ? {
+          key: e.key,
+          engine: 2,
+          regionIndex: e.region,
+          regionName: e.regionName,
+          cause: e.cause,
+          id: `${s.seed}:${s.quarter}:${e.key}`,
+          quarter: s.quarter,
+        }
+      : null;
+  }
   if (s.quarter >= 160 || s.quarter % 3 !== 1) return null;
   const eligible = incidents.filter((e) => e.eligible(s));
   const previous = s.decisionLog?.at(-1)?.key;
@@ -230,8 +300,13 @@ export function resolveDecision(s, eventId, choiceId) {
     choice: choice.label,
     effect: choice.effect,
     followup: choice.followup,
+    ...(choice.systems ? { systems: choice.systems } : {}),
+    ...(choice.policyUpdates ? { policyUpdates: choice.policyUpdates } : {}),
+    ...(event.cause ? { cause: event.cause } : {}),
     chosenAt: s.quarter,
   };
+  for (const update of choice.policyUpdates ?? [])
+    n.policies[update.key] = update.after;
   n.decisionLog = [...(s.decisionLog ?? []), n.scheduledDecision].slice(-160);
   n.events = n.events.map((item) =>
     item.title === event.title
@@ -292,6 +367,16 @@ export function advanceTurn(s) {
   if (s.quarter >= 160 || decisionFor(s)) return s;
   s = migrateConsequences(s);
   const n = projectQuarter(s);
+  const review = s.scheduledDecision
+    ? decisionReview(s, n, projectQuarter(withoutResponse(s)))
+    : null;
+  if (review)
+    n.decisionReviews = [
+      ...(Array.isArray(s.decisionReviews) ? s.decisionReviews : [])
+        .filter((r) => r.id !== review.id)
+        .slice(-39),
+      review,
+    ];
   const baseline = s.policyBaseline ?? s.policies;
   n.lastReport = {
     quarter: n.quarter,
@@ -307,6 +392,7 @@ export function advanceTurn(s) {
         after: s.policies[p.key],
       })),
     decision: s.scheduledDecision ?? null,
+    actionReview: review,
     drivers: quarterDrivers(s, n),
     policiesBefore: { ...baseline },
   };
@@ -331,6 +417,18 @@ export function advanceTurn(s) {
         "Consulte o balanço no Plano de governo. O país continua com o mesmo histórico.",
     });
   n.pendingDecision = nextDecision(n);
+  if (n.pendingDecision?.engine === 2)
+    n.eventMemory = [
+      ...(Array.isArray(s.eventMemory) ? s.eventMemory : []).slice(-79),
+      {
+        key: n.pendingDecision.key,
+        quarter: n.quarter,
+        region: n.pendingDecision.regionIndex,
+        regionName: n.pendingDecision.regionName,
+        cause: n.pendingDecision.cause,
+        id: n.pendingDecision.id,
+      },
+    ];
   n.preventionReport = null;
   if (n.pendingDecision?.prevention?.contained) {
     n.preventionReport = n.pendingDecision.prevention;
@@ -347,5 +445,25 @@ export function advanceTurn(s) {
       title: event.title,
       detail: `${event.region}: há uma decisão aguardando sua escolha. O efeito entra no próximo trimestre.`,
     });
-  return advanceGoals(s, n);
+  const result = advanceGoals(s, n),
+    challenge = assessChallenge(result);
+  if (
+    challenge &&
+    !["won", "lost"].includes(s.challenge?.status) &&
+    challenge.status !== "playing"
+  ) {
+    result.challenge = {
+      ...result.challenge,
+      status: challenge.status,
+      result: challenge,
+    };
+    result.events.unshift({
+      title:
+        challenge.status === "won"
+          ? "Desafio concluído"
+          : "Prazo ou limite do desafio encerrado",
+      detail: `${challenge.name}. Você pode continuar o país no modo livre; o resultado foi guardado no Plano.`,
+    });
+  }
+  return result;
 }
