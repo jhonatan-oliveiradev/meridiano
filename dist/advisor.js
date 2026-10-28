@@ -1,4 +1,5 @@
 import { tradeSnapshot } from "./trade.js";
+import { systemsSnapshot } from "./systems.js";
 import { safetyValues } from "./consequences.js";
 import { crisisTracks } from "./crisis-followup.js";
 import { goalsOf } from "./government-plan.js";
@@ -25,6 +26,7 @@ export function snapshotOf(s) {
     metrics: { ...s.metrics },
     capacity: s.capacity,
     ...(tradeSnapshot(s) ? { tradeSummary: tradeSnapshot(s) } : {}),
+    ...(systemsSnapshot(s) ? { systemsSummary: systemsSnapshot(s) } : {}),
     ...(crisisTracks(s).length
       ? {
           crisisTracks: crisisTracks(s).map(

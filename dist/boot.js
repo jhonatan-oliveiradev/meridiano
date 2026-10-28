@@ -31,7 +31,12 @@ export function renderBootState(doc, state) {
     home = doc.querySelector("#welcome");
   doc.body.dataset.boot = state;
   home.setAttribute("aria-busy", String(!ready && !failed));
-  for (const id of ["welcomePlay", "welcomeNew", "welcomeLearn"])
+  for (const id of [
+    "welcomePlay",
+    "welcomeNew",
+    "welcomeLearn",
+    "welcomeChallenges",
+  ])
     doc.getElementById(id).disabled = !ready;
   doc.querySelector("#welcomeBootText").textContent = {
     loading: "Preparando seu país…",

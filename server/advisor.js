@@ -1,4 +1,5 @@
 import { validateTradeSummary } from "../dist/trade.js";
+import { validateSystemsSummary } from "../dist/systems.js";
 import {
   consequenceDefaults,
   safetyPolicies,
@@ -294,6 +295,15 @@ export function validateRequest(body) {
       ? validateInvestments(s.investments, { quarter: s.quarter, territory })
       : undefined;
   let tradeSummary;
+  let systemsSummary;
+  if (s.systemsSummary !== undefined) {
+    try {
+      systemsSummary = validateSystemsSummary(s.systemsSummary);
+      if (systemsSummary.quarter !== s.quarter) invalid();
+    } catch {
+      invalid();
+    }
+  }
   if (s.tradeSummary !== undefined) {
     try {
       tradeSummary = validateTradeSummary(s.tradeSummary);
@@ -342,6 +352,7 @@ export function validateRequest(body) {
       previous: s.previous ? metrics(s.previous, true) : null,
       ...(territory ? { territory } : {}),
       ...(tradeSummary ? { tradeSummary } : {}),
+      ...(systemsSummary ? { systemsSummary } : {}),
       ...(investments ? { investments } : {}),
       ...(goals.length ? { goals } : {}),
       ...(continuing.length

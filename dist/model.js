@@ -1,4 +1,5 @@
 import { tradeQuarter } from "./trade.js";
+import { evolveSystems } from "./systems.js";
 import {
   safetyPolicies,
   consequenceDefaults,
@@ -245,7 +246,6 @@ export function advance(s, effect = {}) {
     m = n.metrics,
     b = budget(n),
     prev = { ...m };
-  const consequences = consequenceStep(n, effect);
   const projectEvents = advanceInvestments(n) ?? [];
   const projectEffect = investmentEffects(n);
   n.capacity = clamp(
@@ -253,6 +253,51 @@ export function advance(s, effect = {}) {
     0.35,
     0.95,
   );
+  const networkReference = s.scheduledDecision?.systems
+    ? evolveSystems(n)
+    : null;
+  const networks = evolveSystems(n, s.scheduledDecision?.systems);
+  if (networks) {
+    networks.response = networkReference
+      ? networks.regions
+          .map((r, i) => ({
+            region: i,
+            waterBefore: networkReference.regions[i].waterService,
+            waterAfter: r.waterService,
+            reserveBefore: networkReference.regions[i].water,
+            reserveAfter: r.water,
+            gridBefore: networkReference.regions[i].grid,
+            gridAfter: r.grid,
+            energyBefore: networkReference.regions[i].energyService,
+            energyAfter: r.energyService,
+            backlogBefore: networkReference.regions[i].backlog,
+            backlogAfter: r.backlog,
+            installation: !!r.pipeline && !networkReference.regions[i].pipeline,
+          }))
+          .filter(
+            (r) =>
+              Math.abs(r.waterAfter - r.waterBefore) > 0.0001 ||
+              Math.abs(r.reserveAfter - r.reserveBefore) > 0.0001 ||
+              Math.abs(r.gridAfter - r.gridBefore) > 0.0001 ||
+              Math.abs(r.energyAfter - r.energyBefore) > 0.0001 ||
+              Math.abs(r.backlogAfter - r.backlogBefore) > 0.0001 ||
+              r.installation,
+          )
+      : [];
+    networks.fiscal = {
+      balance: b.balance,
+      revenue: b.revenue,
+      spending: b.spending + b.interest,
+    };
+    n.systems = networks;
+  }
+  const networkStress = networks
+    ? 1 - networks.summary.water + (1 - networks.summary.energy)
+    : 0;
+  const consequences = consequenceStep(n, {
+    ...effect,
+    servicesPressure: (effect.servicesPressure ?? 0) + networkStress * 0.6,
+  });
   const economy = tradeQuarter(n);
   if (economy) {
     n.trade = economy.trade;
@@ -384,6 +429,32 @@ export function advance(s, effect = {}) {
       detail: `Saldo anual projetado: ${b.balance.toFixed(1).replace(".", ",")}% do PIB, incluindo juros. A dívida absorve o saldo trimestral.`,
     },
   ];
+  if (networks) {
+    for (const r of networks.regions) {
+      const old = s.systems?.regions?.[r.region];
+      if (
+        old &&
+        ((old.waterService < 0.9 && r.waterService > 0.98) ||
+          (old.energyService < 0.9 && r.energyService > 0.98) ||
+          (old.backlog > 20 && r.backlog < 5))
+      )
+        n.events.push({
+          title: `Rede recuperada: ${r.name}`,
+          detail:
+            "Abastecimento ou logística voltou a operar sem a restrição anterior. Consulte o diagnóstico das redes para comparar os trimestres.",
+        });
+      if (
+        old?.pipeline &&
+        !r.pipeline &&
+        r.privateCapacity > (old.privateCapacity ?? 0)
+      )
+        n.events.push({
+          title: `Produção privada ampliada: ${r.name}`,
+          detail:
+            "A implantação apoiada pelo governo foi concluída. A capacidade de manufaturas aumentou; produção efetiva continua sujeita a energia, insumos e demanda.",
+        });
+    }
+  }
   if (Math.abs(m.crime - prev.crime) >= 0.05)
     n.events.push({
       title: `Violência ${m.crime < prev.crime ? "em queda" : "em alta"}`,

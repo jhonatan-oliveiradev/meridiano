@@ -1,0 +1,560 @@
+{
+  "method": "four seeds; 48 quarters; first event choice; real project phases and charges",
+  "runs": [
+    {
+      "seed": 719,
+      "profile": "reactive",
+      "turns": 48,
+      "waterLoss": 4.757013891264945,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 35.05710695639123,
+      "events": {
+        "water": 8,
+        "investment": 3
+      },
+      "timing": {
+        "water": [3, 9, 15, 21, 27, 33, 39, 47],
+        "investment": [12, 24, 36]
+      },
+      "gdp": 576.9376799255634,
+      "debt": 36.584784150840854,
+      "welfare": 61.21141109640062,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 719,
+      "profile": "prepared",
+      "turns": 48,
+      "waterLoss": 3.56298799386686,
+      "energyLoss": 0,
+      "construction": 35.64041080892345,
+      "upkeep": 8.526078749999998,
+      "emergency": 23.265094213833688,
+      "events": {
+        "water": 3,
+        "investment": 4
+      },
+      "timing": {
+        "water": [3, 9, 15],
+        "investment": [11, 23, 35, 47]
+      },
+      "gdp": 587.750411000833,
+      "debt": 43.04748883134044,
+      "welfare": 63.82408822339333,
+      "operating": 18,
+      "challenge": null
+    },
+    {
+      "seed": 719,
+      "profile": "spending",
+      "turns": 48,
+      "waterLoss": 4.82345583780285,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 26.486388970159666,
+      "events": {
+        "water": 7,
+        "fiscal": 7,
+        "prices": 7
+      },
+      "timing": {
+        "water": [3, 9, 15, 22, 28, 35, 47],
+        "fiscal": [5, 11, 17, 24, 30, 37, 43],
+        "prices": [7, 13, 19, 26, 32, 39, 45]
+      },
+      "gdp": 478.44503454274064,
+      "debt": 250,
+      "welfare": 96.77755374086881,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 719,
+      "profile": "austerity",
+      "turns": 48,
+      "waterLoss": 4.853436803734054,
+      "energyLoss": 1.9648686340676846,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 36.88043963674009,
+      "events": {
+        "water": 7,
+        "investment": 3,
+        "energy": 4
+      },
+      "timing": {
+        "water": [3, 9, 15, 21, 28, 35, 47],
+        "investment": [12, 24, 37],
+        "energy": [17, 26, 39, 45]
+      },
+      "gdp": 507.65250165301353,
+      "debt": 0,
+      "welfare": 57.98494820980354,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 40315,
+      "profile": "reactive",
+      "turns": 48,
+      "waterLoss": 7.968508718761331,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 31.563822465071617,
+      "events": {
+        "investment": 3,
+        "water": 7
+      },
+      "timing": {
+        "investment": [3, 15, 41],
+        "water": [7, 13, 19, 25, 31, 37, 43]
+      },
+      "gdp": 564.9830079550328,
+      "debt": 37.00041426475749,
+      "welfare": 60.991813068539784,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 40315,
+      "profile": "prepared",
+      "turns": 48,
+      "waterLoss": 2.6270927533161403,
+      "energyLoss": 0,
+      "construction": 31.079901818516717,
+      "upkeep": 6.178778750000001,
+      "emergency": 32.0660058792239,
+      "events": {
+        "investment": 4,
+        "water": 6
+      },
+      "timing": {
+        "investment": [3, 15, 27, 39],
+        "water": [7, 13, 19, 25, 31, 37]
+      },
+      "gdp": 570.3923881985936,
+      "debt": 45.164628572431106,
+      "welfare": 63.346718434037975,
+      "operating": 18,
+      "challenge": null
+    },
+    {
+      "seed": 40315,
+      "profile": "spending",
+      "turns": 48,
+      "waterLoss": 7.777454376343003,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 26.47212543223906,
+      "events": {
+        "fiscal": 8,
+        "prices": 7,
+        "water": 7
+      },
+      "timing": {
+        "fiscal": [3, 10, 16, 22, 28, 34, 40, 46],
+        "prices": [6, 12, 18, 24, 30, 36, 42],
+        "water": [8, 14, 20, 26, 32, 38, 44]
+      },
+      "gdp": 468.49979674152144,
+      "debt": 250,
+      "welfare": 96.77761249986796,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 40315,
+      "profile": "austerity",
+      "turns": 48,
+      "waterLoss": 7.935631881398431,
+      "energyLoss": 1.4178370104154063,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 35.06465157511084,
+      "events": {
+        "investment": 3,
+        "water": 7,
+        "energy": 3
+      },
+      "timing": {
+        "investment": [3, 21, 41],
+        "water": [7, 13, 19, 26, 32, 38, 45],
+        "energy": [24, 35, 43]
+      },
+      "gdp": 501.68487310197077,
+      "debt": 0,
+      "welfare": 57.803285859157945,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 75101,
+      "profile": "reactive",
+      "turns": 48,
+      "waterLoss": 4.950261906476733,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 32.19473667549394,
+      "events": {
+        "investment": 3,
+        "water": 7
+      },
+      "timing": {
+        "investment": [3, 16, 38],
+        "water": [8, 14, 22, 28, 34, 40, 46]
+      },
+      "gdp": 571.6788117991612,
+      "debt": 35.85783966225152,
+      "welfare": 61.25803231387457,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 75101,
+      "profile": "prepared",
+      "turns": 48,
+      "waterLoss": 0.6293571156961998,
+      "energyLoss": 0,
+      "construction": 37.214000000000006,
+      "upkeep": 9.232837500000004,
+      "emergency": 20.489941597572958,
+      "events": {
+        "investment": 4,
+        "water": 2
+      },
+      "timing": {
+        "investment": [3, 15, 27, 39],
+        "water": [9, 44]
+      },
+      "gdp": 589.8140417597469,
+      "debt": 42.50770260094339,
+      "welfare": 63.93229503690985,
+      "operating": 18,
+      "challenge": null
+    },
+    {
+      "seed": 75101,
+      "profile": "spending",
+      "turns": 48,
+      "waterLoss": 4.3586711409500625,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 23.824152758144695,
+      "events": {
+        "fiscal": 8,
+        "prices": 7,
+        "water": 6
+      },
+      "timing": {
+        "fiscal": [3, 10, 16, 22, 28, 34, 40, 46],
+        "prices": [6, 12, 18, 26, 32, 38, 44],
+        "water": [8, 14, 24, 30, 36, 42]
+      },
+      "gdp": 466.59192018220784,
+      "debt": 250,
+      "welfare": 96.77756178446882,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 75101,
+      "profile": "austerity",
+      "turns": 48,
+      "waterLoss": 4.914005780847777,
+      "energyLoss": 1.3778852056080497,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 33.69875531742779,
+      "events": {
+        "investment": 2,
+        "water": 7,
+        "energy": 4
+      },
+      "timing": {
+        "investment": [3, 16],
+        "water": [8, 14, 22, 28, 34, 40, 46],
+        "energy": [20, 26, 32, 38]
+      },
+      "gdp": 509.6418061419237,
+      "debt": 0,
+      "welfare": 58.100396350049635,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 91731,
+      "profile": "reactive",
+      "turns": 48,
+      "waterLoss": 1.5283662745653086,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 33.38265196953558,
+      "events": {
+        "investment": 4,
+        "water": 6
+      },
+      "timing": {
+        "investment": [3, 15, 27, 39],
+        "water": [17, 23, 29, 35, 41, 47]
+      },
+      "gdp": 578.7261032337789,
+      "debt": 35.06401367330414,
+      "welfare": 61.41201551424234,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 91731,
+      "profile": "prepared",
+      "turns": 48,
+      "waterLoss": 0.03663201173611885,
+      "energyLoss": 0,
+      "construction": 30.90136156194411,
+      "upkeep": 5.8278725,
+      "emergency": 17.145833519604814,
+      "events": {
+        "investment": 4,
+        "water": 1
+      },
+      "timing": {
+        "investment": [3, 15, 27, 39],
+        "water": [17]
+      },
+      "gdp": 585.4874401565077,
+      "debt": 39.544704406964904,
+      "welfare": 63.522098157778636,
+      "operating": 18,
+      "challenge": null
+    },
+    {
+      "seed": 91731,
+      "profile": "spending",
+      "turns": 48,
+      "waterLoss": 1.1469967513925343,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 24.111451773899102,
+      "events": {
+        "fiscal": 8,
+        "prices": 7,
+        "water": 6
+      },
+      "timing": {
+        "fiscal": [3, 9, 15, 21, 27, 33, 39, 45],
+        "prices": [6, 12, 19, 25, 31, 37, 43],
+        "water": [17, 23, 29, 35, 41, 47]
+      },
+      "gdp": 481.9634380028057,
+      "debt": 250,
+      "welfare": 96.77771651975657,
+      "operating": 0,
+      "challenge": null
+    },
+    {
+      "seed": 91731,
+      "profile": "austerity",
+      "turns": 48,
+      "waterLoss": 1.5283662745653086,
+      "energyLoss": 2.0364503108118717,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 36.107901061710464,
+      "events": {
+        "investment": 3,
+        "water": 6,
+        "energy": 5
+      },
+      "timing": {
+        "investment": [3, 15, 27],
+        "water": [17, 23, 29, 35, 41, 47],
+        "energy": [19, 25, 31, 37, 43]
+      },
+      "gdp": 506.04891229207897,
+      "debt": 0,
+      "welfare": 58.10992828179848,
+      "operating": 0,
+      "challenge": null
+    }
+  ],
+  "challenges": [
+    {
+      "seed": 40315,
+      "profile": "reactive",
+      "turns": 24,
+      "waterLoss": 3.0579211812780747,
+      "energyLoss": 0,
+      "construction": 0,
+      "upkeep": 0,
+      "emergency": 14.981324564925583,
+      "events": {
+        "investment": 2,
+        "water": 3
+      },
+      "timing": {
+        "investment": [7, 19],
+        "water": [9, 15, 21]
+      },
+      "gdp": 478.6315715261216,
+      "debt": 82.41111993115649,
+      "welfare": 60.71634638290009,
+      "operating": 0,
+      "challenge": {
+        "key": "fiscal",
+        "name": "Recuperar as contas",
+        "description": "Uma dívida alta e um orçamento apertado. Recupere espaço para governar preservando os serviços.",
+        "hint": "Tributação, juros e despesas recorrentes precisam fechar a conta. Cortes podem custar bem-estar.",
+        "dueAt": 24,
+        "remaining": 0,
+        "rows": [
+          {
+            "key": "debt",
+            "label": "Dívida no prazo",
+            "max": 95,
+            "unit": "% do PIB",
+            "value": 82.41111993115649,
+            "met": true
+          },
+          {
+            "key": "welfare",
+            "label": "Bem-estar no prazo",
+            "min": 55,
+            "unit": "/100",
+            "value": 60.71634638290009,
+            "met": true
+          }
+        ],
+        "status": "won",
+        "reason": "Os critérios são avaliados no prazo final; as redes precisam manter atendimento nos quatro trimestres finais."
+      }
+    },
+    {
+      "seed": 719,
+      "profile": "prepared",
+      "turns": 32,
+      "waterLoss": 3.5137246586743895,
+      "energyLoss": 0.0026358789274424366,
+      "construction": 27.169547884605254,
+      "upkeep": 3.156041250000001,
+      "emergency": 15.26704790632443,
+      "events": {
+        "water": 3,
+        "investment": 2
+      },
+      "timing": {
+        "water": [3, 9, 15],
+        "investment": [11, 23]
+      },
+      "gdp": 528.251180367206,
+      "debt": 43.120698417126675,
+      "welfare": 63.134733739455996,
+      "operating": 12,
+      "challenge": {
+        "key": "water",
+        "name": "Atravessar os períodos secos",
+        "description": "Reservas pequenas e redes vulneráveis. Prepare o abastecimento sem depender apenas de apoio emergencial.",
+        "hint": "Obras demoram e precisam de água para recarregar as reservas. Planeje a sequência de estados atendidos.",
+        "dueAt": 32,
+        "remaining": 0,
+        "rows": [
+          {
+            "key": "water",
+            "label": "Água atendida: média dos últimos 4 trimestres",
+            "min": 0.92,
+            "unit": "%",
+            "window": 4,
+            "value": 1,
+            "met": true
+          },
+          {
+            "key": "debt",
+            "label": "Dívida no prazo",
+            "max": 110,
+            "unit": "% do PIB",
+            "value": 43.120698417126675,
+            "met": true
+          }
+        ],
+        "status": "won",
+        "reason": "Os critérios são avaliados no prazo final; as redes precisam manter atendimento nos quatro trimestres finais."
+      }
+    },
+    {
+      "seed": 75101,
+      "profile": "industry",
+      "turns": 28,
+      "waterLoss": 1.0977574106517634,
+      "energyLoss": 0.08348579807590029,
+      "construction": 27.03413660866858,
+      "upkeep": 3.3817975000000007,
+      "emergency": 15.442658539053461,
+      "events": {
+        "investment": 2,
+        "water": 3
+      },
+      "timing": {
+        "investment": [3, 17],
+        "water": [9, 15, 22]
+      },
+      "gdp": 524.080846591339,
+      "debt": 60.17558690374784,
+      "welfare": 63.2302109902068,
+      "operating": 10,
+      "challenge": {
+        "key": "industry",
+        "name": "Produzir sem sobrecarregar",
+        "description": "Instale dois parques industriais e mantenha água e energia para que possam operar.",
+        "hint": "A indústria consome energia e água. Infraestrutura precisa acompanhar a expansão e a manutenção entra no orçamento.",
+        "dueAt": 28,
+        "remaining": 0,
+        "rows": [
+          {
+            "key": "industry",
+            "label": "Parques de manufaturas em operação",
+            "min": 2,
+            "unit": " parques",
+            "value": 2,
+            "met": true
+          },
+          {
+            "key": "water",
+            "label": "Água atendida: média dos últimos 4 trimestres",
+            "min": 0.95,
+            "unit": "%",
+            "window": 4,
+            "value": 1,
+            "met": true
+          },
+          {
+            "key": "energy",
+            "label": "Energia atendida: média dos últimos 4 trimestres",
+            "min": 0.95,
+            "unit": "%",
+            "window": 4,
+            "value": 1,
+            "met": true
+          },
+          {
+            "key": "debt",
+            "label": "Dívida no prazo",
+            "max": 120,
+            "unit": "% do PIB",
+            "value": 60.17558690374784,
+            "met": true
+          }
+        ],
+        "status": "won",
+        "reason": "Os critérios são avaliados no prazo final; as redes precisam manter atendimento nos quatro trimestres finais."
+      }
+    }
+  ]
+}

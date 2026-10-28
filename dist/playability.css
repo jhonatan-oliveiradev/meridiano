@@ -1,0 +1,222 @@
+.decision-review,
+.challenge-progress {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  margin: 20px 0;
+}
+.decision-review h4,
+.challenge-progress h3 {
+  font:
+    500 24px/1.2 "Space Grotesk",
+    sans-serif;
+  letter-spacing: -0.7px;
+  margin: 12px 0;
+}
+.decision-review p,
+.challenge-progress p,
+.challenge-catalog p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.review-costs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.review-costs span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.6;
+  min-height: 32px;
+}
+.review-costs strong {
+  display: block;
+  font:
+    500 20px "Space Grotesk",
+    sans-serif;
+  margin-top: 8px;
+}
+.review-method {
+  font-size: 11px !important;
+}
+.review-deltas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  border-block: 1px solid var(--border);
+  padding: 16px 0;
+}
+.review-deltas span {
+  font-size: 11px;
+}
+.review-deltas b {
+  display: block;
+  margin-top: 6px;
+}
+.decision-review details {
+  font-size: 12px;
+  margin-top: 16px;
+}
+.decision-review summary {
+  cursor: pointer;
+}
+.challenge-catalog {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+.challenge-catalog article {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.challenge-catalog article > span {
+  font-size: 10px;
+  color: var(--primary);
+}
+.challenge-catalog h4 {
+  font:
+    500 23px "Space Grotesk",
+    sans-serif;
+  margin: 12px 0;
+}
+.challenge-catalog ul {
+  font-size: 11px;
+  line-height: 1.9;
+  padding-left: 18px;
+}
+.challenge-rules > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.challenge-rules small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.challenge-rules > div > span:last-child {
+  color: var(--primary);
+  grid-column: 1/-1;
+}
+.branch-status {
+  font-size: 10px;
+  color: var(--primary);
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 5px 0;
+}
+.branch-status[hidden] {
+  display: none;
+}
+#experimentForm input,
+#experimentMetric {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 36px 12px 14px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  margin: 10px 0 16px;
+}
+.experiment-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 680/230;
+  max-height: 280px;
+  margin: 20px 0;
+}
+.experiment-chart text {
+  font:
+    12px Manrope,
+    sans-serif;
+  fill: var(--muted);
+  stroke: none;
+}
+.experiment-chart polyline {
+  stroke-linejoin: round;
+}
+.situation-pin {
+  cursor: pointer;
+}
+.situation-pin > rect {
+  stroke: var(--surface);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 2px 3px #0003);
+}
+.situation-symbol {
+  fill: none;
+  stroke: #111b12;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.situation-pin:focus-visible > rect {
+  stroke: var(--primary);
+  stroke-width: 4;
+}
+.region-situation {
+  border-block: 1px solid var(--border);
+  padding: 18px 0;
+  margin: 16px 0;
+}
+.region-situation h4 {
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.region-situation p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.region-situation p span {
+  display: block;
+}
+.region-situation .secondary {
+  font-size: 10px;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 10px;
+}
+@media (max-width: 760px) {
+  .review-costs {
+    grid-template-columns: 1fr;
+  }
+  .review-costs span {
+    min-height: 0;
+  }
+  .review-costs > div {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .challenge-rules > div {
+    grid-template-columns: 1fr;
+  }
+  .decision-review,
+  .challenge-progress {
+    padding: 18px;
+  }
+  .review-deltas {
+    grid-template-columns: 1fr;
+  }
+  .challenge-catalog article {
+    padding: 16px;
+  }
+  .branch-status {
+    max-width: 180px;
+    overflow-wrap: anywhere;
+  }
+}

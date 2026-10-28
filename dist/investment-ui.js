@@ -1,4 +1,5 @@
 import { preventionAt } from "./prevention.js";
+import { evolveSystems } from "./systems.js";
 import { renderProjectCard, regionalProjectSummary } from "./project-card.js";
 import { regionsOf, regionalMetrics, budget } from "./model.js";
 import {
@@ -79,6 +80,22 @@ export function initInvestmentUI({
     focusTitle();
   }
   function preventionQuote(s, index, type, q) {
+    if (s.trade) {
+      if (!["water", "energy", "transport"].includes(type)) return "";
+      const before = evolveSystems(s)?.regions[index],
+        after = evolveSystems({
+          ...s,
+          investments: [...(s.investments ?? []), { ...q, phase: "operating" }],
+        })?.regions[index];
+      if (!before || !after) return "";
+      const line =
+        type === "water"
+          ? `Capacidade de reserva: ${fmt(before.storageCapacity)} → ${fmt(after.storageCapacity)} unidades de água. Atendimento nessa hipótese: ${fmt(before.waterService * 100, 0)}% → ${fmt(after.waterService * 100, 0)}%.`
+          : type === "energy"
+            ? `Capacidade da rede: ${fmt(before.energyCapacity, 2)} → ${fmt(after.energyCapacity, 2)} unidades de rede. Atendimento: ${fmt(before.energyService * 100, 0)}% → ${fmt(after.energyService * 100, 0)}%.`
+            : `Capacidade logística: ${fmt(before.transportCapacity, 2)} → ${fmt(after.transportCapacity, 2)} UP por trimestre. Fila: ${fmt(before.backlog, 0)} → ${fmt(after.backlog, 0)}/200.`;
+      return `<div class="investment-impact"><h4>Rede após entrar em operação</h4><p>${line}</p><p>Prévia para ${quarter(s.quarter + 1)}, caso a obra já estivesse em operação, com a mesma hipótese de chuva e demanda nas duas alternativas. Não representa a situação na data real da entrega; a rede futura depende de consumo, manutenção e outras decisões. Contratar agora não resolve a emergência aberta; os benefícios começam na operação.</p></div>`;
+    }
     const key = {
       water: "water",
       health: "services",
