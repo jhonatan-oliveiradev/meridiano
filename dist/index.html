@@ -87,8 +87,110 @@
     <link rel="stylesheet" href="layout-polish.css" />
     <link rel="stylesheet" href="governance.css" />
     <link rel="stylesheet" href="trade.css" />
+    <link rel="stylesheet" href="onboarding.css" />
   </head>
-  <body>
+  <body class="entry-active">
+    <section id="welcome" class="welcome-screen" aria-labelledby="welcomeTitle">
+      <header class="welcome-header">
+        <a class="welcome-wordmark" href="#inicio"
+          >meridiano<span>SIMULADOR GEOPOLÍTICO</span></a
+        ><span class="welcome-edition">UM PAÍS. SUAS DECISÕES.</span>
+      </header>
+      <div class="welcome-layout">
+        <div class="welcome-copy">
+          <span class="welcome-kicker"><i></i> SEU PRÓXIMO GOVERNO</span>
+          <h1 id="welcomeTitle">
+            O futuro tem<br />um ponto<br />de partida<span>.</span>
+          </h1>
+          <p>
+            Cuide de um país. Escolha onde investir, enfrente crises e descubra
+            o que suas decisões mudam ao longo do tempo.
+          </p>
+          <div class="welcome-actions">
+            <button id="welcomePlay" class="primary">Começar →</button
+            ><button id="welcomeNew" class="secondary">
+              Criar novo país <span>↗</span>
+            </button>
+          </div>
+          <button id="welcomeLearn" class="welcome-learn">
+            Aprender jogando
+          </button>
+          <small id="welcomeSaveNote"></small>
+        </div>
+        <div class="welcome-territory" aria-label="Seu país">
+          <div class="welcome-coordinates">
+            <span>TERRITÓRIO EM ABERTO</span><span id="welcomePeriod"></span>
+          </div>
+          <div class="welcome-map-frame">
+            <svg viewBox="0 0 1000 760" aria-hidden="true">
+              <g id="welcomeMap"></g></svg
+            ><span class="welcome-north" aria-hidden="true">N<br />↑</span
+            ><span class="welcome-map-caption"
+              >O primeiro movimento é seu.</span
+            >
+          </div>
+          <div class="welcome-country">
+            <span class="welcome-flag" aria-hidden="true"><i></i></span>
+            <div>
+              <h2 id="welcomeCountry"></h2>
+              <p id="welcomeSystem"></p>
+              <span id="welcomePopulation"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="welcome-footer">
+        <span>EXPERIMENTE. OBSERVE. MUDE DE RUMO.</span
+        ><span>Países fictícios · resultados simulados</span>
+      </footer>
+    </section>
+    <section
+      id="tutorial"
+      class="tutorial-shell"
+      hidden
+      aria-label="Tutorial do Meridiano"
+    >
+      <div class="tutorial-blocker"></div>
+      <div id="tutorialSpot" class="tutorial-spot" aria-hidden="true"></div>
+      <div id="tutorialArrow" class="tutorial-arrow" aria-hidden="true">➜</div>
+      <div
+        id="tutorialCoach"
+        class="tutorial-coach"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorialTitle"
+        aria-describedby="tutorialText"
+      >
+        <div class="tutorial-top">
+          <div class="tutorial-guide">
+            <img src="assets/nilo-neutral.svg" alt="" /><span
+              >NILO<small>Seu guia de governo</small></span
+            >
+          </div>
+          <span id="tutorialCounter"></span>
+        </div>
+        <progress
+          id="tutorialProgress"
+          max="9"
+          value="1"
+          aria-label="Progresso do tutorial"
+        ></progress>
+        <div aria-live="polite" aria-atomic="true">
+          <h2 id="tutorialTitle"></h2>
+          <p id="tutorialText"></p>
+          <div class="tutorial-task">
+            <span aria-hidden="true">↳</span><span id="tutorialTask"></span>
+          </div>
+        </div>
+        <div class="tutorial-actions">
+          <button id="tutorialBack" class="secondary">← Voltar</button
+          ><button id="tutorialNext" class="primary">Próximo →</button>
+        </div>
+        <button id="tutorialSkip" class="tutorial-skip">
+          Sair do tutorial e explorar
+        </button>
+      </div>
+    </section>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <symbol id="i-globe" viewBox="0 0 24 24">
@@ -138,7 +240,11 @@
     </svg>
     <div class="app">
       <nav class="rail" aria-label="Navegação principal">
-        <a class="brand-mark" href="#territorio" aria-label="Meridiano, início"
+        <a
+          class="brand-mark"
+          href="#inicio"
+          data-entry-home
+          aria-label="Meridiano, tela inicial"
           ><svg><use href="assets/reicon.svg#i-globe" /></svg
         ></a>
         <div class="rail-links" id="navigationLinks">
@@ -299,9 +405,17 @@
                 ← Voltar à meta
               </button>
             </div>
-            <h2 id="pageTitle">Território</h2>
+            <h2 id="pageTitle" tabindex="-1">Território</h2>
           </div>
           <div class="top-actions">
+            <button
+              class="secondary tutorial-launch"
+              data-entry-tutorial
+              aria-label="Abrir tutorial"
+              title="Aprender a jogar"
+            >
+              ?
+            </button>
             <div class="theme-switch" role="group" aria-label="Aparência">
               <button
                 data-theme-choice="light"
