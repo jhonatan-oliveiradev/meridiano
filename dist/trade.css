@@ -398,8 +398,13 @@
   stroke: var(--surface);
   stroke-width: 3px;
 }
-.economic-active .map-legend {
-  visibility: hidden;
+.map-shell.economic-active .map-bottom > div:first-child {
+  display: none;
+}
+@media (min-width: 761px) {
+  .map-shell.economic-active .map-bottom {
+    left: 294px;
+  }
 }
 .economic-active .map-zoom {
   bottom: 270px;
