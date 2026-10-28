@@ -270,12 +270,9 @@ export function initTradeUI({
       ? `<div class="economic-region-title"><span>ECONOMIA DO ESTADO</span><button class="economic-close" data-view="comercio" aria-label="Abrir produção e comércio">↗</button></div>${sectors.map((d) => `<button class="economic-resource-row" data-trade-action="sector-map" data-sector="${d.key}"><span style="color:${d.color}">${sectorIcon(d.key)}</span><b>${d.name}</b><meter min="0" max="100" value="${r[d.key] * 100}" aria-label="Potencial de ${d.name.toLowerCase()}"></meter><small>${fmt(r[d.key] * 100, 0)}/100</small></button>`).join("")}<p>Potencial da geografia; não é produção instalada.</p><button class="secondary" data-invest-action="offers" data-invest-region="${i}">Desenvolver este estado ↗</button>`
       : "";
     panel.hidden = !economic;
-    panel.innerHTML =
-      economic &&
-      r &&
-      (report.flows.find((f) => f.key === sector.key)?.exports ?? 0) > 0
-        ? `<div class="economic-panel-title"><span>RECURSOS DO TERRITÓRIO</span><button class="economic-close" data-trade-action="sector-map" data-sector="relevo" aria-label="Fechar camada de recursos">×</button></div><div class="economic-tabs">${sectors.map((d) => `<button data-trade-action="sector-map" data-sector="${d.key}" aria-pressed="${d.key === sector.key}" aria-label="Potencial de ${d.name.toLowerCase()}" title="${d.name}">${sectorIcon(d.key)}</button>`).join("")}</div><strong class="economic-sector-name">${sector.name} · potencial geográfico</strong><div class="economic-scale"><span>Menor potencial</span><i style="--sector:${sector.color}"></i><span>Maior</span></div><button class="secondary" data-view="comercio" aria-label="Produção e comércio"><span class="economic-link-full">Produção e comércio ↗</span><span class="economic-link-short" aria-hidden="true">Comércio ↗</span></button>`
-        : "";
+    panel.innerHTML = economic
+      ? `<div class="economic-panel-title"><span>RECURSOS DO TERRITÓRIO</span><button class="economic-close" data-trade-action="sector-map" data-sector="relevo" aria-label="Fechar camada de recursos">×</button></div><div class="economic-tabs">${sectors.map((d) => `<button data-trade-action="sector-map" data-sector="${d.key}" aria-pressed="${d.key === sector.key}" aria-label="Potencial de ${d.name.toLowerCase()}" title="${d.name}">${sectorIcon(d.key)}</button>`).join("")}</div><strong class="economic-sector-name">${sector.name} · potencial geográfico</strong><div class="economic-scale"><span>Menor potencial</span><i style="--sector:${sector.color}"></i><span>Maior</span></div><button class="secondary" data-view="comercio" aria-label="Produção e comércio"><span class="economic-link-full">Produção e comércio ↗</span><span class="economic-link-short" aria-hidden="true">Comércio ↗</span></button>`
+      : "";
   }
   return { update, updateMap };
 }
