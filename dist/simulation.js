@@ -1,3 +1,8 @@
+import {
+  assessPrevention,
+  reviewedPrevention,
+  reduceAdverse,
+} from "./prevention.js";
 import { migrateConsequences } from "./consequences.js";
 import { advanceGoals } from "./government-plan.js";
 import { advance, budget, policyDefs, regionsOf } from "./model.js";
@@ -182,13 +187,17 @@ export function decisionFor(s) {
   const template = incidents.find((e) => e.key === pending.key);
   if (!template) return null;
   const { eligible, ...event } = template;
+  const prevention = reviewedPrevention(s, event.key, pending.prevention);
+  const factor = prevention ? Math.max(0.15, 1 - prevention.protection) : 1;
   return {
     ...structuredClone(event),
     choices: event.choices.map((c) => ({
       ...structuredClone(c),
-      followup: followupFor(s, event.key, c.id),
+      effect: reduceAdverse(c.effect, factor),
+      followup: followupFor(s, event.key, c.id, prevention?.region),
     })),
     ...(s.territory ? { region: incidentRegion(s, event.key) } : {}),
+    ...(prevention ? { prevention, region: prevention.regionName } : {}),
     id: pending.id,
     quarter: pending.quarter,
   };
@@ -202,6 +211,7 @@ function nextDecision(s) {
   const event = options[(s.seed + Math.floor(s.quarter / 3)) % options.length];
   return {
     key: event.key,
+    prevention: assessPrevention(s, event.key),
     id: `${s.seed}:${s.quarter}:${event.key}`,
     quarter: s.quarter,
   };
@@ -219,7 +229,7 @@ export function resolveDecision(s, eventId, choiceId) {
     region: event.region,
     choice: choice.label,
     effect: choice.effect,
-    followup: followupFor(s, event.key, choice.id),
+    followup: choice.followup,
     chosenAt: s.quarter,
   };
   n.decisionLog = [...(s.decisionLog ?? []), n.scheduledDecision].slice(-160);
@@ -321,6 +331,16 @@ export function advanceTurn(s) {
         "Consulte o balanço no Plano de governo. O país continua com o mesmo histórico.",
     });
   n.pendingDecision = nextDecision(n);
+  n.preventionReport = null;
+  if (n.pendingDecision?.prevention?.contained) {
+    n.preventionReport = n.pendingDecision.prevention;
+    const title = incidents.find((e) => e.key === n.pendingDecision.key).title;
+    n.events.unshift({
+      title: `Prevenção funcionou: ${title}`,
+      detail: `${n.preventionReport.regionName}: a estrutura em operação absorveu a pressão. Sem gasto emergencial ou decisão obrigatória neste acontecimento.`,
+    });
+    n.pendingDecision = null;
+  }
   const event = decisionFor(n);
   if (event)
     n.events.unshift({

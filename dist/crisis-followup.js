@@ -1,3 +1,4 @@
+import { preventionAt } from "./prevention.js";
 // Fictional, bounded continuations. No recurring emergency charge.
 const tails = {
   water: {
@@ -40,17 +41,20 @@ const relevant = {
   investment: ["transport"],
   security: [],
 };
-export function followupFor(s, key, choiceId) {
+export function followupFor(s, key, choiceId, region) {
   if (!tails[key]?.[choiceId] || !Object.keys(tails[key][choiceId]).length)
     return null;
   const network = (s.investments ?? []).some(
-    (p) => p.phase === "operating" && relevant[key].includes(p.type),
+    (p) =>
+      p.phase === "operating" &&
+      relevant[key].includes(p.type) &&
+      (region === undefined || p.region === region),
   );
   const capacity = Math.max(0.35, Math.min(0.95, s.capacity ?? 0.65));
-  const strength = Math.max(
-    0.35,
-    1 - (capacity - 0.35) * 0.5 - (network ? 0.3 : 0),
-  );
+  const local = Number.isInteger(region) ? preventionAt(s, key, region) : null;
+  const strength = local
+    ? Math.max(0.35, 1 - local.protection)
+    : Math.max(0.35, 1 - (capacity - 0.35) * 0.5 - (network ? 0.3 : 0));
   return { key, choiceId, strength, turns: strength < 0.6 ? 1 : 2 };
 }
 export function crisisTracks(s) {

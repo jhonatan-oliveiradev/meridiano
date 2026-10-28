@@ -57,8 +57,8 @@ export default async function handler(req, res) {
     });
   try {
     if (
-      Number(req.headers["content-length"] || 0) > 24000 ||
-      JSON.stringify(req.body ?? null).length > 24000
+      Number(req.headers["content-length"] || 0) > 48000 ||
+      JSON.stringify(req.body ?? null).length > 48000
     )
       throw new AdvisorError(
         413,

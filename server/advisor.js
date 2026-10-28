@@ -1,3 +1,4 @@
+import { validateTradeSummary } from "../dist/trade.js";
 import {
   consequenceDefaults,
   safetyPolicies,
@@ -172,7 +173,7 @@ function territorySummary(t) {
   };
 }
 function validateInvestments(value, scenario) {
-  if (!Array.isArray(value) || value.length > 48) invalid();
+  if (!Array.isArray(value) || value.length > 96) invalid();
   const regions = regionsOf(scenario),
     seen = new Set();
   const bounded = (v, a, b) =>
@@ -292,6 +293,14 @@ export function validateRequest(body) {
     s.investments !== undefined
       ? validateInvestments(s.investments, { quarter: s.quarter, territory })
       : undefined;
+  let tradeSummary;
+  if (s.tradeSummary !== undefined) {
+    try {
+      tradeSummary = validateTradeSummary(s.tradeSummary);
+    } catch {
+      invalid();
+    }
+  }
   let goals;
   const continuing = crisisTracks({
     seed: s.seed,
@@ -332,6 +341,7 @@ export function validateRequest(body) {
       metrics: metrics(s.metrics),
       previous: s.previous ? metrics(s.previous, true) : null,
       ...(territory ? { territory } : {}),
+      ...(tradeSummary ? { tradeSummary } : {}),
       ...(investments ? { investments } : {}),
       ...(goals.length ? { goals } : {}),
       ...(continuing.length
@@ -392,7 +402,16 @@ export const toolResponseSchema = {
               region: { type: "integer", minimum: 0, maximum: 11 },
               program: {
                 type: "string",
-                enum: ["water", "health", "education", "transport"],
+                enum: [
+                  "water",
+                  "health",
+                  "education",
+                  "transport",
+                  "agriculture",
+                  "energy",
+                  "mining",
+                  "industry",
+                ],
               },
               regions: {
                 type: "array",

@@ -1,3 +1,4 @@
+import { preventionAt } from "./prevention.js";
 import { renderProjectCard, regionalProjectSummary } from "./project-card.js";
 import { regionsOf, regionalMetrics, budget } from "./model.js";
 import {
@@ -53,7 +54,7 @@ export function initInvestmentUI({
       `<div class="investment-dialog cycle-dialog"><span class="eyebrow">PROGRAMAS ESTADUAIS · ${esc(r.name)}</span><h3 id="modalTitle">Onde investir</h3><p>Escolha um programa para ${esc(r.name)}. A contratação é estadual, inclusive quando você chega por um município.</p><div class="investment-context"><span>Acesso a serviços <b>${fmt(m.access, 0)}/100</b></span><span>População <b>${people(m.population)}</b></span><span>Em implantação no país <b>${activeInvestments(s).length}/3</b></span></div><div class="investment-offers">${projectDefs
         .map((def) => {
           const q = quoteInvestment(s, index, def.key);
-          return `<article class="investment-offer"><span class="investment-symbol" aria-hidden="true">${{ water: "≈", health: "+", education: "Aa", transport: "↔" }[def.key]}</span><h4>${def.name}</h4><p>${def.detail}</p><dl><div><dt>Investimento total</dt><dd>${money(q.cost)}</dd></div><div><dt>Operação estimada</dt><dd>${q.operationTurns} trimestres</dd></div><div><dt>Moradores atendidos</dt><dd>${people(q.people)}</dd></div></dl>${q.reason ? `<p class="investment-reason">${q.reason}</p>` : ""}<button class="${q.allowed ? "primary" : "secondary"}" data-invest-action="quote" data-invest-region="${index}" data-invest-type="${def.key}" ${q.allowed ? "" : "disabled"}>Avaliar ${def.short.toLowerCase()}</button></article>`;
+          return `<article class="investment-offer"><span class="investment-symbol" aria-hidden="true">${{ water: "≈", health: "+", education: "Aa", transport: "↔", agriculture: "✳", energy: "ϟ", mining: "◆", industry: "▦" }[def.key]}</span><h4>${def.name}</h4><p>${def.detail}</p><dl><div><dt>Investimento total</dt><dd>${money(q.cost)}</dd></div><div><dt>Operação estimada</dt><dd>${q.operationTurns} trimestres</dd></div><div><dt>${def.productive ? "Cobertura territorial" : "Moradores atendidos"}</dt><dd>${def.productive ? `${fmt(q.coverage * 100, 0)}% do estado` : people(q.people)}</dd></div></dl>${q.reason ? `<p class="investment-reason">${q.reason}</p>` : ""}<button class="${q.allowed ? "primary" : "secondary"}" data-invest-action="quote" data-invest-region="${index}" data-invest-type="${def.key}" ${q.allowed ? "" : "disabled"}>Avaliar ${def.short.toLowerCase()}</button></article>`;
         })
         .join(
           "",
@@ -77,6 +78,25 @@ export function initInvestmentUI({
     );
     focusTitle();
   }
+  function preventionQuote(s, index, type, q) {
+    const key = {
+      water: "water",
+      health: "services",
+      education: "services",
+      transport: "freight",
+    }[type];
+    if (!key) return "";
+    const before = preventionAt(s, key, index);
+    const after = preventionAt(
+      {
+        ...s,
+        investments: [...(s.investments ?? []), { ...q, phase: "operating" }],
+      },
+      key,
+      index,
+    );
+    return `<div class="investment-impact"><h4>Prevenção duradoura</h4><p>Proteção local estimada: ${fmt(before.protection * 100, 0)}/100 → ${fmt(after.protection * 100, 0)}/100 com a cobertura atual, após entrar em operação. Este índice não é uma probabilidade.</p><p>Reduz emergências e seus impactos enquanto o programa estiver operando, com manutenção automática incluída no orçamento. Pressões excepcionais ainda podem superar a rede; o crescimento da população reduz a cobertura proporcional. A obra não resolve uma emergência já aberta.</p></div>`;
+  }
   function showQuote(index, type) {
     const s = getState(),
       q = quoteInvestment(s, index, type),
@@ -90,7 +110,7 @@ export function initInvestmentUI({
       before = budget(s),
       after = budget(next);
     openModal(
-      `<div class="investment-dialog cycle-dialog"><span class="eyebrow">PROPOSTA · ${esc(q.regionName)}</span><h3 id="modalTitle">${def.name}</h3><p>${def.detail} O alcance inicial estimado é de <b>${people(q.people)}${q.people >= 1 ? " de" : ""} moradores</b>, incluindo áreas urbanas e rurais.</p><div class="investment-quote-grid"><div><span>Investimento total</span><strong>${money(q.cost)}</strong></div><div><span>Manutenção anual após entrega</span><strong>${money(q.upkeepAnnual)}</strong></div><div><span>Entrega estimada</span><strong>${quarter(s.quarter + q.deliveryTurns)}</strong></div><div><span>Operação estimada</span><strong>${quarter(s.quarter + q.operationTurns)}</strong></div></div><ol class="investment-steps"><li><b>Planejar</b><span>10% no próximo trimestre: ${money(q.cost * 0.1)}.</span></li><li><b>Construir</b><span>90% pagos conforme o avanço físico; ${fmt(q.terrain, 2)}× de dificuldade territorial.</span></li><li><b>Operar</b><span>Manutenção e benefícios começam no avanço seguinte à entrega.</span></li></ol><div class="investment-impact"><h4>Benefício local em operação</h4><p>Acesso a serviços: até +${fmt(q.benefits.access)} pontos. Bem-estar: +${fmt(q.benefits.welfare)} pontos. Pobreza: −${fmt(q.benefits.poverty)} p.p.${q.benefits.growth ? ` Contribuição ao crescimento anualizado nacional: +${fmt(q.benefits.growth * q.regionShare, 2)} p.p.` : ""}</p><small>Regras sintéticas, com limites nos indicadores. Efeitos nacionais são ponderados pela participação do estado e se acumulam gradualmente.</small></div><div class="investment-finance"><b>Contas do próximo trimestre</b><p>Pagamento desta contratação: ${money(q.cost * 0.1)}. Total da carteira: ${money(finance.constructionQuarter + finance.upkeepQuarter)}.</p><p>Saldo anualizado / PIB: ${fmt(before.balance, 2)}% → ${fmt(after.balance, 2)}%. Valores trimestrais multiplicados por quatro para comparação; não representam um cronograma anual fixo.</p></div><p class="investment-footnote">A estimativa considera capacidade ${fmt(s.capacity * 100, 0)}/100. Mudanças na capacidade podem antecipar ou atrasar a entrega. O déficit é financiado pela dívida; não há verba reservada fora do orçamento. Você pode cancelar sem custo antes do primeiro avanço.</p><div class="modal-actions">${action("offers", index, "Voltar aos programas")}<button class="primary" data-invest-action="confirm" data-invest-region="${index}" data-invest-type="${type}">Contratar ${def.short.toLowerCase()}</button></div></div>`,
+      `<div class="investment-dialog cycle-dialog"><span class="eyebrow">PROPOSTA · ${esc(q.regionName)}</span><h3 id="modalTitle">${def.name}</h3><p>${def.detail} ${def.productive ? "Este contrato amplia a capacidade instalada do setor; a cobertura territorial indica a escala do programa, sem estimar empregos ou moradores beneficiados." : `O alcance inicial estimado é de <b>${people(q.people)}${q.people >= 1 ? " de" : ""} moradores</b>, incluindo áreas urbanas e rurais.`}</p><div class="investment-quote-grid"><div><span>Investimento total</span><strong>${money(q.cost)}</strong></div><div><span>Manutenção anual após entrega</span><strong>${money(q.upkeepAnnual)}</strong></div><div><span>Entrega estimada</span><strong>${quarter(s.quarter + q.deliveryTurns)}</strong></div><div><span>Operação estimada</span><strong>${quarter(s.quarter + q.operationTurns)}</strong></div></div><ol class="investment-steps"><li><b>Planejar</b><span>10% no próximo trimestre: ${money(q.cost * 0.1)}.</span></li><li><b>Construir</b><span>90% pagos conforme o avanço físico; ${fmt(q.terrain, 2)}× de dificuldade territorial.</span></li><li><b>Operar</b><span>Manutenção e benefícios começam no avanço seguinte à entrega.</span></li></ol><div class="investment-impact"><h4>${def.productive ? "Capacidade produtiva em operação" : "Benefício local em operação"}</h4>${def.productive ? "<p>Até +70% de capacidade neste setor e estado. Insumos, demanda e logística limitam o resultado. Confira a produção em Comércio.</p>" : ""}${!def.productive ? `<p>Acesso a serviços: até +${fmt(q.benefits.access)} pontos. Bem-estar: +${fmt(q.benefits.welfare)} pontos. Pobreza: −${fmt(q.benefits.poverty)} p.p.${q.benefits.growth ? ` Contribuição ao crescimento anualizado nacional: +${fmt(q.benefits.growth * q.regionShare, 2)} p.p.` : ""}</p>` : ""}<small>Regras sintéticas, com limites nos indicadores. Efeitos nacionais são ponderados pela participação do estado e se acumulam gradualmente.</small></div>${preventionQuote(s, index, type, q)}<div class="investment-finance"><b>Contas do próximo trimestre</b><p>Pagamento desta contratação: ${money(q.cost * 0.1)}. Total da carteira: ${money(finance.constructionQuarter + finance.upkeepQuarter)}.</p><p>Saldo anualizado / PIB: ${fmt(before.balance, 2)}% → ${fmt(after.balance, 2)}%. Valores trimestrais multiplicados por quatro para comparação; não representam um cronograma anual fixo.</p></div><p class="investment-footnote">A estimativa considera capacidade ${fmt(s.capacity * 100, 0)}/100. Mudanças na capacidade podem antecipar ou atrasar a entrega. O déficit é financiado pela dívida; não há verba reservada fora do orçamento. Você pode cancelar sem custo antes do primeiro avanço.</p><div class="modal-actions">${action("offers", index, "Voltar aos programas")}<button class="primary" data-invest-action="confirm" data-invest-region="${index}" data-invest-type="${type}">Contratar ${def.short.toLowerCase()}</button></div></div>`,
     );
     focusTitle();
   }

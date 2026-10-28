@@ -354,7 +354,7 @@ test("investment context recomputes fiscal cost, strips extras and rejects inval
   }
 });
 
-test("all investment phases validate and a full 48-program portfolio fits the API body limit", async () => {
+test("all investment phases validate and a full 96-program portfolio fits the API body limit", async () => {
   const { createCountry } = await import("../dist/country.js");
   const { startInvestment } = await import("../dist/investments.js");
   const { projectDefs, advanceInvestments } = await import(
@@ -381,8 +381,8 @@ test("all investment phases validate and a full 48-program portfolio fits the AP
     question: "Quais programas estão em operação?",
     snapshot: snapshotOf(s),
   };
-  assert.equal(validateRequest(payload).snapshot.investments.length, 48);
-  assert.ok(Buffer.byteLength(JSON.stringify(payload)) < 24000);
+  assert.equal(validateRequest(payload).snapshot.investments.length, 96);
+  assert.ok(Buffer.byteLength(JSON.stringify(payload)) < 48000);
   const { createGoal } = await import("../dist/government-plan.js");
   const { regionalMetrics } = await import("../dist/model.js");
   const { advanceTurn, decisionFor, resolveDecision } = await import(
@@ -418,7 +418,7 @@ test("all investment phases validate and a full 48-program portfolio fits the AP
     snapshot: snapshotOf(planned),
   };
   assert.equal(validateRequest(withPlan).snapshot.goals.length, 5);
-  assert.ok(Buffer.byteLength(JSON.stringify(withPlan)) < 24000);
+  assert.ok(Buffer.byteLength(JSON.stringify(withPlan)) < 48000);
 });
 
 const planned = (requests) =>
