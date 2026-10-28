@@ -1,0 +1,727 @@
+/* Productive atlas: warm mineral accents on Meridiano's existing light/dark surfaces. */
+.trade-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 8px 0 28px;
+}
+.trade-heading h3,
+.trade-intro h3 {
+  font:
+    500 clamp(26px, 3vw, 38px) / 1.15 "Space Grotesk",
+    sans-serif;
+  letter-spacing: -1.4px;
+  margin: 12px 0;
+}
+.trade-heading p,
+.trade-intro p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.trade-intro {
+  padding: 40px;
+  max-width: 720px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+}
+.trade-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+.trade-kpis > div {
+  padding: 22px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  min-width: 0;
+}
+.trade-kpis span,
+.trade-kpis small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.trade-kpis strong {
+  display: block;
+  font:
+    500 clamp(18px, 2.1vw, 28px) / 1.4 "Space Grotesk",
+    sans-serif;
+  margin: 7px 0;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+.trade-kpis strong small {
+  display: inline;
+  font-size: 13px;
+}
+.trade-negative,
+.trade-warning {
+  color: var(--primary);
+}
+.trade-ledger-note {
+  display: flex;
+  gap: 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.trade-ledger-note b {
+  min-width: 100px;
+  color: var(--ink);
+}
+.trade-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+.trade-sector {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 24px;
+  position: relative;
+}
+.trade-sector:before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--sector);
+}
+.trade-sector header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.trade-sector header span {
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+}
+.trade-sector h4 {
+  font:
+    500 23px "Space Grotesk",
+    sans-serif;
+  margin: 3px 0;
+}
+.trade-sector-icon {
+  background: color-mix(in srgb, var(--sector) 18%, var(--surface));
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--sector) 70%, var(--border));
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+}
+.trade-sector-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.trade-map-link {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.trade-flow-bar {
+  height: 7px;
+  display: flex;
+  gap: 3px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--border);
+  margin: 22px 0;
+}
+.trade-flow-bar i {
+  background: var(--sector);
+  border-radius: 4px;
+}
+.trade-flow-bar i + i {
+  background: var(--primary);
+}
+.trade-sector dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  margin: 0;
+}
+.trade-sector dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.trade-sector dt {
+  font-size: 10px;
+  color: var(--muted);
+}
+.trade-sector dd {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  font-weight: 500;
+}
+.trade-policy-summary {
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 20px 0 16px;
+  color: var(--muted);
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.trade-sector-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.trade-sector-actions button {
+  font-size: 11px;
+  min-height: 40px;
+  padding: 9px 13px;
+}
+.trade-warning {
+  font-size: 11px;
+  line-height: 1.7;
+  border-left: 2px solid #d99449;
+  padding-left: 12px;
+}
+.trade-delivery {
+  font-size: 11px;
+  line-height: 1.7;
+}
+.trade-history-card,
+.trade-contracts {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: 20px;
+  margin: 24px 0;
+}
+.trade-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.trade-section-heading h4,
+.trade-contracts h4 {
+  font:
+    500 19px "Space Grotesk",
+    sans-serif;
+  margin: 0;
+}
+.trade-section-heading span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.trade-section-heading i {
+  background: #a5d449;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+.trade-section-heading i + i {
+  background: #e8a163;
+}
+.trade-history {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 680 / 150;
+  display: block;
+  max-height: 200px;
+  margin-top: 15px;
+}
+.trade-chart-empty {
+  padding: 25px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.trade-contracts h4 span {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 12px;
+}
+.trade-contracts article {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding: 18px 0;
+  font-size: 12px;
+}
+.trade-contracts article:first-of-type {
+  margin-top: 16px;
+}
+.trade-contracts small {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 10px;
+}
+.trade-contracts p,
+.trade-method p {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.trade-method {
+  margin: 24px 0;
+}
+.trade-method summary,
+.trade-history-card summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.trade-dialog select {
+  display: block;
+  width: 100%;
+  padding: 12px 38px 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 44px;
+  margin: 8px 0 20px;
+  font: inherit;
+}
+.trade-dialog label {
+  display: block;
+  font-size: 12px;
+}
+.trade-dialog .trade-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.7;
+}
+.trade-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+.trade-term {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+}
+.trade-term .active {
+  outline: 2px solid var(--primary);
+}
+.trade-dialog .trade-kpis {
+  grid-template-columns: 1fr 1fr;
+}
+.economic-site {
+  cursor: pointer;
+  outline: none;
+}
+.economic-site > rect {
+  stroke: #23352c;
+  stroke-opacity: 0.7;
+  stroke-width: 1;
+  filter: drop-shadow(0 4px 4px #09231b55);
+  transition:
+    stroke-width 0.18s,
+    filter 0.18s;
+}
+.economic-site.is-selected > rect,
+.economic-site:focus-visible > rect {
+  stroke: #c7ff3d;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 7px #c7ff3d66);
+}
+.economic-symbol {
+  color: #20372d;
+  pointer-events: none;
+}
+.economic-symbol svg {
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+.economic-site > text {
+  font:
+    600 11px Manrope,
+    sans-serif;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+.economic-routes > path {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-dasharray: 7 7;
+  opacity: 0.85;
+  animation: trade-current 15s linear infinite;
+  pointer-events: none;
+}
+.economic-routes circle {
+  fill: var(--surface);
+  stroke: var(--primary);
+  stroke-width: 1.5;
+}
+.economic-routes g > path {
+  stroke: var(--primary);
+  stroke-width: 1.5;
+  fill: none;
+}
+.economic-routes text {
+  fill: var(--ink);
+  font:
+    10px Manrope,
+    sans-serif;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+}
+.economic-active .map-legend {
+  visibility: hidden;
+}
+.economic-active .map-zoom {
+  bottom: 270px;
+}
+#mapEconomyPanel {
+  position: absolute;
+  z-index: 5;
+  left: 22px;
+  bottom: 22px;
+  width: 250px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 12px 40px #071b241c;
+}
+#mapEconomyPanel[hidden] {
+  display: none;
+}
+.economic-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.economic-close {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+.economic-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+.economic-tabs button {
+  width: 44px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.economic-tabs button[aria-pressed="true"] {
+  color: #17351e;
+  background: #c7ff3d;
+  border-color: #a1d020;
+}
+.economic-tabs svg {
+  width: 22px;
+  height: 22px;
+}
+.economic-scale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 8px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.economic-scale i {
+  flex: 1;
+  height: 5px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #254d42, var(--sector));
+}
+#mapEconomyPanel > .secondary {
+  font-size: 10px;
+  min-height: 36px;
+  width: 100%;
+}
+#economicOverlay {
+  isolation: isolate;
+}
+.economic-active #urbanFootprints {
+  opacity: 0.45;
+}
+.economic-active #geoLabels {
+  opacity: 0.6;
+}
+.economic-active #terrain {
+  opacity: 0.7;
+}
+.trade-page-back {
+  margin-bottom: 12px;
+}
+.economic-cta {
+  font-size: 11px;
+}
+.map-shell .layer-bar {
+  max-width: calc(100% - 350px);
+}
+@keyframes trade-current {
+  to {
+    stroke-dashoffset: -140;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .economic-routes > path {
+    animation: none;
+  }
+  .economic-site > rect {
+    transition: none;
+  }
+}
+@media (max-width: 1050px) {
+  .map-shell .layer-bar {
+    max-width: calc(100% - 40px);
+  }
+  .trade-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .trade-sector-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .trade-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .trade-ledger-note {
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px;
+  }
+  .trade-kpis > div {
+    padding: 16px 12px;
+  }
+  .trade-kpis strong {
+    font-size: 21px;
+  }
+  .trade-sector {
+    padding: 20px;
+  }
+  .trade-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .trade-intro {
+    padding: 24px;
+  }
+  .map-shell.economic-active .map-zoom {
+    bottom: 94px;
+  }
+  #mapEconomyPanel {
+    left: 14px;
+    bottom: 18px;
+    width: 218px;
+    padding: 12px;
+  }
+  .economic-tabs button {
+    width: 39px;
+    min-height: 40px;
+  }
+  .economic-panel-title {
+    font-size: 7px;
+  }
+  .map-shell .layer-bar {
+    max-width: calc(100% - 28px);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .map-shell .layer-bar button {
+    flex-shrink: 0;
+    min-height: 36px;
+  }
+  .trade-dialog .trade-kpis strong {
+    font-size: 19px;
+  }
+}
+#regionalEconomy {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 18px;
+}
+.economic-region-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+}
+.economic-resource-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--ink);
+  padding: 11px 0;
+  cursor: pointer;
+  text-align: left;
+}
+.economic-resource-row svg {
+  width: 20px;
+  height: 20px;
+}
+.economic-resource-row b {
+  font-weight: 500;
+  font-size: 10px;
+  flex: 1;
+}
+.economic-resource-row meter {
+  width: 50px;
+  height: 5px;
+  accent-color: var(--primary);
+}
+.economic-resource-row small {
+  font-size: 9px;
+  color: var(--muted);
+}
+#regionalEconomy p {
+  font-size: 9px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+#regionalEconomy > .secondary {
+  font-size: 10px;
+  min-height: 38px;
+  width: 100%;
+  margin-top: 6px;
+}
+.economic-sector-name {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+.view:not(.active) .economic-routes > path {
+  animation-play-state: paused;
+}
+.economic-link-short {
+  display: none;
+}
+@media (max-width: 760px) {
+  #mapEconomyPanel {
+    width: calc(100% - 94px);
+    display: grid;
+    grid-template-columns: 1fr 70px;
+    gap: 8px;
+    padding: 10px;
+  }
+  .economic-panel-title {
+    position: absolute;
+    right: 0;
+    top: -36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .economic-panel-title > span {
+    display: none;
+  }
+  .economic-panel-title .economic-close {
+    width: 36px;
+    height: 32px;
+  }
+  .economic-tabs {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+    gap: 4px;
+  }
+  .economic-tabs button {
+    width: 32px;
+    min-height: 36px;
+    height: 36px;
+  }
+  .economic-tabs svg {
+    width: 20px;
+    height: 20px;
+  }
+  .economic-sector-name {
+    grid-column: 1/-1;
+    grid-row: 2;
+    margin: 0;
+    font-size: 9px;
+  }
+  .economic-scale {
+    display: none;
+  }
+  #mapEconomyPanel > .secondary {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 6px;
+    font-size: 9px;
+    min-height: 36px;
+  }
+  .economic-link-full {
+    display: none;
+  }
+  .economic-link-short {
+    display: inline;
+  }
+}
+
+.economic-active #atlasInteractive .maplibregl-ctrl-bottom-left {
+  bottom: 270px;
+}
+@media (max-width: 760px) {
+  .economic-active #atlasInteractive .maplibregl-ctrl-bottom-left {
+    bottom: 94px;
+  }
+}
+
+.trade-history rect {
+  stroke: none;
+}

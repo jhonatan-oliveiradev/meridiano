@@ -15,7 +15,9 @@ export function quoteInvestment(s, index, type) {
       reason: "Escolha um estado e um programa válidos.",
     };
   const local = regionalMetrics(s, index),
-    coverage = Math.min(def.coverage, Math.max(0.05, 1 - local.access / 100));
+    coverage = def.productive
+      ? def.coverage
+      : Math.min(def.coverage, Math.max(0.05, 1 - local.access / 100));
   const terrain = 1 + (r.terrain - 1) * 0.35,
     fraction = coverage / def.coverage;
   const cost = Math.max(
@@ -51,15 +53,16 @@ export function quoteInvestment(s, index, type) {
     poverty: def.poverty * fraction,
     growth: def.growth * fraction,
   };
-  q.reason = (s.investments ?? []).some(
-    (p) => p.region === index && p.type === type,
-  )
-    ? "Este programa já foi contratado neste estado."
-    : activeInvestments(s).length >= 3
-      ? "As três vagas de implantação estão ocupadas. Aguarde uma entrega entrar em operação."
-      : s.quarter + q.operationTurns > 160
-        ? "Não há tempo estimado para iniciar a operação antes do limite de 40 anos."
-        : "";
+  q.reason =
+    def.productive && !s.trade && !s.tradeSummary
+      ? "Ative Produção e comércio antes de contratar um programa produtivo."
+      : (s.investments ?? []).some((p) => p.region === index && p.type === type)
+        ? "Este programa já foi contratado neste estado."
+        : activeInvestments(s).length >= 3
+          ? "As três vagas de implantação estão ocupadas. Aguarde uma entrega entrar em operação."
+          : s.quarter + q.operationTurns > 160
+            ? "Não há tempo estimado para iniciar a operação antes do limite de 40 anos."
+            : "";
   q.allowed = !q.reason;
   return q;
 }

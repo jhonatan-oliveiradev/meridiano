@@ -1,3 +1,4 @@
+import { tradeQuarter } from "./trade.js";
 import {
   safetyPolicies,
   consequenceDefaults,
@@ -6,6 +7,7 @@ import {
   migrateConsequences,
 } from "./consequences.js";
 import {
+  projectFor,
   investmentFinance,
   advanceInvestments,
   investmentEffects,
@@ -251,13 +253,19 @@ export function advance(s, effect = {}) {
     0.35,
     0.95,
   );
+  const economy = tradeQuarter(n);
+  if (economy) {
+    n.trade = economy.trade;
+    n.tradeReport = economy.report;
+  }
   const ext =
     { estavel: 0, recessao: -1.6, expansao: 1.3, sancoes: -2.4 }[n.external] ??
     0;
   const cycle = Math.sin((n.quarter + (n.seed % 17)) * 0.7) * 0.22;
   const annualGrowth = clamp(
     2 +
-      (effect.growth ?? 0) -
+      (effect.growth ?? 0) +
+      (economy?.report.growth ?? 0) -
       Math.max(0, prev.crime - 45) * 0.01 +
       projectEffect.growth +
       0.12 * (p.infrastructure - 3) * n.capacity +
@@ -308,7 +316,8 @@ export function advance(s, effect = {}) {
   m.inflation = clamp(
     m.inflation +
       (inflationTarget - m.inflation) * 0.16 +
-      (effect.inflation ?? 0),
+      (effect.inflation ?? 0) +
+      (economy?.report.shortage ?? 0) * 0.2,
     0,
     35,
   );
@@ -389,7 +398,7 @@ export function advance(s, effect = {}) {
           : event.phase === "ready"
             ? "Obra entregue"
             : "Construção iniciada",
-      detail: `${regionsOf(n)[event.region].name}: ${event.type === "water" ? "água e saneamento" : event.type === "health" ? "atenção básica" : event.type === "education" ? "escolas e formação" : "mobilidade regional"}. ${event.phase === "ready" ? "Manutenção e benefícios começam no próximo trimestre." : event.phase === "operating" ? "Manutenção incluída no orçamento; benefícios em vigor." : "Pagamentos acompanham o avanço físico."}`,
+      detail: `${regionsOf(n)[event.region].name}: ${projectFor(event.type)?.name ?? "programa regional"}. ${event.phase === "ready" ? "Manutenção e benefícios começam no próximo trimestre." : event.phase === "operating" ? "Manutenção incluída no orçamento; benefícios em vigor." : "Pagamentos acompanham o avanço físico."}`,
     });
   return n;
 }

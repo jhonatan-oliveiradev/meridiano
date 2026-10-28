@@ -1,3 +1,4 @@
+import { resourceAt, sectors, validTrade } from "./trade.js";
 import { clipping } from "./vendor/geography-engine.js";
 import { landFor, voronoiCell } from "./geography.js";
 import { regionsOf, regionalMetrics, municipalMetrics } from "./model.js";
@@ -30,7 +31,14 @@ export function atlasData(state, cities) {
   const states = regions.map((r, i) =>
     polygon(
       r.shape ?? clipping.intersection(country, [[voronoiCell(r, regions)]]),
-      { index: i, name: r.name, ...regionalMetrics(state, i) },
+      {
+        index: i,
+        name: r.name,
+        ...regionalMetrics(state, i),
+        ...Object.fromEntries(
+          sectors.map((d) => [d.key, resourceAt(state, i)?.[d.key] ?? 0]),
+        ),
+      },
     ),
   );
   const municipalities = state.territory
@@ -62,7 +70,32 @@ export function atlasData(state, cities) {
   const line = (path) =>
     feature({ type: "LineString", coordinates: path.map(project) }, {});
   const works = publicWorks(state, cities);
+  const resources = validTrade(state.trade) ? state.trade.resources : [],
+    port = [...resources].sort((a, b) => b.coast - a.coast)[0];
   return {
+    economicSites: fc(
+      resources.map((r) =>
+        feature(
+          { type: "Point", coordinates: project([r.x - 18, r.y - 24]) },
+          { index: r.index, name: r.name },
+        ),
+      ),
+    ),
+    economicRoutes: fc(
+      resources.map((r) =>
+        feature(
+          {
+            type: "LineString",
+            coordinates: [
+              [r.x, r.y],
+              [port.x, port.y],
+              [925, 115],
+            ].map(project),
+          },
+          { index: r.index },
+        ),
+      ),
+    ),
     publicWorks: fc(
       works.map((p) =>
         feature(

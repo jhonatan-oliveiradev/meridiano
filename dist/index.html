@@ -86,6 +86,7 @@
     <link rel="stylesheet" href="music-player.css" />
     <link rel="stylesheet" href="layout-polish.css" />
     <link rel="stylesheet" href="governance.css" />
+    <link rel="stylesheet" href="trade.css" />
   </head>
   <body>
     <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg">
@@ -434,7 +435,13 @@
               ><button data-layer="populacao">População</button
               ><button data-layer="densidade">Densidade</button
               ><button data-layer="renda">Renda</button
-              ><button data-layer="bemestar">Bem-estar</button>
+              ><button data-layer="bemestar">Bem-estar</button
+              ><button
+                data-trade-action="map"
+                aria-label="Explorar recursos e produção"
+              >
+                Recursos ↗
+              </button>
             </div>
             <div class="compass" aria-hidden="true">
               <span>N</span
@@ -497,7 +504,16 @@
             ><button id="mapMethods">Sobre o modelo ↗</button>
           </div>
         </div>
+        <section class="view content-view" id="view-comercio">
+          <button class="secondary trade-page-back" data-view="politicas">
+            ← Políticas públicas
+          </button>
+          <div id="tradeContent"></div>
+        </section>
         <div class="view content-view" id="view-politicas">
+          <button class="secondary economic-cta" data-view="comercio">
+            Produção e comércio exterior ↗
+          </button>
           <div class="content-heading">
             <span class="eyebrow">GOVERNO</span>
             <h3>Políticas públicas</h3>

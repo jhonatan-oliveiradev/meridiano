@@ -1,3 +1,4 @@
+import { createTrade } from "./trade.js";
 import { initialState, policyDefs } from "./model.js";
 import { rng } from "./geography.js";
 import { generateTerritory } from "./territory.js";
@@ -9,6 +10,7 @@ export function createCountry(config = {}) {
     areaKm2: config.areaKm2,
     kind: config.kind,
   });
+  s.trade = createTrade(s, s.territory.regions);
   return s;
 }
 export const governments = [
@@ -126,5 +128,6 @@ export function randomCountry(seed) {
     },
   ];
   s.territory = generateTerritory({ seed, population: s.metrics.population });
+  s.trade = createTrade(s, s.territory.regions);
   return s;
 }

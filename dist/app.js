@@ -1,3 +1,5 @@
+import { createTrade, resourceAt, sectors } from "./trade.js";
+import { initTradeUI } from "./trade-ui.js";
 import { migrateConsequences, consequenceMetrics } from "./consequences.js";
 import { initGovernanceUI } from "./governance-ui.js";
 import { initConsequenceUI } from "./consequence-ui.js";
@@ -72,6 +74,7 @@ let eventIsland = null;
 let decisionUI = null;
 let investmentUI = null;
 let governanceUI = null;
+let tradeUI = null;
 let governmentPlanUI = null;
 let consequenceUI = null;
 let pendingGoalReturn = null;
@@ -144,6 +147,7 @@ function setView(next) {
     ![
       "territorio",
       "politicas",
+      "comercio",
       "indicadores",
       "cenarios",
       "plano",
@@ -156,13 +160,19 @@ function setView(next) {
     el.classList.toggle("active", el.id === "view-" + view),
   );
   $$("[data-view]").forEach((el) => {
-    el.classList.toggle("active", el.dataset.view === view);
-    if (el.dataset.view === view) el.setAttribute("aria-current", "page");
+    const active =
+      el.dataset.view === view ||
+      (view === "comercio" &&
+        el.closest(".rail") &&
+        el.dataset.view === "politicas");
+    el.classList.toggle("active", Boolean(active));
+    if (active) el.setAttribute("aria-current", "page");
     else el.removeAttribute("aria-current");
   });
   const title = {
     territorio: "Território",
     politicas: "Políticas públicas",
+    comercio: "Produção e comércio",
     indicadores: "Indicadores",
     cenarios: "Cenários salvos",
     plano: "Plano de governo",
@@ -248,6 +258,7 @@ function updateUI() {
   decisionUI?.update();
   investmentUI?.update();
   governanceUI?.update();
+  tradeUI?.update();
   governmentPlanUI?.render();
   updateGoalReturn();
   if (state.quarter >= 160) pausePlayback();
@@ -878,6 +889,9 @@ function applyLayer() {
   terrain3d?.update(state, { selected, layer });
   atlasMap?.update(state, { selected, layer });
   const colors = {
+    ...Object.fromEntries(
+      sectors.map((d) => [d.key, ["#254d42", d.color, d.color]]),
+    ),
     populacao: ["#dbe7c7", "#73935d", "#3a654c"],
     densidade: ["#d8e6c0", "#7eaa38", "#e97738"],
     renda: ["#ece5be", "#b8bf84", "#4e7b5c"],
@@ -889,8 +903,9 @@ function applyLayer() {
       return;
     }
     const m = regionalMetrics(state, i),
-      v =
-        layer === "populacao"
+      v = sectors.some((d) => d.key === layer)
+        ? (resourceAt(state, i)?.[layer] ?? 0)
+        : layer === "populacao"
           ? regions[i].share / Math.max(...regions.map((r) => r.share))
           : layer === "densidade"
             ? Math.log1p(m.density ?? 0) /
@@ -908,6 +923,11 @@ function applyLayer() {
                   0.5) /
                 0.8
               : m.welfare / 100;
+    const economicSector = sectors.find((d) => d.key === layer);
+    if (economicSector) {
+      el.style.fill = `color-mix(in srgb, color-mix(in srgb, #254d42 ${Math.round((1 - clamp(v, 0, 1)) * 85)}%, ${economicSector.color}) 76%, transparent)`;
+      return;
+    }
     const palette = colors[layer];
     el.style.fill =
       palette[Math.min(2, Math.floor(clamp(v, 0, 0.99) * 3))] + "ce";
@@ -917,6 +937,7 @@ function applyLayer() {
     el.setAttribute("aria-pressed", el.dataset.layer === layer);
   });
   $(".map-shell").classList.toggle("density-active", layer === "densidade");
+  tradeUI?.updateMap();
   const maximumDensity = Math.max(
     1,
     ...cities.map((c) =>
@@ -935,6 +956,12 @@ function applyLayer() {
         : "";
   });
   const labels = {
+    ...Object.fromEntries(
+      sectors.map((d) => [
+        d.key,
+        [`POTENCIAL DE ${d.name.toUpperCase()}`, "Menor", "Maior"],
+      ]),
+    ),
     relevo: ["ALTITUDE", "0 m", "2.400 m"],
     densidade: [
       state.territory
@@ -966,7 +993,7 @@ function applyLayer() {
     renda: ["RENDA / HABITANTE", "Menor", "Maior"],
     bemestar: ["BEM-ESTAR", "0", "100"],
   };
-  const l = labels[layer];
+  const l = labels[layer] ?? labels.relevo;
   $("#legendLabel").textContent = l[0];
   $("#legendMin").textContent = l[1];
   $("#legendMax").textContent = l[2];
@@ -1162,6 +1189,7 @@ function countryForm(isNew = false) {
         areaKm2: f.get("areaKm2") ? Number(f.get("areaKm2")) : undefined,
         kind: f.get("landform") || undefined,
       });
+      state.trade = createTrade(state, state.territory.regions);
       selected = state.territory.capitalRegion;
       selectedCity = null;
       drawMap();
@@ -1523,6 +1551,27 @@ advisorController = initAdvisor({
     setView("territorio");
     selectRegion(index);
     investmentUI.showQuote(index, type);
+  },
+});
+tradeUI = initTradeUI({
+  getState: () => state,
+  getSelected: () => selected,
+  getLayer: () => layer,
+  setLayer: (next) => {
+    layer = next;
+    applyLayer();
+  },
+  setView,
+  selectRegion,
+  openModal,
+  closeModal,
+  notify,
+  setState: (next) => {
+    state = next;
+    renderPolicies();
+    updateUI();
+    persist();
+    applyLayer();
   },
 });
 governanceUI = initGovernanceUI({
