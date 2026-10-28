@@ -89,8 +89,13 @@
     <link rel="stylesheet" href="trade.css" />
     <link rel="stylesheet" href="onboarding.css" />
   </head>
-  <body class="entry-active">
-    <section id="welcome" class="welcome-screen" aria-labelledby="welcomeTitle">
+  <body class="entry-active" data-boot="loading">
+    <section
+      id="welcome"
+      class="welcome-screen"
+      aria-labelledby="welcomeTitle"
+      aria-busy="true"
+    >
       <header class="welcome-header">
         <a class="welcome-wordmark" href="#inicio"
           >meridiano<span>SIMULADOR GEOPOLÍTICO</span></a
@@ -107,12 +112,12 @@
             o que suas decisões mudam ao longo do tempo.
           </p>
           <div class="welcome-actions">
-            <button id="welcomePlay" class="primary">Começar →</button
-            ><button id="welcomeNew" class="secondary">
+            <button id="welcomePlay" class="primary" disabled>Começar →</button
+            ><button id="welcomeNew" class="secondary" disabled>
               Criar novo país <span>↗</span>
             </button>
           </div>
-          <button id="welcomeLearn" class="welcome-learn">
+          <button id="welcomeLearn" class="welcome-learn" disabled>
             Aprender jogando
           </button>
           <small id="welcomeSaveNote"></small>
@@ -123,11 +128,38 @@
           </div>
           <div class="welcome-map-frame">
             <svg viewBox="0 0 1000 760" aria-hidden="true">
-              <g id="welcomeMap"></g></svg
+              <g id="welcomeMap"></g>
+              <g
+                id="welcomePlaceholder"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                opacity=".2"
+              >
+                <path
+                  d="M300 210Q420 90 610 180T740 360Q840 520 650 590T350 550Q210 470 280 330Z"
+                />
+                <path
+                  d="M350 250Q480 160 590 230T680 370Q760 470 630 530T390 500Q280 440 350 250Z"
+                />
+                <path
+                  d="M420 290Q510 230 580 290T620 400Q690 470 580 470T440 430Q360 390 420 290Z"
+                />
+              </g></svg
             ><span class="welcome-north" aria-hidden="true">N<br />↑</span
             ><span class="welcome-map-caption"
               >O primeiro movimento é seu.</span
             >
+            <div class="welcome-boot" role="status" aria-live="polite">
+              <strong id="welcomeBootText">Preparando seu país…</strong>
+              <p id="welcomeBootDetail">
+                Carregando território e dados da sessão.
+              </p>
+              <a id="welcomeRetry" class="secondary" href=""
+                >Carregar novamente</a
+              >
+              <noscript>Ative o JavaScript do navegador para jogar.</noscript>
+            </div>
           </div>
           <div class="welcome-country">
             <span class="welcome-flag" aria-hidden="true"><i></i></span>
@@ -1116,7 +1148,7 @@
       <div id="modalBody"></div>
     </dialog>
     <div id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="boot.js"></script>
     <script type="module" src="music-player.js"></script>
   </body>
 </html>
