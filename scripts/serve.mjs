@@ -36,7 +36,7 @@ http
           chunks = [];
         for await (const chunk of req) {
           size += chunk.length;
-          if (size > 24000) {
+          if (size > 48000) {
             res.status(413).json({
               code: "PAYLOAD_TOO_LARGE",
               message: "Consulta muito longa.",

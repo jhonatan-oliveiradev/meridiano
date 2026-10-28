@@ -10,7 +10,16 @@ export const cabinetRoles = [
     avatar: "nilo",
     office: "Coordenação do gabinete",
     scope: "Prioridades do país e trabalho entre as áreas.",
-    programs: ["water", "health", "education", "transport"],
+    programs: [
+      "water",
+      "health",
+      "education",
+      "transport",
+      "agriculture",
+      "energy",
+      "mining",
+      "industry",
+    ],
     tools: [
       "inspect_security",
       "investigate_states",
@@ -27,7 +36,16 @@ export const cabinetRoles = [
     title: "Secretária da Fazenda",
     office: "Secretaria da Fazenda",
     scope: "Orçamento, dívida e financiamento dos programas.",
-    programs: ["water", "health", "education", "transport"],
+    programs: [
+      "water",
+      "health",
+      "education",
+      "transport",
+      "agriculture",
+      "energy",
+      "mining",
+      "industry",
+    ],
     tools: [
       "inspect_budget",
       "investigate_states",
@@ -54,7 +72,14 @@ export const cabinetRoles = [
     title: "Secretária de Infraestrutura",
     office: "Secretaria de Infraestrutura",
     scope: "Saneamento, mobilidade e execução das obras.",
-    programs: ["water", "transport"],
+    programs: [
+      "water",
+      "transport",
+      "agriculture",
+      "energy",
+      "mining",
+      "industry",
+    ],
     tools: ["investigate_states", "compare_investments", "prepare_investment"],
   },
   {
@@ -109,7 +134,14 @@ export function runCabinetTool(s, roleId, request) {
       ? roleId
       : program === "health"
         ? "health"
-        : program === "water" || program === "transport"
+        : [
+              "water",
+              "transport",
+              "agriculture",
+              "energy",
+              "mining",
+              "industry",
+            ].includes(program)
           ? "infrastructure"
           : "nilo";
   if (request.name === "inspect_security") {

@@ -21,9 +21,9 @@ A proposta informa proteção local antes/depois estimada e manutenção antes d
 
 Testes cobrem localização, cobertura, obra ainda em construção, população, recorrência em 40 anos, eventos extremos, benefícios preservados, gasto emergencial ajustado uma vez, legado, persistência e emergência absorvida que não bloqueia o tempo. 112 testes passaram, incluindo a suíte existente; syntax check, build e formatação dos arquivos alterados passaram. QA no navegador: proposta de saneamento mostrou proteção de 35 para 87/100 antes da contratação; avanço normal abriu nova crise com proteção e pressão visíveis e custos revisados. O fluxo manteve os programas anteriores e a cobrança de manutenção. Situações absorvidas foram verificadas por teste integrado do motor, não por uma partida completa nova de 40 anos no navegador. Screenshot: screenshots/structural-prevention.jpg.
 
-## Comércio exterior: proposta para próxima etapa (não implementada)
+## Comércio exterior: evolução na mesma PR
 
-Hoje o parâmetro externo apenas altera crescimento; não existe contabilidade comercial. Recomenda-se começar com mercado externo agregado e preços sintéticos limitados por oferta/demanda. Negociação bilateral e diplomacia constituem expansão posterior.
+A proposta abaixo foi aprovada e sua primeira etapa foi implementada na mesma PR. Consulte [Produção, comércio e mapa](TRADE-MAP.md) para regras entregues, verificações e limites. O mercado é agregado; negociação bilateral e tecnologia avançada continuam como expansões posteriores.
 
 1. Recursos reproduzíveis por estado na criação: aptidão agrícola, disponibilidade hídrica, potencial energético e depósitos minerais; mapas e dados coerentes. Preservar geografia dos cenários antigos e explicitar geração dos campos novos.
 2. Produção por setor, capacidade instalada, consumo interno, estoques e necessidade de importação. Começar com alimentos, energia, matérias-primas e manufaturas; tecnologia avançada depende de encadeamento industrial, infraestrutura e formação, não só depósitos minerais.

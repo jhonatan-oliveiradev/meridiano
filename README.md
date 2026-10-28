@@ -6,6 +6,14 @@ Um laboratório para criar países fictícios, explorar seus territórios e expe
 
 ![Gabinete e Nilo — v0.3](docs/screenshots/cabinet-v03.jpg)
 
+## Em desenvolvimento · prevenção, produção e comércio
+
+- Infraestrutura operacional reduz emergências repetidas e seus impactos no estado atendido.
+- Recursos por estado, produção em quatro setores, insumos industriais, consumo interno, reservas e comércio com oferta/demanda sintéticas.
+- Acordos com volume/preço definidos e prazo de quatro ou oito trimestres; carteira produtiva com obras e manutenção explícitas.
+- Atlas econômico com cores por potencial, ícones, painel regional e fluxos esquemáticos. Cenários antigos ativam a economia produtiva explicitamente.
+- Regras e limites: [Prevenção](docs/STRUCTURAL-PREVENTION.md) e [Produção, comércio e mapa](docs/TRADE-MAP.md).
+
 ## Versão 0.10 · plano de governo
 
 Metas de acesso regional, pobreza, bem-estar e dívida, com prazo de um a três anos. O gabinete acompanha ritmo, compromissos fiscais e operação estimada das obras. Histórico por trimestre, avaliação no prazo e arquivo de metas encerradas. Os programas continuam exigindo revisão e confirmação. Veja [regras do plano](docs/GOVERNMENT-PLAN.md).

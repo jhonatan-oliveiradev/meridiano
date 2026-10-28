@@ -8,7 +8,16 @@ export function publicWorks(s, cities = s.territory?.cities ?? []) {
     .map((p) => {
       const r = regions[p.region],
         local = cities.filter((c) => c.region === p.region),
-        order = ["water", "health", "education", "transport"].indexOf(p.type),
+        order = [
+          "water",
+          "health",
+          "education",
+          "transport",
+          "agriculture",
+          "energy",
+          "mining",
+          "industry",
+        ].indexOf(p.type),
         anchor = local[order % Math.max(1, local.length)] ?? r;
       const nearest = roads.length
         ? [...roads]
@@ -25,8 +34,8 @@ export function publicWorks(s, cities = s.territory?.cities ?? []) {
         type: p.type,
         name: projectFor(p.type).name,
         phase: p.phase,
-        x: anchor.x,
-        y: anchor.y,
+        x: anchor.x + (Math.floor(order / Math.max(1, local.length)) % 3) * 24,
+        y: anchor.y + Math.floor(order / (Math.max(1, local.length) * 3)) * 24,
         path: p.type === "transport" && nearest ? nearest : [],
       };
     });

@@ -1,3 +1,4 @@
+import { sectors } from "./trade.js";
 import * as maplibre from "./vendor/maplibre-gl.mjs";
 import { atlasData } from "./atlas-data.js";
 
@@ -140,7 +141,23 @@ export function createAtlasMap(
         100,
         "#34735d",
       ];
+    const resource = sectors.find((d) => d.key === layer);
+    if (resource)
+      fill = [
+        "interpolate",
+        ["linear"],
+        ["get", resource.key],
+        0,
+        "#254d42",
+        1,
+        resource.color,
+      ];
     map.setPaintProperty("state-fill", "fill-color", fill);
+    for (const id of ["economicSites", "economicRoutes"])
+      map.setLayoutProperty(id, "visibility", resource ? "visible" : "none");
+    map.setFilter("economicRoutes", ["==", ["get", "index"], selected]);
+    if (resource)
+      map.setPaintProperty("economicRoutes", "line-color", resource.color);
     map.setLayoutProperty(
       "municipal-fill",
       "visibility",
@@ -162,6 +179,8 @@ export function createAtlasMap(
       "projects",
       "publicWorks",
       "publicLinks",
+      "economicSites",
+      "economicRoutes",
       "states",
       "municipalities",
       "cities",
@@ -306,6 +325,30 @@ export function createAtlasMap(
       },
     });
     map.addLayer({
+      id: "economicRoutes",
+      type: "line",
+      source: "economicRoutes",
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": "#c7ff3d",
+        "line-width": 2.5,
+        "line-dasharray": [3, 3],
+        "line-opacity": 0.8,
+      },
+    });
+    map.addLayer({
+      id: "economicSites",
+      type: "circle",
+      source: "economicSites",
+      layout: { visibility: "none" },
+      paint: {
+        "circle-radius": 9,
+        "circle-color": "#c7ff3d",
+        "circle-stroke-color": "#20372d",
+        "circle-stroke-width": 2,
+      },
+    });
+    map.addLayer({
       id: "projects",
       type: "circle",
       source: "projects",
@@ -353,6 +396,8 @@ export function createAtlasMap(
         layers: [
           "publicWorks",
           "publicLinks",
+          "economicSites",
+          "economicRoutes",
           "projects",
           "cities",
           "municipal-fill",
@@ -404,6 +449,8 @@ export function createAtlasMap(
             "projects",
             "publicWorks",
             "publicLinks",
+            "economicSites",
+            "economicRoutes",
           ])
             map.getSource(key).setData(d[key]);
         recolor();

@@ -24,6 +24,7 @@ export function quarterDrivers(s, after) {
     investments: [],
     scheduledDecision: null,
     crisisTracks: [],
+    trade: undefined,
   };
   const reference = advance(base);
   const policies = advance({ ...base, policies: s.policies });
@@ -32,15 +33,27 @@ export function quarterDrivers(s, after) {
     policies: s.policies,
     investments: s.investments,
   });
+  const commerce = advance({
+    ...base,
+    policies: s.policies,
+    investments: s.investments,
+    trade: s.trade,
+  });
   const crises = advance(
-    { ...base, policies: s.policies, investments: s.investments },
+    {
+      ...base,
+      policies: s.policies,
+      investments: s.investments,
+      trade: s.trade,
+    },
     crisisEffect(s),
   );
-  const stages = [s, reference, policies, programs, crises, after];
+  const stages = [s, reference, policies, programs, commerce, crises, after];
   return [
     "Políticas mantidas e contexto",
     "Ajustes deste trimestre",
     "Investimentos regionais",
+    "Produção e comércio exterior",
     "Crises em acompanhamento",
     "Resposta escolhida",
   ].map((name, i) => ({

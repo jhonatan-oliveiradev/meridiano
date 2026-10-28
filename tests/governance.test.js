@@ -55,7 +55,7 @@ test("quarter explanations sum to actual changes with edits and investment", () 
       k,
     );
   assert.deepEqual(s, copy);
-  assert.equal(rows.length, 5);
+  assert.equal(rows.length, 6);
 });
 test("new crises persist for bounded turns, never charge follow-up again, and survive serialization", () => {
   let s = advanceTurn(initialState());

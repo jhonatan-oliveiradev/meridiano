@@ -48,7 +48,7 @@ export function renderQuarterExplanation(s) {
   const r = s.lastReport;
   if (!r?.drivers)
     return '<p class="governance-note">A decomposição aparece no próximo trimestre avançado nesta versão.</p>';
-  return `<section class="quarter-explanation"><h4>O que moveu os números</h4><p>Abra um indicador para conferir a composição da mudança.</p>${driverMetrics.map((k) => `<details data-explain="${k}"><summary>${labels[k]} <strong>${signed(r.after[k] - r.before[k])} ${unit(k)}</strong></summary><div class="governance-table"><table><caption>${labels[k]} · ${period(r.quarter)}</caption><thead><tr><th>Fator</th><th>Contribuição</th></tr></thead><tbody>${r.drivers.map((d) => `<tr><th scope="row">${esc(d.name)}</th><td>${signed(d.delta[k])} ${unit(k)}</td></tr>`).join("")}</tbody><tfoot><tr><th>Total no trimestre</th><td>${signed(r.after[k] - r.before[k])} ${unit(k)}</td></tr></tfoot></table></div></details>`).join("")}<p class="governance-note">Comparação sequencial das regras do jogo: contexto → ajustes → programas → acompanhamento → resposta. As parcelas somam a mudança; como os efeitos interagem, sua distribuição depende dessa ordem. Valores exibidos são arredondados. Não é uma estimativa causal do mundo real.</p></section>`;
+  return `<section class="quarter-explanation"><h4>O que moveu os números</h4><p>Abra um indicador para conferir a composição da mudança.</p>${driverMetrics.map((k) => `<details data-explain="${k}"><summary>${labels[k]} <strong>${signed(r.after[k] - r.before[k])} ${unit(k)}</strong></summary><div class="governance-table"><table><caption>${labels[k]} · ${period(r.quarter)}</caption><thead><tr><th>Fator</th><th>Contribuição</th></tr></thead><tbody>${r.drivers.map((d) => `<tr><th scope="row">${esc(d.name)}</th><td>${signed(d.delta[k])} ${unit(k)}</td></tr>`).join("")}</tbody><tfoot><tr><th>Total no trimestre</th><td>${signed(r.after[k] - r.before[k])} ${unit(k)}</td></tr></tfoot></table></div></details>`).join("")}<p class="governance-note">Comparação sequencial das regras do jogo: contexto → ajustes → programas → produção e comércio → acompanhamento → resposta. As parcelas somam a mudança; como os efeitos interagem, sua distribuição depende dessa ordem. Valores exibidos são arredondados. Não é uma estimativa causal do mundo real.</p></section>`;
 }
 export function initGovernanceUI({
   getState,
@@ -142,6 +142,10 @@ export function initGovernanceUI({
       health: "+",
       education: "Aa",
       transport: "↔",
+      agriculture: "✳",
+      energy: "ϟ",
+      mining: "◆",
+      industry: "▦",
     };
     works.innerHTML = publicWorks(s, getCities())
       .map(

@@ -56,6 +56,27 @@ export const projectDefs = [
     poverty: 0.3,
     growth: 0.5,
   },
+  ...[
+    ["agriculture", "Rede agroprodutiva", "Agricultura", 2.5, 0.04, 4],
+    ["energy", "Geração e rede elétrica", "Energia", 4, 0.05, 6],
+    ["mining", "Extração e beneficiamento", "Mineração", 3.8, 0.05, 5],
+    ["industry", "Parque de manufaturas", "Indústria", 5, 0.06, 7],
+  ].map(([key, name, short, capital, upkeep, work]) => ({
+    key,
+    name,
+    short,
+    capital,
+    upkeep,
+    work,
+    productive: true,
+    coverage: 0.4,
+    access: 0,
+    welfare: 0,
+    poverty: 0,
+    growth: 0,
+    detail:
+      "Amplia em 70% a capacidade instalada do setor neste estado após entrar em operação. A produção efetiva depende dos recursos, da demanda e dos insumos disponíveis.",
+  })),
 ];
 export const projectFor = (key) => projectDefs.find((p) => p.key === key);
 export const activeInvestments = (s) =>

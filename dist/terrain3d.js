@@ -1,3 +1,4 @@
+import { validTrade, sectors } from "./trade.js";
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import {
@@ -277,6 +278,9 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
     recolor();
   }
   function recolor() {
+    const economicResources = validTrade(currentState.trade)
+      ? currentState.trade.resources
+      : [];
     const metrics = defs.map((_, i) => regionalMetrics(currentState, i)),
       maxDensity = Math.max(1, ...metrics.map((m) => m.density ?? 0)),
       maxShare = Math.max(...defs.map((r) => r.share)),
@@ -291,8 +295,9 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
         );
       else {
         const m = metrics[v.region],
-          t =
-            layer === "populacao"
+          t = sectors.some((d) => d.key === layer)
+            ? (economicResources[v.region]?.[layer] ?? 0)
+            : layer === "populacao"
               ? defs[v.region].share / maxShare
               : layer === "densidade"
                 ? Math.log1p(m.density ?? 0) / Math.log1p(maxDensity)
@@ -305,7 +310,10 @@ export function createTerrain3D(host, { state, cities, onSelect, onError }) {
                     0.8
                   : m.welfare / 100;
         c.set(dark ? "#274f64" : "#cfe9db").lerp(
-          new THREE.Color(dark ? "#5aade4" : "#267ca4"),
+          new THREE.Color(
+            sectors.find((d) => d.key === layer)?.color ??
+              (dark ? "#5aade4" : "#267ca4"),
+          ),
           clamp(t, 0, 1),
         );
       }
