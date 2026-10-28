@@ -1,5 +1,6 @@
 // Fictional productive units (UP), quarterly flows; prices are billions of M$ per UP.
 // No fetch, randomness or model import: the same snapshot always clears the same market.
+import { systemFactors, validSystems } from "./systems.js";
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const sum = (a) => a.reduce((x, y) => x + y, 0);
 export const sectors = [
@@ -212,14 +213,21 @@ export function tradeQuarter(s) {
   const connected = (s.investments ?? [])
     .filter((p) => p.type === "transport" && p.phase === "operating")
     .reduce((n, p) => n + p.regionShare * Math.min(1, p.coverage / 0.4), 0);
-  const logistics = clamp(
-      0.35 +
-        connected * 0.25 +
-        (s.policies.infrastructure ?? 3) * 0.045 +
-        (s.capacity ?? 0.65) * 0.25,
-      0.3,
-      1,
-    ),
+  const networkLogistics = validSystems(s.systems)
+    ? s.systems.regions.reduce(
+        (n, r) => n + r.share * systemFactors(s, r.region).logistics,
+        0,
+      ) / s.systems.regions.reduce((n, r) => n + r.share, 0)
+    : 1;
+  const logistics =
+      clamp(
+        0.35 +
+          connected * 0.25 +
+          (s.policies.infrastructure ?? 3) * 0.045 +
+          (s.capacity ?? 0.65) * 0.25,
+        0.3,
+        1,
+      ) * networkLogistics,
     contracts = activeContracts(t, q);
   const regional = t.resources.map((r) => ({
     region: r.index,
@@ -241,7 +249,8 @@ export function tradeQuarter(s) {
           (0.35 + r[d.key]) *
           (0.65 + (s.capacity ?? 0.65) * 0.55) *
           (1 + expansion) *
-          (1 + (s.policies.services - 8) * 0.012);
+          (1 + (s.policies.services - 8) * 0.012) *
+          systemFactors(s, j)[d.key];
         regional[j].output[d.key] = amount;
         return amount;
       }),
@@ -333,8 +342,11 @@ export function tradeQuarter(s) {
   const importLimits = Object.fromEntries(
     flows.map((f) => [f.key, ((t.anchorGdp * 0.055) / 4) * external]),
   );
+  const emergencyFood = s.scheduledDecision?.systems?.food === 1;
+  if (emergencyFood) importLimits.food *= 1.5;
   function importTo(f, needed) {
-    if (!t.policy[f.key].imports) return;
+    if (!t.policy[f.key].imports && !(emergencyFood && f.key === "food"))
+      return;
     const buy = Math.max(0, Math.min(needed, importLimits[f.key] - f.imports));
     f.imports += buy;
     available[f.key] += buy;

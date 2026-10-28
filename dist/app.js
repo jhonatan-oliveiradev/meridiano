@@ -1,6 +1,7 @@
 import { createTrade, resourceAt, sectors } from "./trade.js";
 import { initTradeUI } from "./trade-ui.js";
 import { initOnboarding } from "./onboarding.js";
+import { initSystemsUI } from "./systems-ui.js";
 import { migrateConsequences, consequenceMetrics } from "./consequences.js";
 import { initGovernanceUI } from "./governance-ui.js";
 import { initConsequenceUI } from "./consequence-ui.js";
@@ -79,6 +80,7 @@ let decisionUI = null;
 let investmentUI = null;
 let governanceUI = null;
 let tradeUI = null;
+let systemsUI = null;
 let governmentPlanUI = null;
 let consequenceUI = null;
 let pendingGoalReturn = null;
@@ -157,6 +159,7 @@ function setView(next) {
       "territorio",
       "politicas",
       "comercio",
+      "redes",
       "indicadores",
       "cenarios",
       "plano",
@@ -173,7 +176,10 @@ function setView(next) {
       el.dataset.view === view ||
       (view === "comercio" &&
         el.closest(".rail") &&
-        el.dataset.view === "politicas");
+        el.dataset.view === "politicas") ||
+      (view === "redes" &&
+        el.closest(".rail") &&
+        el.dataset.view === "territorio");
     el.classList.toggle("active", Boolean(active));
     if (active) el.setAttribute("aria-current", "page");
     else el.removeAttribute("aria-current");
@@ -182,6 +188,7 @@ function setView(next) {
     territorio: "Território",
     politicas: "Políticas públicas",
     comercio: "Produção e comércio",
+    redes: "Redes e abastecimento",
     indicadores: "Indicadores",
     cenarios: "Cenários salvos",
     plano: "Plano de governo",
@@ -268,6 +275,7 @@ function updateUI() {
   investmentUI?.update();
   governanceUI?.update();
   tradeUI?.update();
+  systemsUI?.update();
   governmentPlanUI?.render();
   updateGoalReturn();
   if (state.quarter >= 160) pausePlayback();
@@ -1599,6 +1607,7 @@ governanceUI = initGovernanceUI({
   selectRegion,
   setView,
 });
+systemsUI = initSystemsUI({ getState: () => state });
 updateUI();
 setView(
   initialRoute === "inicio" ? "territorio" : initialRoute || "territorio",

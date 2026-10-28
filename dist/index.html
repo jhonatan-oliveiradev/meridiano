@@ -88,6 +88,7 @@
     <link rel="stylesheet" href="governance.css" />
     <link rel="stylesheet" href="trade.css" />
     <link rel="stylesheet" href="onboarding.css" />
+    <link rel="stylesheet" href="systems.css" />
   </head>
   <body class="entry-active" data-boot="loading">
     <section
@@ -647,6 +648,7 @@
           <div class="below-map">
             <span id="mapInteractionHint"
               >Arraste para navegar. Selecione um estado ou município.</span
+            ><button class="systems-open" data-view="redes">Redes ↗</button
             ><button id="mapMethods">Sobre o modelo ↗</button>
           </div>
         </div>
@@ -654,7 +656,13 @@
           <button class="secondary trade-page-back" data-view="politicas">
             ← Políticas públicas
           </button>
+          <button class="secondary" data-view="redes">
+            Redes e abastecimento ↗
+          </button>
           <div id="tradeContent"></div>
+        </section>
+        <section class="view content-view" id="view-redes">
+          <div id="systemsContent"></div>
         </section>
         <div class="view content-view" id="view-politicas">
           <button class="secondary economic-cta" data-view="comercio">

@@ -199,7 +199,7 @@ export function initTradeUI({
           p = s.trade.policy[f.key],
           scale = Math.max(0.001, f.opening + f.production + f.imports);
         return `<article class="trade-sector" style="--sector:${d.color}"><header><div class="trade-sector-icon">${sectorIcon(f.key)}</div><div><span>SETOR PRODUTIVO</span><h4>${d.name}</h4></div><button class="trade-map-link" data-trade-action="sector-map" data-sector="${f.key}" aria-label="Ver ${d.name.toLowerCase()} no mapa">↗</button></header><div class="trade-flow-bar" aria-hidden="true"><i style="width:${Math.min(100, (f.domestic / scale) * 100)}%"></i><i style="width:${Math.min(100, (f.exports / scale) * 100)}%"></i></div><dl>${[
-          ["Capacidade instalada", f.capacity],
+          ["Capacidade disponível", f.capacity],
           ["Produção", f.production],
           ["Consumo interno", f.domestic],
           ["Insumos para indústria", f.inputs],

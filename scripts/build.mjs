@@ -4,6 +4,10 @@ import { musicTracks } from "../dist/music-tracks.js";
 for (const f of [
   "index.html",
   "boot.js",
+  "systems.js",
+  "systems-ui.js",
+  "systems.css",
+  "causal-events.js",
   "governance.js",
   "governance-ui.js",
   "governance.css",
