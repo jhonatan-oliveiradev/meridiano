@@ -1,3 +1,11 @@
+import { initPlayabilityUI } from "./playability-ui.js";
+import { initExperimentsUI } from "./experiments-ui.js";
+import { branchInfo, syncBranch } from "./experiments.js";
+import {
+  stateSituation,
+  situationColors,
+  initSituationUI,
+} from "./map-situation.js";
 import { createTrade, resourceAt, sectors } from "./trade.js";
 import { initTradeUI } from "./trade-ui.js";
 import { initOnboarding } from "./onboarding.js";
@@ -81,6 +89,9 @@ let investmentUI = null;
 let governanceUI = null;
 let tradeUI = null;
 let systemsUI = null;
+let playabilityUI = null,
+  experimentsUI = null,
+  situationUI = null;
 let governmentPlanUI = null;
 let consequenceUI = null;
 let pendingGoalReturn = null;
@@ -138,13 +149,20 @@ function readStorage() {
 }
 function persist() {
   try {
+    const synced = syncBranch(state, saved);
+    if (synced !== saved) {
+      localStorage.setItem("meridiano:scenarios:v1", JSON.stringify(synced));
+      saved = synced;
+    }
     localStorage.setItem("meridiano:active:v1", JSON.stringify(state));
     $("#localStatus").textContent = "Salvo neste navegador";
+    return true;
   } catch {
     $("#localStatus").textContent = "Sessão sem salvamento";
     notify(
       "O navegador bloqueou o salvamento. Exporte o cenário para conservar os dados.",
     );
+    return false;
   }
 }
 function setView(next) {
@@ -276,6 +294,13 @@ function updateUI() {
   governanceUI?.update();
   tradeUI?.update();
   systemsUI?.update();
+  playabilityUI?.update();
+  situationUI?.update();
+  const branch = branchInfo(state);
+  $("#experimentActive").hidden = !branch;
+  $("#experimentActive").textContent = branch
+    ? branch.label + " · experimento ↗"
+    : "";
   governmentPlanUI?.render();
   updateGoalReturn();
   if (state.quarter >= 160) pausePlayback();
@@ -913,10 +938,15 @@ function applyLayer() {
     densidade: ["#d8e6c0", "#7eaa38", "#e97738"],
     renda: ["#ece5be", "#b8bf84", "#4e7b5c"],
     bemestar: ["#e6e4c5", "#99b18b", "#3f795c"],
+    situacao: situationColors,
   };
   $$(".region-path").forEach((el, i) => {
     if (layer === "relevo") {
       el.style.fill = "";
+      return;
+    }
+    if (layer === "situacao") {
+      el.style.fill = situationColors[stateSituation(state, i).level] + "d9";
       return;
     }
     const m = regionalMetrics(state, i),
@@ -955,6 +985,7 @@ function applyLayer() {
   });
   $(".map-shell").classList.toggle("density-active", layer === "densidade");
   tradeUI?.updateMap();
+  situationUI?.update();
   const maximumDensity = Math.max(
     1,
     ...cities.map((c) =>
@@ -1009,6 +1040,7 @@ function applyLayer() {
     ],
     renda: ["RENDA / HABITANTE", "Menor", "Maior"],
     bemestar: ["BEM-ESTAR", "0", "100"],
+    situacao: ["SITUAÇÃO REGIONAL", "Sem dados / estável", "Crítico"],
   };
   const l = labels[layer] ?? labels.relevo;
   $("#legendLabel").textContent = l[0];
@@ -1245,7 +1277,8 @@ function saveScenario() {
       state: structuredClone(state),
     };
     try {
-      const next = [item, ...saved].slice(0, 20);
+      if (saved.length >= 20) throw Error("Limite de cenários");
+      const next = [item, ...saved];
       localStorage.setItem("meridiano:scenarios:v1", JSON.stringify(next));
       saved = next;
       closeModal();
@@ -1253,7 +1286,7 @@ function saveScenario() {
       notify("Cenário salvo neste navegador.");
     } catch {
       $("#saveError").textContent =
-        "Não foi possível salvar. Feche esta janela e exporte uma cópia JSON.";
+        "Não foi possível salvar. O limite é de 20 cenários; exclua uma cópia que não precisa ou exporte os dados.";
     }
   });
 }
@@ -1262,12 +1295,13 @@ function renderScenarios() {
     ? saved
         .map(
           (s) =>
-            `<article class="scenario-card"><div><h4>${esc(s.name)}</h4><p>${esc(s.state.name)} · ${date(s.state.quarter)} · Semente ${s.state.seed}</p></div><div class="scenario-numbers"><div><span>Bem-estar</span><strong>${fmt(s.state.metrics.welfare, 0)}/100</strong></div><div><span>Pobreza</span><strong>${fmt(s.state.metrics.poverty)}%</strong></div></div><div class="scenario-buttons"><button class="secondary" data-load="${s.id}">Retomar</button><button class="secondary" data-compare="${s.id}">Comparar</button><button class="remove" data-remove="${s.id}" aria-label="Excluir cenário ${esc(s.name)}">Excluir</button></div></article>`,
+            `<article class="scenario-card"><div><h4>${esc(s.name)}</h4><p>${esc(s.state.name)} · ${date(s.state.quarter)} · Semente ${s.state.seed}${s.kind === "origin" ? " · Origem preservada" : s.kind === "branch" && branchInfo(s.state) ? " · " + esc(branchInfo(s.state).label) + " · atualização automática quando ativo" : ""}</p></div><div class="scenario-numbers"><div><span>Bem-estar</span><strong>${fmt(s.state.metrics.welfare, 0)}/100</strong></div><div><span>Pobreza</span><strong>${fmt(s.state.metrics.poverty)}%</strong></div></div><div class="scenario-buttons"><button class="secondary" data-load="${s.id}">Retomar</button><button class="secondary" data-compare="${s.id}">Comparar</button><button class="remove" data-remove="${s.id}" aria-label="Excluir cenário ${esc(s.name)}">Excluir</button></div></article>`,
         )
         .join("")
     : '<div class="empty"><svg style="width:30px;height:30px"><use href="assets/reicon.svg#i-layers"/></svg><h4>Nenhum cenário salvo</h4><p>Salve o cenário atual para retomar ou comparar depois.</p></div>';
 }
 function compareScenario(s) {
+  if (experimentsUI?.compare(s)) return;
   openModal(
     `<h3 id="modalTitle">Comparar cenários</h3><p>${s.state.seed === state.seed ? "Mesma semente territorial." : "Territórios diferentes: considere as condições iniciais."} Comparação descritiva, sem atribuição causal automática.</p><div class="comparison"><table><thead><tr><th>Indicador</th><th>Atual<br>${date(state.quarter)}</th><th>${esc(s.name)}<br>${date(s.state.quarter)}</th></tr></thead><tbody>${metricDefs.map(([k, n, u]) => `<tr><td>${n}</td><td>${fmt(state.metrics[k])}${u}</td><td>${Number.isFinite(s.state.metrics[k]) ? fmt(s.state.metrics[k]) + u : "Sem registro"}</td></tr>`).join("")}</tbody></table></div><p>Atual: ${esc(state.name)} · ${esc(state.external)}<br>Salvo: ${esc(s.state.name)} · ${esc(s.state.external)}</p><div class="modal-actions"><button class="primary" data-close>Fechar comparação</button></div>`,
   );
@@ -1289,13 +1323,15 @@ document.addEventListener("click", (e) => {
     if (s) compareScenario(s);
   }
   if (b.dataset.load) {
+    if (!persist() && branchInfo(state)) return;
     const item = saved.find((s) => s.id === b.dataset.load);
     if (!item) return;
     openModal(
-      `<h3 id="modalTitle">Retomar ${esc(item.name)}?</h3><p>O cenário ativo será substituído. Para conservar seu progresso atual, cancele e salve uma cópia primeiro.</p><div class="modal-actions"><button class="secondary" data-close autofocus>Cancelar</button><button class="primary" id="confirmLoad">Retomar cenário</button></div>`,
+      `<h3 id="modalTitle">Retomar ${esc(item.name)}?</h3><p>${branchInfo(state) ? "O caminho ativo foi guardado automaticamente antes desta troca." : "O cenário ativo será substituído. Para conservar seu progresso, cancele e salve uma cópia primeiro."}</p><div class="modal-actions"><button class="secondary" data-close autofocus>Cancelar</button><button class="primary" id="confirmLoad">Retomar cenário</button></div>`,
     );
     $("#confirmLoad").onclick = () => {
       state = structuredClone(item.state);
+      if (item.kind !== "branch") delete state.experiment;
       selected = state.territory?.capitalRegion ?? 3;
       selectedCity = null;
       drawMap();
@@ -1608,6 +1644,58 @@ governanceUI = initGovernanceUI({
   setView,
 });
 systemsUI = initSystemsUI({ getState: () => state });
+function savePlayRecords(next) {
+  localStorage.setItem("meridiano:scenarios:v1", JSON.stringify(next));
+  saved = next;
+}
+function activatePlayState(next) {
+  pausePlayback();
+  state = structuredClone(next);
+  selected = state.territory?.capitalRegion ?? 3;
+  selectedCity = null;
+  drawMap();
+  renderPolicies();
+  updateUI();
+  persist();
+  closeModal();
+  if (entryController?.isHome()) entryController.enter();
+  else setView("plano");
+}
+playabilityUI = initPlayabilityUI({
+  getState: () => state,
+  openModal,
+  onStart: (next) => {
+    if (saved.length >= 20)
+      throw Error(
+        "Guarde uma cópia externa ou remova um cenário antes de iniciar: as 20 vagas estão ocupadas.",
+      );
+    persist();
+    const checkpoint = {
+      id:
+        crypto.randomUUID?.() ??
+        Date.now().toString(36) + Math.random().toString(36).slice(2),
+      name: `Antes de ${next.name} · ${date(state.quarter)}`,
+      state: structuredClone(state),
+    };
+    savePlayRecords([checkpoint, ...saved]);
+    activatePlayState(next);
+  },
+});
+experimentsUI = initExperimentsUI({
+  getState: () => state,
+  getSaved: () => saved,
+  saveRecords: savePlayRecords,
+  activate: activatePlayState,
+  openModal,
+});
+situationUI = initSituationUI({
+  getState: () => state,
+  getRegions: () => regions,
+  getSelected: () => selected,
+  getLayer: () => layer,
+  selectRegion,
+});
+
 updateUI();
 setView(
   initialRoute === "inicio" ? "territorio" : initialRoute || "territorio",

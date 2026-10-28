@@ -12,7 +12,8 @@
     "predev": "node scripts/vendor.mjs",
     "format": "prettier --write dist/*.js dist/*.css dist/index.html api/*.js server/*.js scripts/*.mjs tests/*.js",
     "format:check": "prettier --check dist/*.js dist/*.css dist/index.html api/*.js server/*.js scripts/*.mjs tests/*.js",
-    "pretest": "node scripts/vendor.mjs"
+    "pretest": "node scripts/vendor.mjs",
+    "calibrate": "node scripts/calibrate.mjs"
   },
   "engines": {
     "node": ">=20"

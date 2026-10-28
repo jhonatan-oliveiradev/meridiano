@@ -256,7 +256,7 @@ export function initTradeUI({
               report.regional.find((x) => x.region === j)?.output[
                 dominant.key
               ] ?? 0;
-          return `<g class="economic-site ${j === i ? "is-selected" : ""}" transform="translate(${v.x - 18},${v.y - 24})" data-economic-region="${j}" role="button" tabindex="0" aria-label="${esc(v.name)}: potencial de ${dominant.name.toLowerCase()} ${fmt(v[dominant.key] * 100, 0)} de 100"><title>${esc(v.name)} · ${dominant.name} · ${fmt(amount)} UP no trimestre</title><rect x="-13" y="-13" width="26" height="26" rx="7" fill="${dominant.color}"/><g transform="translate(-9,-9) scale(.75)" class="economic-symbol">${sectorIcon(
+          return `<g class="economic-site ${j === i ? "is-selected" : ""}" transform="translate(${v.x - 18},${v.y - 50})" data-economic-region="${j}" role="button" tabindex="0" aria-label="${esc(v.name)}: potencial de ${dominant.name.toLowerCase()} ${fmt(v[dominant.key] * 100, 0)} de 100"><title>${esc(v.name)} · ${dominant.name} · ${fmt(amount)} UP no trimestre</title><rect x="-13" y="-13" width="26" height="26" rx="7" fill="${dominant.color}"/><g transform="translate(-9,-9) scale(.75)" class="economic-symbol">${sectorIcon(
             dominant.key,
           )
             .replace(/^<svg[^>]*>/, "")

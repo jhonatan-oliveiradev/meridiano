@@ -4,6 +4,13 @@ import { musicTracks } from "../dist/music-tracks.js";
 for (const f of [
   "index.html",
   "boot.js",
+  "decision-review.js",
+  "challenges.js",
+  "experiments.js",
+  "experiments-ui.js",
+  "playability-ui.js",
+  "playability.css",
+  "map-situation.js",
   "systems.js",
   "systems-ui.js",
   "systems.css",

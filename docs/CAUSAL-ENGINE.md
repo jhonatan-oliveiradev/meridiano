@@ -42,6 +42,20 @@ A Sala de situação fica em Redes, pelo mapa ou comércio, com seleção de est
 
 Testes de conservação, operações versus planejamento, clima independente de contexto externo, resposta única, racionamento, importação emergencial, prazo industrial, horizonte, validação do gabinete e replay de quarenta anos. A decomposição dos indicadores continua somando a variação realizada. Na revisão pela interface, Aurora alcançou estabilidade e recebeu uma oportunidade; apoio contratado entrou em implantação e ampliou a capacidade em 12%. Mais tarde, chuva de 18% e reserva esgotada justificaram uma emergência em Porto Claro. A prévia registrou o gasto único e o fechamento chegou a 2028 T4.
 
-O navegador de validação deixou de responder após o fechamento do balanço. A conferência visual final da comparação da resposta e a revisão mobile permanecem pendentes; não foram substituídas por uma declaração de aprovação visual. Não houve chamada ao provedor de IA nem validação GPU adicional.
+Na continuação desta PR, o navegador foi recuperado. A conferência desktop confirmou uma resposta de água: 34% de atendimento sem a medida contra 86% com ela, custo único de M$ 2,74 bi e reserva final ainda zerada. O balanço separa resultado total e diferença da resposta. Sem chamada ao provedor de IA nem validação GPU adicional.
 
 Ainda não há clima real, simulação hidrológica física, mercado elétrico horário, rotas reais, migração ou aprendizado automático de coeficientes. Reservas iniciais e limites foram definidos para permitir partidas comparáveis. A calibração de dificuldade deve continuar com partidas observadas, sem tratar frequência de eventos como prova de realismo.
+
+## Cinco passos de jogabilidade
+
+O balanço guarda até 40 respostas com gasto único, diferenças recorrentes de orçamento, indicadores com/sem resposta no mesmo trimestre e acompanhamento ainda ativo. Histórico de execução não é reescrito ao avançar. Alterações manuais de política posteriores à resposta são preservadas no contrafactual.
+
+Três desafios estão disponíveis na tela inicial e no Plano: recuperação fiscal, abastecimento e expansão industrial. Cada partida guarda o país anterior, explicita critérios/prazo/limites e fixa vitória ou falha. Países continuam no modo livre após o resultado. Redes são medidas pela média dos quatro trimestres finais, exigindo quatro amostras distintas.
+
+Cenários permitem criar um experimento com origem preservada e dois caminhos independentes. A fotografia inclui redes, estoque, obras, políticas e decisões. Cada caminho ativo é atualizado localmente e pode ser retomado. Comparação exige origem compartilhada, além da semente, e alinha históricos no último trimestre comum. Cópias comuns não são atualizadas; retomá-las não sobrescreve a ramificação original. O limite de 20 registros não descarta cópias silenciosamente. Exportação JSON continua sendo do país atual, não um pacote completo do experimento.
+
+A camada Situação compartilha cores de pressão regional entre 2D, Atlas e 3D. No SVG 2D há marcadores acessíveis de água, energia, logística, obras e entregas, com contexto no painel regional. Na camada de situação os ícones econômicos cedem lugar aos alertas; marcadores ficam acima dos nomes dos estados. Nos modos GPU a informação permanece disponível no painel e pela cor, sem afirmar que os marcadores SVG estão presentes.
+
+Calibração reproduzível e seus limites estão em [CALIBRATION.md](CALIBRATION.md). Não foram adicionadas dependências ou chamadas de IA.
+
+QA responsivo desta etapa: Plano, catálogo de desafios, cenários, comparação A/B e select em iframe temporário de 390 × 844 no Chrome. Documento sem rolagem horizontal; teste não substitui Safari/iOS ou dispositivo físico. Evidências em `docs/screenshots/playability/`.

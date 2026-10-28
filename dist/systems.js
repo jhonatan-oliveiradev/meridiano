@@ -250,6 +250,10 @@ export function evolveSystems(s, response = {}) {
       load,
       privateCapacity,
       pipeline,
+      commissioned:
+        !!old.pipeline &&
+        !pipeline &&
+        privateCapacity > (old.privateCapacity ?? 0),
       readyStreak: healthy ? Math.min(160, (old.readyStreak ?? 0) + 1) : 0,
     };
   });

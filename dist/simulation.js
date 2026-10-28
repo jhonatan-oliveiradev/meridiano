@@ -15,6 +15,8 @@ import {
 import { quarterDrivers, driverMetrics } from "./governance.js";
 import { validSystems, chooseSystemEvent } from "./systems.js";
 import { causalIncidents, networkChoices } from "./causal-events.js";
+import { decisionReview, withoutResponse } from "./decision-review.js";
+import { assessChallenge } from "./challenges.js";
 
 // Fictional game rules. Immediate effects last one turn; optional follow-ups are bounded.
 // Emergency cost is charged once as a percentage of GDP.
@@ -299,6 +301,7 @@ export function resolveDecision(s, eventId, choiceId) {
     effect: choice.effect,
     followup: choice.followup,
     ...(choice.systems ? { systems: choice.systems } : {}),
+    ...(choice.policyUpdates ? { policyUpdates: choice.policyUpdates } : {}),
     ...(event.cause ? { cause: event.cause } : {}),
     chosenAt: s.quarter,
   };
@@ -364,6 +367,16 @@ export function advanceTurn(s) {
   if (s.quarter >= 160 || decisionFor(s)) return s;
   s = migrateConsequences(s);
   const n = projectQuarter(s);
+  const review = s.scheduledDecision
+    ? decisionReview(s, n, projectQuarter(withoutResponse(s)))
+    : null;
+  if (review)
+    n.decisionReviews = [
+      ...(Array.isArray(s.decisionReviews) ? s.decisionReviews : [])
+        .filter((r) => r.id !== review.id)
+        .slice(-39),
+      review,
+    ];
   const baseline = s.policyBaseline ?? s.policies;
   n.lastReport = {
     quarter: n.quarter,
@@ -379,6 +392,7 @@ export function advanceTurn(s) {
         after: s.policies[p.key],
       })),
     decision: s.scheduledDecision ?? null,
+    actionReview: review,
     drivers: quarterDrivers(s, n),
     policiesBefore: { ...baseline },
   };
@@ -431,5 +445,25 @@ export function advanceTurn(s) {
       title: event.title,
       detail: `${event.region}: há uma decisão aguardando sua escolha. O efeito entra no próximo trimestre.`,
     });
-  return advanceGoals(s, n);
+  const result = advanceGoals(s, n),
+    challenge = assessChallenge(result);
+  if (
+    challenge &&
+    !["won", "lost"].includes(s.challenge?.status) &&
+    challenge.status !== "playing"
+  ) {
+    result.challenge = {
+      ...result.challenge,
+      status: challenge.status,
+      result: challenge,
+    };
+    result.events.unshift({
+      title:
+        challenge.status === "won"
+          ? "Desafio concluído"
+          : "Prazo ou limite do desafio encerrado",
+      detail: `${challenge.name}. Você pode continuar o país no modo livre; o resultado foi guardado no Plano.`,
+    });
+  }
+  return result;
 }

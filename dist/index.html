@@ -89,6 +89,7 @@
     <link rel="stylesheet" href="trade.css" />
     <link rel="stylesheet" href="onboarding.css" />
     <link rel="stylesheet" href="systems.css" />
+    <link rel="stylesheet" href="playability.css" />
   </head>
   <body class="entry-active" data-boot="loading">
     <section
@@ -121,7 +122,14 @@
           <button id="welcomeLearn" class="welcome-learn" disabled>
             Aprender jogando
           </button>
-          <small id="welcomeSaveNote"></small>
+          <button
+            id="welcomeChallenges"
+            class="welcome-learn"
+            data-challenge-catalog
+            disabled
+          >
+            Jogar um desafio ↗</button
+          ><small id="welcomeSaveNote"></small>
         </div>
         <div class="welcome-territory" aria-label="Seu país">
           <div class="welcome-coordinates">
@@ -438,6 +446,12 @@
                 ← Voltar à meta
               </button>
             </div>
+            <button
+              id="experimentActive"
+              class="branch-status"
+              data-view="cenarios"
+              hidden
+            ></button>
             <h2 id="pageTitle" tabindex="-1">Território</h2>
           </div>
           <div class="top-actions">
@@ -582,6 +596,11 @@
               ><button data-layer="populacao">População</button
               ><button data-layer="densidade">Densidade</button
               ><button data-layer="renda">Renda</button
+              ><button
+                data-layer="situacao"
+                title="Redes, obras e entregas: cinza sem apuração; verde estável; âmbar em atenção; vermelho crítico"
+              >
+                Situação</button
               ><button data-layer="bemestar">Bem-estar</button
               ><button
                 data-trade-action="map"
@@ -780,9 +799,20 @@
             Salvos neste navegador. Exporte uma cópia para conservar seus
             cenários.
           </p>
+          <button class="secondary" data-experiment-new>
+            Criar experimento A/B ↗
+          </button>
+          <p>
+            Experimentos guardam a origem e dois caminhos. Caminhos ativos são
+            atualizados automaticamente; cópias comuns permanecem fixas.
+          </p>
           <div id="scenarios"></div>
         </div>
         <section class="view content-view" id="view-plano">
+          <button class="secondary" data-challenge-catalog>
+            Jogar um desafio ↗
+          </button>
+          <div id="challengeStatus"></div>
           <div class="plan-heading">
             <div>
               <span class="eyebrow">PRIORIDADES DO PAÍS</span>
